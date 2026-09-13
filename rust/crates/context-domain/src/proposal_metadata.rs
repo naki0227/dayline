@@ -35,6 +35,16 @@ impl ProposedTool {
         require_identifier(&self.name, "tool.name")?;
         require_identifier(&self.operation, "tool.operation")
     }
+
+    #[must_use]
+    pub fn integration(&self) -> &str {
+        &self.integration
+    }
+
+    #[must_use]
+    pub fn operation(&self) -> &str {
+        &self.operation
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]

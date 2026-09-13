@@ -130,6 +130,26 @@ impl ActionProposal {
             proposer,
         })
     }
+
+    #[must_use]
+    pub const fn effect(&self) -> ActionEffect {
+        self.effect
+    }
+
+    #[must_use]
+    pub const fn risk(&self) -> &RiskAssessment {
+        &self.risk
+    }
+
+    #[must_use]
+    pub const fn permission(&self) -> &ActionPermission {
+        &self.permission
+    }
+
+    #[must_use]
+    pub const fn tool(&self) -> &ProposedTool {
+        &self.tool
+    }
 }
 
 #[derive(Deserialize)]

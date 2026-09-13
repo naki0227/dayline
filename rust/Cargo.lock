@@ -35,6 +35,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "context-policy"
+version = "0.1.0"
+dependencies = [
+ "context-domain",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
 name = "context-redact"
 version = "0.1.0"
 dependencies = [

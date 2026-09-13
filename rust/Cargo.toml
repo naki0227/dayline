@@ -1,6 +1,10 @@
 [workspace]
 resolver = "3"
-members = ["crates/context-domain", "crates/context-redact"]
+members = [
+    "crates/context-domain",
+    "crates/context-policy",
+    "crates/context-redact",
+]
 
 [workspace.package]
 edition = "2024"
