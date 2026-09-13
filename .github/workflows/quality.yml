@@ -1,0 +1,38 @@
+name: Quality / Cross-cutting
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: quality-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  duplication:
+    name: Duplication report (advisory)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Detect duplicated code
+        id: duplication
+        continue-on-error: true
+        run: npx --yes jscpd@4 --config .jscpd.json
+      - name: Publish advisory result
+        if: steps.duplication.outcome == 'failure'
+        run: echo '::warning::Code duplication exceeded the advisory threshold. Review the jscpd artifact.'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jscpd-report
+          path: artifacts/jscpd
+          if-no-files-found: ignore
+

@@ -1,0 +1,40 @@
+name: CI / Swift
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-swift-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  quality-gates:
+    name: Format, lint, typecheck, test, build
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Format
+        run: swift format lint --recursive --strict packages
+      - name: Install SwiftLint
+        run: brew install swiftlint
+      - name: Lint
+        run: swiftlint lint --strict --no-cache
+      - name: Type check
+        run: |
+          swift build --package-path packages/ContextCoreKit
+          swift build --package-path packages/AppleIntelligenceKit
+      - name: Unit tests
+        run: |
+          swift test --package-path packages/ContextCoreKit --parallel
+          swift test --package-path packages/AppleIntelligenceKit --parallel
+      - name: Build
+        run: |
+          swift build --package-path packages/ContextCoreKit -c release
+          swift build --package-path packages/AppleIntelligenceKit -c release
+

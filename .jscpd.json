@@ -1,0 +1,12 @@
+{
+  "threshold": 3,
+  "reporters": ["console", "json"],
+  "output": "artifacts/jscpd",
+  "format": ["rust", "swift"],
+  "ignore": [
+    "**/.build/**",
+    "**/target/**",
+    "**/Tests/**",
+    "**/*Tests/**"
+  ]
+}
