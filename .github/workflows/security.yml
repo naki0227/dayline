@@ -34,6 +34,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: rustsec/audit-check@v2
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           working-directory: rust
 
   python-dependencies:
@@ -49,4 +50,3 @@ jobs:
         run: |
           python -m pip install pip-audit
           python -m pip_audit -r scripts/requirements-asc.txt
-
