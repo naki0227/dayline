@@ -84,6 +84,7 @@ buildまで成功を確認した。
   が未実装。
 - SchemaからRust／Swift bindingsを再現可能に生成する方式は未決定。
 - Tool Registry固有のargument schemaと実行policyは未実装。
+- 一部GitHub ActionsにNode.js 20 runtimeの非blocking廃止予定警告がある。
 
 ## 次にやること
 

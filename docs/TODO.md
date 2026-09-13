@@ -44,6 +44,8 @@
 - [ ] Replace marker APIs with versioned generated bindings after the contracts
       are accepted.
 - [ ] Add coverage thresholds after meaningful domain behavior exists.
+- [ ] Review GitHub Actions using the deprecated Node.js 20 runtime before the
+      runner compatibility shim is removed.
 
 ## Start here next time
 
