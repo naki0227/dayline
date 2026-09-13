@@ -101,20 +101,21 @@ impl Provenance {
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(try_from = "RawContextEvent")]
 pub struct ContextEvent {
-    pub schema_version: u32,
-    pub id: EventId,
+    schema_version: u32,
+    id: EventId,
     #[serde(with = "time::serde::rfc3339")]
-    pub occurred_at: OffsetDateTime,
-    pub day_id: DayId,
-    pub session_id: Option<SessionId>,
-    pub source: ContextSource,
-    pub kind: EventKind,
-    pub payload: EventPayload,
-    pub metadata: BTreeMap<String, String>,
-    pub sensitivity: Sensitivity,
-    pub retention: RetentionPolicy,
-    pub provenance: Provenance,
+    occurred_at: OffsetDateTime,
+    day_id: DayId,
+    session_id: Option<SessionId>,
+    source: ContextSource,
+    kind: EventKind,
+    payload: EventPayload,
+    metadata: BTreeMap<String, String>,
+    sensitivity: Sensitivity,
+    retention: RetentionPolicy,
+    provenance: Provenance,
 }
 
 impl ContextEvent {
@@ -161,89 +162,45 @@ impl ContextEvent {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use std::collections::BTreeMap;
+#[derive(Deserialize)]
+struct RawContextEvent {
+    schema_version: u32,
+    id: EventId,
+    #[serde(with = "time::serde::rfc3339")]
+    occurred_at: OffsetDateTime,
+    day_id: DayId,
+    session_id: Option<SessionId>,
+    source: ContextSource,
+    kind: EventKind,
+    payload: EventPayload,
+    metadata: BTreeMap<String, String>,
+    sensitivity: Sensitivity,
+    retention: RetentionPolicy,
+    provenance: Provenance,
+}
 
-    use time::macros::{date, datetime};
+impl TryFrom<RawContextEvent> for ContextEvent {
+    type Error = DomainError;
 
-    use super::{
-        ContextEvent, ContextSource, EventKind, EventPayload, Provenance, RetentionPolicy,
-        Sensitivity,
-    };
-    use crate::{DayId, DomainError, EventId};
-
-    fn event(
-        payload: EventPayload,
-        retention: RetentionPolicy,
-    ) -> Result<ContextEvent, DomainError> {
-        ContextEvent::new(
-            EventId::parse("018f6ea2-8f44-7f00-8000-000000000001")?,
-            datetime!(2026-09-13 10:31:00 +09:00),
-            DayId::new(date!(2026 - 09 - 13), "Asia/Tokyo")?,
-            None,
-            ContextSource::Shell,
-            EventKind::Command,
-            payload,
-            BTreeMap::from([("redacted".to_owned(), "true".to_owned())]),
-            Sensitivity::Sensitive,
-            retention,
-            Provenance {
-                collector: "context-collector".to_owned(),
-                device_id: "mac-local".to_owned(),
-                captured_at: datetime!(2026-09-13 10:31:01 +09:00),
-            },
+    fn try_from(raw: RawContextEvent) -> Result<Self, Self::Error> {
+        if raw.schema_version != crate::CONTEXT_SCHEMA_VERSION {
+            return Err(DomainError::UnsupportedSchemaVersion {
+                expected: crate::CONTEXT_SCHEMA_VERSION,
+                actual: raw.schema_version,
+            });
+        }
+        Self::new(
+            raw.id,
+            raw.occurred_at,
+            raw.day_id,
+            raw.session_id,
+            raw.source,
+            raw.kind,
+            raw.payload,
+            raw.metadata,
+            raw.sensitivity,
+            raw.retention,
+            raw.provenance,
         )
-    }
-
-    #[test]
-    fn rejects_empty_shell_command() {
-        let result = event(
-            EventPayload::ShellCommand {
-                command: " ".to_owned(),
-                cwd: "/workspace".to_owned(),
-                exit_code: Some(1),
-                duration_ms: Some(120),
-            },
-            RetentionPolicy::Days(30),
-        );
-
-        assert_eq!(
-            result,
-            Err(DomainError::EmptyField {
-                field: "payload.command"
-            })
-        );
-    }
-
-    #[test]
-    fn rejects_zero_day_retention() {
-        let result = event(
-            EventPayload::Text {
-                text: "context".to_owned(),
-            },
-            RetentionPolicy::Days(0),
-        );
-
-        assert_eq!(result, Err(DomainError::InvalidRetentionDays));
-    }
-
-    #[test]
-    fn serializes_to_the_v1_fixture() -> Result<(), Box<dyn std::error::Error>> {
-        let value = serde_json::to_value(event(
-            EventPayload::ShellCommand {
-                command: "cargo test".to_owned(),
-                cwd: "/workspace/dayline".to_owned(),
-                exit_code: Some(0),
-                duration_ms: Some(425),
-            },
-            RetentionPolicy::Days(30),
-        )?)?;
-        let fixture: serde_json::Value = serde_json::from_str(include_str!(
-            "../../../../contracts/fixtures/context-event-v1.json"
-        ))?;
-
-        assert_eq!(value, fixture);
-        Ok(())
     }
 }

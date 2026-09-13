@@ -45,9 +45,10 @@ uuid_identifier!(RecordId, "record_id");
 uuid_identifier!(RunId, "run_id");
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
+#[serde(try_from = "RawDayId")]
 pub struct DayId {
-    pub local_date: Date,
-    pub timezone: String,
+    local_date: Date,
+    timezone: String,
 }
 
 impl DayId {
@@ -65,6 +66,30 @@ impl DayId {
             local_date,
             timezone,
         })
+    }
+
+    #[must_use]
+    pub const fn local_date(&self) -> Date {
+        self.local_date
+    }
+
+    #[must_use]
+    pub fn timezone(&self) -> &str {
+        &self.timezone
+    }
+}
+
+#[derive(Deserialize)]
+struct RawDayId {
+    local_date: Date,
+    timezone: String,
+}
+
+impl TryFrom<RawDayId> for DayId {
+    type Error = DomainError;
+
+    fn try_from(raw: RawDayId) -> Result<Self, Self::Error> {
+        Self::new(raw.local_date, raw.timezone)
     }
 }
 
