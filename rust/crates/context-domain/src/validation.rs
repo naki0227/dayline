@@ -31,10 +31,10 @@ pub(crate) fn require_non_empty<T>(values: &[T], field: &'static str) -> Result<
 
 pub(crate) fn require_unique<T>(values: &[T], field: &'static str) -> Result<(), DomainError>
 where
-    T: Copy + Eq + Hash,
+    T: Eq + Hash,
 {
     let mut seen = HashSet::with_capacity(values.len());
-    if values.iter().copied().all(|value| seen.insert(value)) {
+    if values.iter().all(|value| seen.insert(value)) {
         return Ok(());
     }
     Err(DomainError::DuplicateIdentifier { field })

@@ -36,6 +36,18 @@ pub enum DomainError {
     #[error("included token count does not match the context items")]
     TokenCountMismatch,
 
+    #[error("proposal expiration must be later than its proposal time")]
+    InvalidExpiration,
+
+    #[error("delete effects must be marked destructive")]
+    DeleteMustBeDestructive,
+
+    #[error("destructive proposals require explicit confirmation")]
+    DestructiveConfirmationRequired,
+
+    #[error("{field} exceeds the maximum length of {maximum}")]
+    StringTooLong { field: &'static str, maximum: usize },
+
     #[error("unsupported schema version {actual}; expected {expected}")]
     UnsupportedSchemaVersion { expected: u32, actual: u32 },
 

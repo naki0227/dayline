@@ -6,6 +6,8 @@ mod bundle_metadata;
 mod error;
 mod event;
 mod identifiers;
+mod proposal;
+mod proposal_metadata;
 mod validation;
 
 pub use artifact::{ArtifactKind, GenerationProvenance, SemanticArtifact, SemanticContent};
@@ -22,6 +24,11 @@ pub use event::{
 };
 pub use identifiers::{
     ArtifactId, BundleId, DayId, EventId, ProposalId, RecordId, RunId, SessionId,
+};
+pub use proposal::{ActionEffect, ActionProposal, ProposalState};
+pub use proposal_metadata::{
+    ActionPermission, ActionProposer, ActionTarget, ConfirmationRequirement, ProposedTool,
+    RiskAssessment, RiskLevel,
 };
 
 /// Current version of the cross-language context contract.
