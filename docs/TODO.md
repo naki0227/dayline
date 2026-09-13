@@ -7,9 +7,8 @@
 
 ## Not started
 
-- [ ] Define versioned `SemanticArtifact`, `ContextBundle`, and `ActionProposal`
-      schemas.
-- [ ] Implement Rust domain invariants with unit tests.
+- [ ] Implement Rust `SemanticArtifact`, `ContextBundle`, and `ActionProposal`
+      invariants with unit tests.
 - [ ] Add normalization, redaction, policy, query, ranking, assembly, and store
       crates incrementally with tests.
 - [ ] Select and record the Rust/Swift FFI approach, then generate an XCFramework.
@@ -31,6 +30,9 @@
 - [x] Add Rust and Python release-tool dependency audits.
 - [x] Define and validate the `ContextEvent` v1 JSON Schema and fixture.
 - [x] Implement validated Rust `ContextEvent` domain types and serialization.
+- [x] Define and validate all four v1 core contracts with positive and negative
+      fixtures.
+- [x] Record the v1 contract boundary and versioning decisions in ADR 0003.
 
 ## On hold
 
@@ -48,4 +50,4 @@
 1. Read `docs/adr/0001-context-platform-boundaries.md`.
 2. Read `docs/architecture.md` and `contracts/README.md`.
 3. Run `make ci`.
-4. Define the `SemanticArtifact` v1 contract and its source-event invariants.
+4. Implement the Rust `SemanticArtifact` model and source-event invariants.
