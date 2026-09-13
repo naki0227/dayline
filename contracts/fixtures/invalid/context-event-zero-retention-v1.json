@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "id": "018f6ea2-8f44-7f00-8000-000000000001",
+  "occurred_at": "2026-09-13T10:31:00+09:00",
+  "day_id": { "local_date": "2026-09-13", "timezone": "Asia/Tokyo" },
+  "session_id": null,
+  "source": { "type": "shell" },
+  "kind": "command",
+  "payload": {
+    "type": "shell_command",
+    "content": {
+      "command": "cargo test",
+      "cwd": "/workspace/dayline",
+      "exit_code": 0,
+      "duration_ms": 425
+    }
+  },
+  "metadata": {},
+  "sensitivity": "standard",
+  "retention": { "type": "days", "days": 0 },
+  "provenance": {
+    "collector": "context-collector",
+    "device_id": "mac-local",
+    "captured_at": "2026-09-13T10:31:01+09:00"
+  }
+}

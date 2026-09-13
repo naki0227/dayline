@@ -50,6 +50,9 @@ contracts-check: ## Contract schemaとfixtureを検証する
 		--schemafile contracts/action-proposal.schema.json \
 		contracts/fixtures/action-proposal-v1.json
 	@! $(CONTRACTS_VENV)/bin/check-jsonschema \
+		--schemafile contracts/context-event.schema.json \
+		contracts/fixtures/invalid/context-event-zero-retention-v1.json
+	@! $(CONTRACTS_VENV)/bin/check-jsonschema \
 		--schemafile contracts/semantic-artifact.schema.json \
 		contracts/fixtures/invalid/semantic-artifact-empty-sources-v1.json
 	@! $(CONTRACTS_VENV)/bin/check-jsonschema \
