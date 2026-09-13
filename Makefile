@@ -34,9 +34,16 @@ contracts-venv: ## JSON Schema検証環境を作成する
 
 contracts-check: ## Contract schemaとfixtureを検証する
 	$(CONTRACTS_VENV)/bin/check-jsonschema --check-metaschema contracts/context-event.schema.json
+	$(CONTRACTS_VENV)/bin/check-jsonschema --check-metaschema contracts/semantic-artifact.schema.json
 	$(CONTRACTS_VENV)/bin/check-jsonschema \
 		--schemafile contracts/context-event.schema.json \
 		contracts/fixtures/context-event-v1.json
+	$(CONTRACTS_VENV)/bin/check-jsonschema \
+		--schemafile contracts/semantic-artifact.schema.json \
+		contracts/fixtures/semantic-artifact-v1.json
+	@! $(CONTRACTS_VENV)/bin/check-jsonschema \
+		--schemafile contracts/semantic-artifact.schema.json \
+		contracts/fixtures/invalid/semantic-artifact-empty-sources-v1.json
 
 rust-format: ## Rustのフォーマットを検証する
 	cd rust && cargo fmt --all --check
