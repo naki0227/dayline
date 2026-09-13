@@ -4,52 +4,45 @@ use uuid::Uuid;
 
 use crate::DomainError;
 
-#[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
-#[serde(transparent)]
-pub struct EventId(Uuid);
+macro_rules! uuid_identifier {
+    ($name:ident, $field:literal) => {
+        #[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
+        #[serde(transparent)]
+        pub struct $name(Uuid);
 
-impl EventId {
-    /// Parses a stable event identifier.
-    ///
-    /// # Errors
-    ///
-    /// Returns [`DomainError::InvalidUuid`] when `value` is not a UUID.
-    pub fn parse(value: &str) -> Result<Self, DomainError> {
-        Uuid::parse_str(value)
-            .map(Self)
-            .map_err(|_| DomainError::InvalidUuid { field: "event_id" })
-    }
+        impl $name {
+            /// Parses a stable UUID identifier.
+            ///
+            /// # Errors
+            ///
+            /// Returns [`DomainError::InvalidUuid`] when `value` is not a UUID.
+            pub fn parse(value: &str) -> Result<Self, DomainError> {
+                Uuid::parse_str(value)
+                    .map(Self)
+                    .map_err(|_| DomainError::InvalidUuid { field: $field })
+            }
 
-    #[must_use]
-    pub fn new() -> Self {
-        Self(Uuid::new_v4())
-    }
+            #[must_use]
+            pub fn new() -> Self {
+                Self(Uuid::new_v4())
+            }
+        }
+
+        impl Default for $name {
+            fn default() -> Self {
+                Self::new()
+            }
+        }
+    };
 }
 
-impl Default for EventId {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-#[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
-#[serde(transparent)]
-pub struct SessionId(Uuid);
-
-impl SessionId {
-    /// Parses a stable live-session identifier.
-    ///
-    /// # Errors
-    ///
-    /// Returns [`DomainError::InvalidUuid`] when `value` is not a UUID.
-    pub fn parse(value: &str) -> Result<Self, DomainError> {
-        Uuid::parse_str(value)
-            .map(Self)
-            .map_err(|_| DomainError::InvalidUuid {
-                field: "session_id",
-            })
-    }
-}
+uuid_identifier!(EventId, "event_id");
+uuid_identifier!(SessionId, "session_id");
+uuid_identifier!(ArtifactId, "artifact_id");
+uuid_identifier!(BundleId, "bundle_id");
+uuid_identifier!(ProposalId, "proposal_id");
+uuid_identifier!(RecordId, "record_id");
+uuid_identifier!(RunId, "run_id");
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
 pub struct DayId {

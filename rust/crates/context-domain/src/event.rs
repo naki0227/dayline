@@ -3,6 +3,7 @@ use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 
+use crate::validation::require_text;
 use crate::{DayId, DomainError, EventId, SessionId};
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -76,7 +77,7 @@ pub enum RetentionPolicy {
 }
 
 impl RetentionPolicy {
-    fn validate(self) -> Result<(), DomainError> {
+    pub(crate) fn validate(self) -> Result<(), DomainError> {
         if matches!(self, Self::Days(0)) {
             return Err(DomainError::InvalidRetentionDays);
         }
@@ -158,13 +159,6 @@ impl ContextEvent {
             provenance,
         })
     }
-}
-
-fn require_text(value: &str, field: &'static str) -> Result<(), DomainError> {
-    if value.trim().is_empty() {
-        return Err(DomainError::EmptyField { field });
-    }
-    Ok(())
 }
 
 #[cfg(test)]

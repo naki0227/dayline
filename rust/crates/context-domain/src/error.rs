@@ -9,6 +9,21 @@ pub enum DomainError {
     #[error("{field} must be a valid UUID")]
     InvalidUuid { field: &'static str },
 
+    #[error("{field} must contain at least one item")]
+    EmptyCollection { field: &'static str },
+
+    #[error("{field} must not contain duplicate identifiers")]
+    DuplicateIdentifier { field: &'static str },
+
+    #[error("{field} must be greater than zero")]
+    InvalidVersion { field: &'static str },
+
+    #[error("confidence must be finite and between zero and one")]
+    InvalidConfidence,
+
+    #[error("unsupported schema version {actual}; expected {expected}")]
+    UnsupportedSchemaVersion { expected: u32, actual: u32 },
+
     #[error("retention days must be greater than zero")]
     InvalidRetentionDays,
 }
