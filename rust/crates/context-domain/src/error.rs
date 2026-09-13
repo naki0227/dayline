@@ -21,6 +21,21 @@ pub enum DomainError {
     #[error("confidence must be finite and between zero and one")]
     InvalidConfidence,
 
+    #[error("{field} is not a valid contract identifier")]
+    InvalidIdentifier { field: &'static str },
+
+    #[error("{field} must be within its allowed range")]
+    ValueOutOfRange { field: &'static str },
+
+    #[error("time window end must be later than start")]
+    InvalidTimeWindow,
+
+    #[error("token budget exceeds its maximum")]
+    TokenBudgetExceeded,
+
+    #[error("included token count does not match the context items")]
+    TokenCountMismatch,
+
     #[error("unsupported schema version {actual}; expected {expected}")]
     UnsupportedSchemaVersion { expected: u32, actual: u32 },
 
