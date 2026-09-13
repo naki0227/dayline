@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "id": "018f6ea2-8f44-7f00-8000-000000000301",
+  "built_at": "2026-09-13T10:33:00+09:00",
+  "task": {
+    "id": "daily_summary",
+    "objective": "Summarize today's work with decisions and next actions."
+  },
+  "profile": {
+    "id": "daily_summary",
+    "version": 1
+  },
+  "window": {
+    "start": "2026-09-13T00:00:00+09:00",
+    "end": "2026-09-14T00:00:00+09:00",
+    "timezone": "Asia/Tokyo"
+  },
+  "items": [
+    {
+      "record_type": "semantic_artifact",
+      "record_id": "018f6ea2-8f44-7f00-8000-000000000101",
+      "occurred_at": "2026-09-13T10:32:00+09:00",
+      "content": "The ContextEvent contract was validated with its Rust model.",
+      "content_format": "plain_text",
+      "sensitivity": "sensitive",
+      "relevance_score": 0.98,
+      "estimated_tokens": 14,
+      "citation_label": "artifact:018f6ea2"
+    }
+  ],
+  "budget": {
+    "maximum_input_tokens": 4096,
+    "included_input_tokens": 14,
+    "reserved_output_tokens": 1024
+  },
+  "processing": {
+    "location": "on_device_only"
+  },
+  "suggested_tools": [
+    {
+      "name": "github.read",
+      "access": "read",
+      "reason": "Resolve repository context only when the runtime needs it."
+    }
+  ],
+  "omissions": [
+    {
+      "reason": "deduplicated",
+      "count": 2
+    }
+  ],
+  "assembly": {
+    "engine": "context-core",
+    "engine_version": "0.1.0",
+    "policy_version": 1,
+    "ranking_version": 1
+  }
+}

@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dayline.dev/contracts/context-bundle.schema.json",
+  "title": "ContextBundle",
+  "description": "Versioned, policy-filtered model input assembled for one task and budget.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "built_at",
+    "task",
+    "profile",
+    "window",
+    "items",
+    "budget",
+    "processing",
+    "suggested_tools",
+    "omissions",
+    "assembly"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "id": { "type": "string", "format": "uuid" },
+    "built_at": { "type": "string", "format": "date-time" },
+    "task": { "$ref": "#/$defs/task" },
+    "profile": { "$ref": "#/$defs/versioned_identifier" },
+    "window": { "$ref": "#/$defs/window" },
+    "items": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/item" }
+    },
+    "budget": { "$ref": "#/$defs/budget" },
+    "processing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["location"],
+      "properties": {
+        "location": { "enum": ["on_device_only", "external_allowed"] }
+      }
+    },
+    "suggested_tools": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/suggested_tool" }
+    },
+    "omissions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/omission" }
+    },
+    "assembly": { "$ref": "#/$defs/assembly" }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9._-]*$"
+    },
+    "versioned_identifier": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version"],
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "version": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "task": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "objective"],
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "objective": { "type": "string", "minLength": 1 }
+      }
+    },
+    "window": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start", "end", "timezone"],
+      "properties": {
+        "start": { "type": "string", "format": "date-time" },
+        "end": { "type": "string", "format": "date-time" },
+        "timezone": { "type": "string", "minLength": 1 }
+      }
+    },
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "record_type",
+        "record_id",
+        "occurred_at",
+        "content",
+        "content_format",
+        "sensitivity",
+        "relevance_score",
+        "estimated_tokens",
+        "citation_label"
+      ],
+      "properties": {
+        "record_type": { "enum": ["context_event", "semantic_artifact"] },
+        "record_id": { "type": "string", "format": "uuid" },
+        "occurred_at": { "type": "string", "format": "date-time" },
+        "content": { "type": "string", "minLength": 1 },
+        "content_format": { "enum": ["plain_text", "json"] },
+        "sensitivity": { "enum": ["standard", "sensitive", "restricted"] },
+        "relevance_score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "estimated_tokens": { "type": "integer", "minimum": 1 },
+        "citation_label": { "type": "string", "minLength": 1 }
+      }
+    },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["maximum_input_tokens", "included_input_tokens", "reserved_output_tokens"],
+      "properties": {
+        "maximum_input_tokens": { "type": "integer", "minimum": 1 },
+        "included_input_tokens": { "type": "integer", "minimum": 0 },
+        "reserved_output_tokens": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "suggested_tool": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "access", "reason"],
+      "properties": {
+        "name": { "$ref": "#/$defs/identifier" },
+        "access": { "enum": ["read", "write"] },
+        "reason": { "type": "string", "minLength": 1 }
+      }
+    },
+    "omission": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reason", "count"],
+      "properties": {
+        "reason": { "enum": ["budget", "policy", "permission", "deduplicated", "unsupported"] },
+        "count": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "assembly": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["engine", "engine_version", "policy_version", "ranking_version"],
+      "properties": {
+        "engine": { "type": "string", "minLength": 1 },
+        "engine_version": { "type": "string", "minLength": 1 },
+        "policy_version": { "type": "integer", "minimum": 1 },
+        "ranking_version": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}
