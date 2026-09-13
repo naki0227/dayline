@@ -41,9 +41,19 @@ make quality  # advisory cross-cutting checks
 CI is split by responsibility under `.github/workflows/`. Development is based
 on small commits pushed directly to `main`; pull requests are not required.
 
+## Release commands
+
+```bash
+make release-dry-run  # signed archive and Apple validation, no upload
+make release-upload   # archive, upload, and App Store version association
+```
+
+Repository Variables provide non-secret Apple identifiers. GitHub Secrets provide
+the certificate, its password, and App Store Connect API credentials. A `v*` tag
+runs the upload path; manual dispatch defaults to dry-run.
+
 ## Current status
 
-The repository currently contains the validated build and CI foundation. Product
-features, Apple app targets, Rust/Swift FFI, and tag-based App Store delivery are
-tracked in [`docs/TODO.md`](docs/TODO.md).
-
+The repository contains the validated build, CI, minimal iOS target, and tag-based
+CD foundation. Product features and Rust/Swift FFI are tracked in
+[`docs/TODO.md`](docs/TODO.md).

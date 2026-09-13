@@ -2,8 +2,8 @@
 
 ## In progress
 
-- [ ] Confirm the exact AppleDevCLI executable and command contract intended for
-      App Store delivery.
+- [ ] Register or confirm `com.dayline.Dayline` in Apple Developer and App Store
+      Connect, then configure the remaining GitHub Secrets.
 
 ## Not started
 
@@ -13,10 +13,9 @@
 - [ ] Add normalization, redaction, policy, query, ranking, assembly, and store
       crates incrementally with tests.
 - [ ] Select and record the Rust/Swift FFI approach, then generate an XCFramework.
-- [ ] Create the Dayline iOS app target and deterministic UI test harness.
+- [ ] Add a deterministic UI test harness to the Dayline iOS target.
 - [ ] Add the macOS Terminal and Chrome collector boundaries.
-- [ ] Add tag-based CD after bundle/team/App Store identifiers are confirmed.
-- [ ] Add dependency and security auditing appropriate to Rust and Swift.
+- [ ] Add Swift dependency auditing when third-party Swift dependencies are introduced.
 
 ## Completed
 
@@ -25,6 +24,11 @@
 - [x] Add advisory code-duplication reporting.
 - [x] Establish ContextCoreKit and AppleIntelligenceKit package boundaries.
 - [x] Record the initial architecture decision.
+- [x] Confirm “AppleDevCLI” means the `useful_map` release toolchain.
+- [x] Add the minimal Dayline iOS target and unsigned CI build.
+- [x] Add Makefile-driven dry-run and upload release paths.
+- [x] Add tag-based App Store CD and secret scanning.
+- [x] Add Rust and Python release-tool dependency audits.
 
 ## On hold
 
@@ -43,4 +47,3 @@
 2. Read `docs/architecture.md` and `contracts/README.md`.
 3. Run `make ci`.
 4. Define the four v1 JSON schemas and their compatibility tests.
-
