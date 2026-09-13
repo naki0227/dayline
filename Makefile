@@ -11,8 +11,9 @@ BUNDLE_ID ?= com.dayline.Dayline
 ASC_PROFILE_NAME ?= Dayline App Store
 MARKETING_VERSION ?= 0.1.0
 BUILD_NUMBER ?= 1
+CONTRACTS_VENV := contracts/.venv
 
-.PHONY: help ci quality architecture duplication rust-format rust-lint rust-check rust-test rust-build swift-format swift-format-check swift-lint swift-check swift-test swift-build project app-build export-options archive export-ipa asc-venv asc-dev-venv release-tools-format release-tools-format-check release-tools-lint release-tools-typecheck release-tools-test release-tools-build release-tools-ci asc-status asc-profile asc-build validate-ipa upload release-dry-run release-upload clean
+.PHONY: help ci quality architecture duplication contracts-venv contracts-check rust-format rust-lint rust-check rust-test rust-build swift-format swift-format-check swift-lint swift-check swift-test swift-build project app-build export-options archive export-ipa asc-venv asc-dev-venv release-tools-format release-tools-format-check release-tools-lint release-tools-typecheck release-tools-test release-tools-build release-tools-ci asc-status asc-profile asc-build validate-ipa upload release-dry-run release-upload clean
 
 help: ## 利用できるターゲットを表示する
 	@awk 'BEGIN {FS = ":.*## "}; /^[a-zA-Z_-]+:.*## / {printf "  %-22s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -26,6 +27,16 @@ architecture: ## 依存方向と責務境界を検証する
 
 duplication: ## コード重複を検出する（CIでは警告扱い）
 	npx --yes jscpd@4 --config .jscpd.json
+
+contracts-venv: ## JSON Schema検証環境を作成する
+	python3 -m venv $(CONTRACTS_VENV)
+	$(CONTRACTS_VENV)/bin/pip install -r contracts/requirements.txt
+
+contracts-check: ## Contract schemaとfixtureを検証する
+	$(CONTRACTS_VENV)/bin/check-jsonschema --check-metaschema contracts/context-event.schema.json
+	$(CONTRACTS_VENV)/bin/check-jsonschema \
+		--schemafile contracts/context-event.schema.json \
+		contracts/fixtures/context-event-v1.json
 
 rust-format: ## Rustのフォーマットを検証する
 	cd rust && cargo fmt --all --check

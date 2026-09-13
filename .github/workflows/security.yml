@@ -50,3 +50,4 @@ jobs:
         run: |
           python -m pip install pip-audit
           python -m pip_audit -r scripts/requirements-asc.txt
+          python -m pip_audit -r contracts/requirements.txt

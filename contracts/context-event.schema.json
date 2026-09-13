@@ -1,0 +1,254 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dayline.dev/contracts/context-event.schema.json",
+  "title": "ContextEvent",
+  "description": "A versioned observation captured by a Dayline context source.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "occurred_at",
+    "day_id",
+    "session_id",
+    "source",
+    "kind",
+    "payload",
+    "metadata",
+    "sensitivity",
+    "retention",
+    "provenance"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "day_id": {
+      "$ref": "#/$defs/day_id"
+    },
+    "session_id": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "uuid"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "source": {
+      "$ref": "#/$defs/source"
+    },
+    "kind": {
+      "enum": [
+        "transcript",
+        "command",
+        "visit",
+        "calendar_event",
+        "message",
+        "external"
+      ]
+    },
+    "payload": {
+      "$ref": "#/$defs/payload"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "sensitivity": {
+      "enum": ["standard", "sensitive", "restricted"]
+    },
+    "retention": {
+      "$ref": "#/$defs/retention"
+    },
+    "provenance": {
+      "$ref": "#/$defs/provenance"
+    }
+  },
+  "$defs": {
+    "day_id": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["local_date", "timezone"],
+      "properties": {
+        "local_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "timezone": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "source": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type"],
+          "properties": {
+            "type": {
+              "enum": ["audio", "browser", "shell", "calendar", "github", "notion"]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "identifier"],
+          "properties": {
+            "type": {
+              "const": "external"
+            },
+            "identifier": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    },
+    "payload": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "content"],
+          "properties": {
+            "type": {
+              "const": "text"
+            },
+            "content": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["text"],
+              "properties": {
+                "text": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "content"],
+          "properties": {
+            "type": {
+              "const": "shell_command"
+            },
+            "content": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["command", "cwd", "exit_code", "duration_ms"],
+              "properties": {
+                "command": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "cwd": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "exit_code": {
+                  "type": ["integer", "null"]
+                },
+                "duration_ms": {
+                  "type": ["integer", "null"],
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "content"],
+          "properties": {
+            "type": {
+              "const": "browser_visit"
+            },
+            "content": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["url", "title"],
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "title": {
+                  "type": ["string", "null"]
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "retention": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type"],
+          "properties": {
+            "type": {
+              "enum": ["session", "indefinite"]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "days"],
+          "properties": {
+            "type": {
+              "const": "days"
+            },
+            "days": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 65535
+            }
+          }
+        }
+      ]
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["collector", "device_id", "captured_at"],
+      "properties": {
+        "collector": {
+          "type": "string",
+          "minLength": 1
+        },
+        "device_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "captured_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}
