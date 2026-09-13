@@ -1,0 +1,81 @@
+# Architecture
+
+## System boundary
+
+```text
+Apple clients
+  Dayline iOS / widgets / macOS collector
+             |
+             v
+ContextCoreKit (Swift facade)
+             |
+             v
+Context Engine (Rust)
+  domain -> normalization -> policy -> query -> ranking -> assembly -> store
+             |
+             v
+ContextBundle
+             |
+             v
+AppleIntelligenceKit
+  availability -> prompt selection -> token measurement -> structured output
+```
+
+## Dependency rules
+
+1. `context-domain` is platform neutral and cannot import database, HTTP, FFI, or
+   Apple frameworks.
+2. Context Engine components depend inward on domain contracts.
+3. `ContextCoreKit` exposes stable Swift DTOs and cannot import UI, capture,
+   persistence, or model-runtime frameworks.
+4. `AppleIntelligenceKit` may depend on `ContextCoreKit`; the reverse dependency
+   is forbidden.
+5. Apps compose packages and platform adapters. Business policy does not belong
+   in SwiftUI views.
+6. Integrations execute an `ActionProposal` only after deterministic permission
+   evaluation. AI output never bypasses policy.
+
+These rules are checked by `scripts/check-architecture.sh` and the Architecture
+workflow. Package and Cargo manifests provide additional compile-time boundaries.
+
+## Core records
+
+- `ContextEvent` is an observed fact with provenance and sensitivity metadata.
+- `SemanticArtifact` is model-derived meaning and references its source events.
+- `ContextBundle` is the versioned model-runtime input selected for a task and
+  budget.
+- `ActionProposal` is an unexecuted external side effect subject to policy.
+
+Raw observations and generated meaning must never share the same record type.
+
+## Storage and synchronization
+
+- Rust-owned SQLite is the device-local source of detailed context.
+- Audio, raw transcripts, shell details, and browser details stay local by
+  default.
+- CloudKit carries explicitly allowed lightweight events, semantic artifacts,
+  summaries, settings, policies, and connector configuration.
+- A SQLite database file is never synchronized directly through iCloud.
+
+## Security and privacy
+
+- Terminal secrets are redacted before persistence.
+- Standard output, standard error, and individual keystrokes are not collected.
+- External writes default to confirmation; destructive actions default to deny.
+- Credentials are stored in Keychain locally and GitHub Secrets in CD.
+- Logs must contain identifiers needed for diagnosis but no raw secrets or
+  unnecessary personal content.
+
+## Test strategy
+
+- Rust unit tests cover domain invariants, normalization, day boundaries,
+  redaction, policy, ranking, and shrinking.
+- Swift unit tests cover facade conversion, runtime availability, structured
+  output mapping, prompt selection, and error mapping.
+- Adapter integration tests cover SQLite, CloudKit, audio, speech, and FFI at
+  their boundaries.
+- Fixture/golden tests cover deterministic multi-hour context assembly.
+- Architecture tests block invalid dependency directions.
+- Duplication reporting is advisory so it informs refactoring without blocking
+  delivery on incidental similarity.
+

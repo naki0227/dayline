@@ -1,0 +1,24 @@
+name: Quality / Architecture
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: architecture-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-boundaries:
+    name: Dependency boundaries
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check architecture
+        run: scripts/check-architecture.sh
+

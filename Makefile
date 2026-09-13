@@ -1,14 +1,17 @@
 SWIFT_PACKAGES := packages/ContextCoreKit packages/AppleIntelligenceKit
 SWIFT_ENV := CLANG_MODULE_CACHE_PATH=$(CURDIR)/.build/clang-module-cache SWIFTPM_MODULECACHE_OVERRIDE=$(CURDIR)/.build/swift-module-cache
 
-.PHONY: help ci quality duplication rust-format rust-lint rust-check rust-test rust-build swift-format swift-format-check swift-lint swift-check swift-test swift-build clean
+.PHONY: help ci quality architecture duplication rust-format rust-lint rust-check rust-test rust-build swift-format swift-format-check swift-lint swift-check swift-test swift-build clean
 
 help: ## 利用できるターゲットを表示する
 	@awk 'BEGIN {FS = ":.*## "}; /^[a-zA-Z_-]+:.*## / {printf "  %-22s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-ci: rust-format rust-lint rust-check rust-test rust-build swift-format-check swift-lint swift-check swift-test swift-build ## CIと同じ検証を実行する
+ci: architecture rust-format rust-lint rust-check rust-test rust-build swift-format-check swift-lint swift-check swift-test swift-build ## blocking CIと同じ検証を実行する
 
 quality: duplication ## 警告扱いの横断的品質検査を実行する
+
+architecture: ## 依存方向と責務境界を検証する
+	scripts/check-architecture.sh
 
 duplication: ## コード重複を検出する（CIでは警告扱い）
 	npx --yes jscpd@4 --config .jscpd.json
