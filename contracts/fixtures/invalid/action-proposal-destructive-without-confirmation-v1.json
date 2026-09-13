@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "id": "018f6ea2-8f44-7f00-8000-000000000401",
+  "proposed_at": "2026-09-13T10:34:00+09:00",
+  "expires_at": null,
+  "state": "proposed",
+  "source_artifact_ids": ["018f6ea2-8f44-7f00-8000-000000000101"],
+  "supporting_event_ids": [],
+  "tool": { "integration": "notion", "name": "notion.page", "operation": "delete" },
+  "arguments_schema": { "id": "notion.page.delete", "version": 1 },
+  "arguments": { "page_id": "daily-note" },
+  "effect": "delete",
+  "target": {
+    "type": "notion_page",
+    "identifier": "daily-note",
+    "display_name": null
+  },
+  "risk": { "level": "high", "destructive": true, "reasons": ["Deletes external data."] },
+  "permission": { "required_scopes": ["notion.write"], "confirmation": "policy_decides" },
+  "sensitivity": "standard",
+  "idempotency_key": "delete:daily-note",
+  "rationale": "Remove an obsolete note.",
+  "proposer": { "type": "rule", "rule_id": "cleanup", "rule_version": 1 }
+}

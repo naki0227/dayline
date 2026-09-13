@@ -36,6 +36,7 @@ contracts-check: ## Contract schemaとfixtureを検証する
 	$(CONTRACTS_VENV)/bin/check-jsonschema --check-metaschema contracts/context-event.schema.json
 	$(CONTRACTS_VENV)/bin/check-jsonschema --check-metaschema contracts/semantic-artifact.schema.json
 	$(CONTRACTS_VENV)/bin/check-jsonschema --check-metaschema contracts/context-bundle.schema.json
+	$(CONTRACTS_VENV)/bin/check-jsonschema --check-metaschema contracts/action-proposal.schema.json
 	$(CONTRACTS_VENV)/bin/check-jsonschema \
 		--schemafile contracts/context-event.schema.json \
 		contracts/fixtures/context-event-v1.json
@@ -45,12 +46,18 @@ contracts-check: ## Contract schemaとfixtureを検証する
 	$(CONTRACTS_VENV)/bin/check-jsonschema \
 		--schemafile contracts/context-bundle.schema.json \
 		contracts/fixtures/context-bundle-v1.json
+	$(CONTRACTS_VENV)/bin/check-jsonschema \
+		--schemafile contracts/action-proposal.schema.json \
+		contracts/fixtures/action-proposal-v1.json
 	@! $(CONTRACTS_VENV)/bin/check-jsonschema \
 		--schemafile contracts/semantic-artifact.schema.json \
 		contracts/fixtures/invalid/semantic-artifact-empty-sources-v1.json
 	@! $(CONTRACTS_VENV)/bin/check-jsonschema \
 		--schemafile contracts/context-bundle.schema.json \
 		contracts/fixtures/invalid/context-bundle-zero-budget-v1.json
+	@! $(CONTRACTS_VENV)/bin/check-jsonschema \
+		--schemafile contracts/action-proposal.schema.json \
+		contracts/fixtures/invalid/action-proposal-destructive-without-confirmation-v1.json
 
 rust-format: ## Rustのフォーマットを検証する
 	cd rust && cargo fmt --all --check

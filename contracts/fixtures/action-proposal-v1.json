@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "id": "018f6ea2-8f44-7f00-8000-000000000401",
+  "proposed_at": "2026-09-13T10:34:00+09:00",
+  "expires_at": "2026-09-14T10:34:00+09:00",
+  "state": "proposed",
+  "source_artifact_ids": [
+    "018f6ea2-8f44-7f00-8000-000000000101"
+  ],
+  "supporting_event_ids": [
+    "018f6ea2-8f44-7f00-8000-000000000001"
+  ],
+  "tool": {
+    "integration": "notion",
+    "name": "notion.page",
+    "operation": "create"
+  },
+  "arguments_schema": {
+    "id": "notion.page.create",
+    "version": 1
+  },
+  "arguments": {
+    "parent_id": "daily-notes",
+    "title": "2026-09-13 Daily Summary",
+    "body": "The ContextEvent contract was completed."
+  },
+  "effect": "create",
+  "target": {
+    "type": "notion_database",
+    "identifier": "daily-notes",
+    "display_name": "Daily Notes"
+  },
+  "risk": {
+    "level": "medium",
+    "destructive": false,
+    "reasons": ["Writes data to an external service."]
+  },
+  "permission": {
+    "required_scopes": ["notion.write"],
+    "confirmation": "required"
+  },
+  "sensitivity": "sensitive",
+  "idempotency_key": "daily-summary:2026-09-13:notion",
+  "rationale": "Save the approved daily summary to the configured notes database.",
+  "proposer": {
+    "type": "model",
+    "runtime": "apple_intelligence",
+    "model": "system-language-model",
+    "prompt_id": "daily_summary",
+    "prompt_version": 1,
+    "run_id": "018f6ea2-8f44-7f00-8000-000000000201"
+  }
+}
