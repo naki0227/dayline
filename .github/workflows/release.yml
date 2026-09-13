@@ -1,0 +1,124 @@
+name: CD / App Store
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Marketing version without the v prefix
+        type: string
+        required: true
+        default: "0.1.0"
+      dry_run:
+        description: Validate with Apple without uploading
+        type: boolean
+        default: true
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: Verify, archive, and deliver
+    runs-on: macos-15
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/select-toolchain
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy,rustfmt
+      - name: Install build tools
+        run: brew install swiftlint xcodegen
+      - name: Run blocking quality gates
+        run: make ci
+      - name: Resolve release version
+        id: version
+        env:
+          MANUAL_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            version="${GITHUB_REF_NAME#v}"
+          else
+            version="$MANUAL_VERSION"
+          fi
+          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+([+-][0-9A-Za-z.-]+)?$ ]]; then
+            echo "Invalid semantic version: $version" >&2
+            exit 1
+          fi
+          echo "marketing=$version" >> "$GITHUB_OUTPUT"
+          echo "build=$GITHUB_RUN_NUMBER" >> "$GITHUB_OUTPUT"
+      - name: Verify release configuration
+        env:
+          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+          BUNDLE_ID: ${{ vars.DAYLINE_BUNDLE_ID }}
+          ASC_PROFILE_NAME: ${{ vars.ASC_PROFILE_NAME }}
+          DIST_CERT_P12: ${{ secrets.DIST_CERT_P12 }}
+          DIST_CERT_PASSWORD: ${{ secrets.DIST_CERT_PASSWORD }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: |
+          set -euo pipefail
+          : "${APPLE_TEAM_ID:?APPLE_TEAM_ID variable is required}"
+          : "${BUNDLE_ID:?DAYLINE_BUNDLE_ID variable is required}"
+          : "${ASC_PROFILE_NAME:?ASC_PROFILE_NAME variable is required}"
+          : "${DIST_CERT_P12:?DIST_CERT_P12 secret is required}"
+          : "${DIST_CERT_PASSWORD:?DIST_CERT_PASSWORD secret is required}"
+          : "${ASC_KEY_ID:?ASC_KEY_ID secret is required}"
+          : "${ASC_ISSUER_ID:?ASC_ISSUER_ID secret is required}"
+          : "${ASC_KEY_P8:?ASC_KEY_P8 secret is required}"
+      - name: Prepare signing identity and API key
+        env:
+          DIST_CERT_P12: ${{ secrets.DIST_CERT_P12 }}
+          DIST_CERT_PASSWORD: ${{ secrets.DIST_CERT_PASSWORD }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: |
+          set -euo pipefail
+          keychain="$RUNNER_TEMP/dayline-build.keychain-db"
+          keychain_password=$(uuidgen)
+          security create-keychain -p "$keychain_password" "$keychain"
+          security set-keychain-settings -lut 3600 "$keychain"
+          security unlock-keychain -p "$keychain_password" "$keychain"
+
+          echo "$DIST_CERT_P12" | base64 --decode > "$RUNNER_TEMP/distribution.p12"
+          security import "$RUNNER_TEMP/distribution.p12" -k "$keychain" \
+            -P "$DIST_CERT_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security -A
+          security set-key-partition-list -S apple-tool:,apple:,codesign: \
+            -s -k "$keychain_password" "$keychain" >/dev/null
+          security list-keychains -d user -s "$keychain" \
+            $(security list-keychains -d user | tr -d '"')
+          rm "$RUNNER_TEMP/distribution.p12"
+
+          mkdir -p "$RUNNER_TEMP/app-store-keys"
+          echo "$ASC_KEY_P8" | base64 --decode \
+            > "$RUNNER_TEMP/app-store-keys/AuthKey_$ASC_KEY_ID.p8"
+          chmod 600 "$RUNNER_TEMP/app-store-keys/AuthKey_$ASC_KEY_ID.p8"
+      - name: Build and validate without upload
+        if: github.event_name == 'workflow_dispatch' && inputs.dry_run
+        env: &release-environment
+          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_PRIVATE_KEYS_DIR: ${{ runner.temp }}/app-store-keys
+          BUNDLE_ID: ${{ vars.DAYLINE_BUNDLE_ID }}
+          ASC_PROFILE_NAME: ${{ vars.ASC_PROFILE_NAME }}
+          MARKETING_VERSION: ${{ steps.version.outputs.marketing }}
+          BUILD_NUMBER: ${{ steps.version.outputs.build }}
+        run: make release-dry-run
+      - name: Build and upload
+        if: github.event_name == 'push' || inputs.dry_run == false
+        env: *release-environment
+        run: make release-upload
+      - name: Remove ephemeral credentials
+        if: always()
+        run: |
+          security delete-keychain "$RUNNER_TEMP/dayline-build.keychain-db" 2>/dev/null || true
+          rm -f "$RUNNER_TEMP/app-store-keys"/*.p8

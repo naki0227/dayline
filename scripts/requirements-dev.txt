@@ -1,0 +1,5 @@
+-r requirements-asc.txt
+mypy>=1.13,<2
+ruff>=0.9,<1
+types-requests>=2.32
+
