@@ -7,8 +7,8 @@
 
 ## Not started
 
-- [ ] Define versioned `ContextEvent`, `SemanticArtifact`, `ContextBundle`, and
-      `ActionProposal` schemas.
+- [ ] Define versioned `SemanticArtifact`, `ContextBundle`, and `ActionProposal`
+      schemas.
 - [ ] Implement Rust domain invariants with unit tests.
 - [ ] Add normalization, redaction, policy, query, ranking, assembly, and store
       crates incrementally with tests.
@@ -29,6 +29,8 @@
 - [x] Add Makefile-driven dry-run and upload release paths.
 - [x] Add tag-based App Store CD and secret scanning.
 - [x] Add Rust and Python release-tool dependency audits.
+- [x] Define and validate the `ContextEvent` v1 JSON Schema and fixture.
+- [x] Implement validated Rust `ContextEvent` domain types and serialization.
 
 ## On hold
 
@@ -46,4 +48,4 @@
 1. Read `docs/adr/0001-context-platform-boundaries.md`.
 2. Read `docs/architecture.md` and `contracts/README.md`.
 3. Run `make ci`.
-4. Define the four v1 JSON schemas and their compatibility tests.
+4. Define the `SemanticArtifact` v1 contract and its source-event invariants.
