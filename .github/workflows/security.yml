@@ -10,7 +10,6 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  checks: write
   contents: read
   security-events: write
 
@@ -33,10 +32,9 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - uses: rustsec/audit-check@v2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          working-directory: rust
+      - uses: taiki-e/install-action@cargo-audit
+      - name: Audit Rust dependencies
+        run: cargo audit --file rust/Cargo.lock
 
   python-dependencies:
     name: Python dependency audit
