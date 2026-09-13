@@ -1,0 +1,15 @@
+name: Select newest Xcode toolchain
+description: Select the newest installed Xcode for reproducible Apple builds.
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        set -euo pipefail
+        newest=$(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -1 || true)
+        developer="${newest:-/Applications/Xcode.app}/Contents/Developer"
+        echo "DEVELOPER_DIR=$developer" >> "$GITHUB_ENV"
+        export DEVELOPER_DIR="$developer"
+        xcodebuild -version
+

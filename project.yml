@@ -1,0 +1,73 @@
+name: Dayline
+options:
+  bundleIdPrefix: com.dayline
+  deploymentTarget:
+    iOS: "26.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+    CODE_SIGNING_REQUIRED: NO
+    CODE_SIGNING_ALLOWED: NO
+    SWIFT_STRICT_CONCURRENCY: complete
+
+packages:
+  ContextCoreKit:
+    path: packages/ContextCoreKit
+  AppleIntelligenceKit:
+    path: packages/AppleIntelligenceKit
+
+targets:
+  Dayline:
+    type: application
+    platform: iOS
+    sources:
+      - path: App
+    dependencies:
+      - package: ContextCoreKit
+      - package: AppleIntelligenceKit
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: Dayline
+        CFBundleDevelopmentRegion: ja
+        CFBundleLocalizations: [ja, en]
+        ITSAppUsesNonExemptEncryption: false
+        NSMicrophoneUsageDescription: "一日の音声を記録し、端末上で文脈を整理するために使用します。"
+        NSSpeechRecognitionUsageDescription: "録音した音声を端末上で文字起こしするために使用します。"
+        UILaunchScreen: {}
+        UIApplicationSupportsIndirectInputEvents: true
+        UIStatusBarStyle: UIStatusBarStyleDefault
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.dayline.Dayline
+        PRODUCT_NAME: Dayline
+        GENERATE_INFOPLIST_FILE: NO
+        CURRENT_PROJECT_VERSION: "1"
+        MARKETING_VERSION: "0.1.0"
+        TARGETED_DEVICE_FAMILY: "1,2"
+      configs:
+        Release:
+          CODE_SIGNING_REQUIRED: YES
+          CODE_SIGNING_ALLOWED: YES
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY: "Apple Distribution"
+          PROVISIONING_PROFILE_SPECIFIER: "Dayline App Store"
+          DEVELOPMENT_TEAM: $(DAYLINE_TEAM_ID)
+
+schemes:
+  Dayline:
+    build:
+      targets:
+        Dayline: all
+    run:
+      config: Debug

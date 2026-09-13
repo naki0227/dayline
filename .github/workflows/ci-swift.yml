@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Format
-        run: swift format lint --recursive --strict packages
+        run: swift format lint --recursive --strict App packages
       - name: Install SwiftLint
         run: brew install swiftlint
       - name: Lint
@@ -37,4 +37,3 @@ jobs:
         run: |
           swift build --package-path packages/ContextCoreKit -c release
           swift build --package-path packages/AppleIntelligenceKit -c release
-

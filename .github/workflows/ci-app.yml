@@ -1,0 +1,34 @@
+name: CI / Apple App
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-app-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Generate and build iOS app
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/select-toolchain
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Generate project
+        run: xcodegen generate
+      - name: Build without signing
+        run: |
+          xcodebuild build \
+            -project Dayline.xcodeproj \
+            -scheme Dayline \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build/ci \
+            CODE_SIGNING_ALLOWED=NO

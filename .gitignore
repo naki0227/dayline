@@ -2,6 +2,7 @@
 .DS_Store
 
 # Xcode
+Dayline.xcodeproj/
 DerivedData/
 build/
 *.xcuserstate
@@ -29,3 +30,9 @@ artifacts/
 .env.*
 !.env.example
 
+# Python
+scripts/.venv/
+__pycache__/
+*.pyc
+.mypy_cache/
+.ruff_cache/
