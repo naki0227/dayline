@@ -16,3 +16,7 @@ make contracts-check
 ```
 
 Generated code must be reproducible and CI must reject stale generated output.
+
+All four schemas are self-contained. Cross-record rules such as sensitivity
+propagation, time ordering, and budget arithmetic are Rust domain invariants,
+not schema-only guarantees. See `docs/adr/0003-core-contracts-v1.md`.
