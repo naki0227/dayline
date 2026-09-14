@@ -142,3 +142,9 @@ Migration and rollback details are in `docs/storage.md`.
   failures cross the product boundary as finite content-free states.
 - UI tests inject a deterministic empty-day generator and never invoke the system
   model. Actual Apple Intelligence generation remains an on-device verification item.
+- Live capture uses a separate `LiveSpeechStreaming` port and `AVAudioEngine` adapter.
+  The app makes Daily recording and Live Meeting mutually exclusive so two owners
+  never compete for the microphone/audio session.
+- Final Live segments receive a meeting session ID before persistence. ProductKit
+  queries only that session and uses the profile's 30-second interval for incremental
+  generation; volatile speech never reaches context assembly.

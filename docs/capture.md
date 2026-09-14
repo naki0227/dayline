@@ -40,7 +40,7 @@ through the versioned `ContextCoreKit` DTO, assigns the event to the configured
 IANA timezone day, and records only duration, locale, and finalization metadata.
 Rust persistence remains a separate composition responsibility. The production app
 injects a `TranscriptEventPipeline` backed by the `ContextEventPersisting` protocol;
-`RustContextEventStore` implements it in ContextCoreFFIKit and writes
+`RustContextStore` implements it in ContextCoreFFIKit and writes
 `Application Support/Dayline/context.sqlite`. CaptureKit never imports generated FFI
 or SQLite. A per-install UUID is used only as provenance and is not a credential.
 
@@ -48,10 +48,25 @@ Deduplication includes the audio chunk identity. Identical words at identical of
 in different chunks remain distinct observations, while repeated final callbacks for
 the same chunk are ignored.
 
+## Live Meeting
+
+`LiveSpeechStreaming` is independent from completed-file `SpeechTranscribing`. On iOS
+26, `AppleLiveSpeechStream` requests microphone and speech permission, prepares the
+on-device SpeechTranscriber asset, converts AVAudioEngine buffers to the analyzer's
+best available format, and finalizes remaining volatile output when stopped.
+
+`LiveMeetingCoordinator` assigns one UUID session, publishes volatile and finalized
+text separately, and persists only finalized segments with that session ID. Stream
+failure stops the underlying audio source before exposing a content-free unavailable
+state. The app prevents passive Daily recording and Live Meeting from owning the
+audio session simultaneously.
+
 ## Testing
 
 Package tests use deterministic recorder and transcriber fakes for success,
 permission failure, manual rotation, interruption/resume, volatile/final segment
 handling, duplicate rejection, and ContextEvent mapping. The XCUITest launches with
 `--ui-testing`; the composition root then injects a fake recorder, so CI never sees
-a microphone permission dialog or writes a real recording.
+a microphone permission dialog or writes a real recording. The same launch mode uses
+a deterministic Live stream and verifies that the active indicator remains visible
+until Live Meeting stops.

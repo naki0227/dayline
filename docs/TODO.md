@@ -2,8 +2,8 @@
 
 ## In progress
 
-- [ ] Implement the Live Meeting streaming path with session-scoped incremental
-      transcript state and 30-second profile updates.
+- [ ] Expand Apple structured output and iOS presentation into summary, decisions,
+      TODOs, ideas, and questions while preserving source provenance.
 
 ## Not started
 
@@ -62,6 +62,12 @@
       store query through Apple runtime generation to SemanticArtifact persistence.
 - [x] Add Daily Summary presentation states and deterministic UI coverage without
       invoking Apple Intelligence in CI.
+- [x] Add an iOS 26 AVAudioEngine-to-SpeechAnalyzer Live stream with shared asset
+      preparation and content-free failure cleanup.
+- [x] Persist only finalized Live transcript evidence with a meeting session ID;
+      volatile results remain presentation-only.
+- [x] Add profile-driven 30-second Live Meeting context updates, artifact persistence,
+      visible Live state, exclusive audio ownership, and deterministic UI coverage.
 
 ## On hold
 
@@ -84,5 +90,5 @@
    `docs/adr/0005-uniffi-json-boundary.md`.
 2. Read `docs/product-profiles.md`, `docs/capture.md`, and GitHub Issue #11.
 3. Run `make ci`.
-4. Implement session-scoped Live Meeting streaming without reusing the completed-file
-   Daily transcription path as the live transport.
+4. Extend the generated model schema and artifact presentation into the structured
+   Phase 1 sections without changing the language-neutral v1 record envelope.

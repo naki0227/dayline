@@ -70,6 +70,9 @@ The versioned Daily profile now queries the local store with a timezone-correct
 One Day window, sends the assembled ContextBundle through the Apple runtime, persists
 the resulting SemanticArtifact, and exposes explicit empty/unavailable states in the
 iOS client. Live Meeting, external outputs, and macOS collectors remain tracked Phase
-1 work rather than implied completed features.
+1 work rather than implied completed features. Live Meeting now has an independent
+iOS 26 microphone-to-SpeechAnalyzer stream, session-scoped finalized evidence, and a
+profile-driven 30-second meeting-state update loop; external outputs and macOS
+collectors remain unfinished.
 Product features are tracked in
 [`docs/TODO.md`](docs/TODO.md).
