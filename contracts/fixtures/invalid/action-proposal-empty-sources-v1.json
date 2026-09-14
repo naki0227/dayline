@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "id": "018f6ea2-8f44-7f00-8000-000000000401",
+  "proposed_at": "2026-09-13T10:34:00+09:00",
+  "expires_at": null,
+  "state": "proposed",
+  "source_artifact_ids": [],
+  "supporting_event_ids": [],
+  "tool": { "integration": "calendar", "name": "calendar.event", "operation": "create" },
+  "arguments_schema": { "id": "calendar.event.create", "version": 1 },
+  "arguments": { "title": "Follow-up" },
+  "effect": "create",
+  "target": { "type": "calendar", "identifier": "default", "display_name": null },
+  "risk": { "level": "medium", "destructive": false, "reasons": [] },
+  "permission": { "required_scopes": ["calendar.write"], "confirmation": "required" },
+  "sensitivity": "standard",
+  "idempotency_key": "calendar:follow-up",
+  "rationale": "Create a follow-up event.",
+  "proposer": { "type": "rule", "rule_id": "follow_up", "rule_version": 1 }
+}

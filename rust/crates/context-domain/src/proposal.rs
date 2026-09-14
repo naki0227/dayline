@@ -5,7 +5,7 @@ use serde_json::Value;
 use time::OffsetDateTime;
 
 use crate::proposal_metadata::validate_arguments_schema;
-use crate::validation::{require_non_empty, require_text, require_unique};
+use crate::validation::{require_text, require_unique};
 use crate::{
     ActionPermission, ActionProposer, ActionTarget, ArtifactId, DomainError, EventId, ProposalId,
     ProposedTool, RiskAssessment, Sensitivity, VersionedIdentifier,
@@ -79,7 +79,9 @@ impl ActionProposal {
         rationale: impl Into<String>,
         proposer: ActionProposer,
     ) -> Result<Self, DomainError> {
-        require_non_empty(&source_artifact_ids, "source_artifact_ids")?;
+        if source_artifact_ids.is_empty() && supporting_event_ids.is_empty() {
+            return Err(DomainError::MissingSource);
+        }
         require_unique(&source_artifact_ids, "source_artifact_ids")?;
         require_unique(&supporting_event_ids, "supporting_event_ids")?;
         if expires_at.is_some_and(|expires| expires <= proposed_at) {

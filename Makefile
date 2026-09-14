@@ -64,6 +64,9 @@ contracts-check: ## Contract schemaとfixtureを検証する
 	@! $(CONTRACTS_VENV)/bin/check-jsonschema \
 		--schemafile contracts/action-proposal.schema.json \
 		contracts/fixtures/invalid/action-proposal-destructive-without-confirmation-v1.json
+	@! $(CONTRACTS_VENV)/bin/check-jsonschema \
+		--schemafile contracts/action-proposal.schema.json \
+		contracts/fixtures/invalid/action-proposal-empty-sources-v1.json
 
 rust-format: ## Rustのフォーマットを検証する
 	cd rust && cargo fmt --all --check

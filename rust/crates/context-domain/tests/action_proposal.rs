@@ -26,8 +26,19 @@ fn rejects_destructive_action_without_confirmation() {
 fn rejects_empty_evidence() -> Result<(), Box<dyn std::error::Error>> {
     let mut value = fixture_value()?;
     value["source_artifact_ids"] = serde_json::json!([]);
+    value["supporting_event_ids"] = serde_json::json!([]);
     let result = serde_json::from_value::<ActionProposal>(value);
-    assert!(result.is_err_and(|error| error.to_string().contains("at least one item")));
+    assert!(result.is_err_and(|error| error.to_string().contains("at least one source")));
+    Ok(())
+}
+
+#[test]
+fn accepts_rule_proposal_supported_only_by_event() -> Result<(), Box<dyn std::error::Error>> {
+    let mut value = fixture_value()?;
+    value["source_artifact_ids"] = serde_json::json!([]);
+    value["proposer"] =
+        serde_json::json!({"type": "rule", "rule_id": "follow_up", "rule_version": 1});
+    assert!(serde_json::from_value::<ActionProposal>(value).is_ok());
     Ok(())
 }
 
