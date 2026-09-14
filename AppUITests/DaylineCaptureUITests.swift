@@ -22,6 +22,20 @@ final class DaylineCaptureUITests: XCTestCase {
     XCTAssertTrue(waitForLabel("停止中", element: status))
   }
 
+  func testDailySummaryShowsAnEmptyDayWithoutInvokingSystemIntelligence() {
+    let app = XCUIApplication()
+    app.launchArguments = ["--ui-testing"]
+    app.launch()
+
+    let generate = app.buttons["dayline.daily.generate"]
+    let status = app.staticTexts["dayline.daily.status"]
+    XCTAssertTrue(generate.waitForExistence(timeout: 5))
+
+    generate.tap()
+
+    XCTAssertTrue(waitForLabel("今日のContextはまだありません。", element: status))
+  }
+
   private func waitForLabel(_ label: String, element: XCUIElement) -> Bool {
     let predicate = NSPredicate(format: "label == %@", label)
     let expectation = XCTNSPredicateExpectation(predicate: predicate, object: element)

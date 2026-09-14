@@ -1,15 +1,18 @@
 import ContextCaptureKit
 import ContextCoreKit
+import DaylineProductKit
 import SwiftUI
 
 struct RootView: View {
   @Bindable var capture: CaptureCoordinator
+  @Bindable var dailySummary: DailySummaryModel
 
   var body: some View {
     NavigationStack {
       VStack(spacing: 24) {
         statusCard
         transcriptCard
+        dailySummaryCard
         Spacer()
         captureButton
         Text("Context schema v\(ContextCoreKit.schemaVersion)")
@@ -18,6 +21,44 @@ struct RootView: View {
       }
       .padding(24)
       .navigationTitle("Dayline")
+    }
+  }
+
+  private var dailySummaryCard: some View {
+    VStack(alignment: .leading, spacing: 10) {
+      Text("今日のまとめ")
+        .font(.headline)
+      if let summary = dailySummary.summary {
+        Text(summary.content.text)
+          .frame(maxWidth: .infinity, alignment: .leading)
+          .accessibilityIdentifier("dayline.daily.summary")
+      } else {
+        Text(dailySummaryStatusText)
+          .font(.subheadline)
+          .foregroundStyle(.secondary)
+          .accessibilityIdentifier("dayline.daily.status")
+      }
+      Button {
+        Task { await dailySummary.generate() }
+      } label: {
+        Label("今日を要約", systemImage: "sparkles")
+      }
+      .disabled(dailySummary.state == .generating)
+      .accessibilityIdentifier("dayline.daily.generate")
+    }
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .padding()
+    .background(.quaternary, in: RoundedRectangle(cornerRadius: 16))
+  }
+
+  private var dailySummaryStatusText: String {
+    switch dailySummary.state {
+    case .idle: "録音したContextから端末上で要約します。"
+    case .generating: "要約を作成中…"
+    case .ready: "要約ができました。"
+    case .empty: "今日のContextはまだありません。"
+    case .intelligenceUnavailable: "Apple Intelligenceが利用可能になると要約できます。"
+    case .failed: "要約を作成できませんでした。"
     }
   }
 

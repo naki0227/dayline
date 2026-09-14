@@ -3,10 +3,14 @@ import ContextCoreFFIKit
 import ContextCoreKit
 import Foundation
 
+typealias AppContextStore = ContextEventPersisting & StoredContextBuilding
+  & SemanticArtifactPersisting
+
 @MainActor
 enum AppCaptureEnvironment {
   static func makeCoordinator(
-    processInfo: ProcessInfo = .processInfo
+    processInfo: ProcessInfo = .processInfo,
+    eventStore: any ContextEventPersisting
   ) -> CaptureCoordinator {
     if processInfo.arguments.contains("--ui-testing") {
       return CaptureCoordinator(
@@ -14,7 +18,7 @@ enum AppCaptureEnvironment {
         automaticChunkDuration: nil
       )
     }
-    let pipeline = makeTranscriptEventPipeline()
+    let pipeline = makeTranscriptEventPipeline(eventStore: eventStore)
     return CaptureCoordinator(
       recorder: AVAudioRecorderAdapter(),
       transcriber: AppleSpeechFileTranscriber(),
@@ -22,33 +26,35 @@ enum AppCaptureEnvironment {
     )
   }
 
-  private static func makeTranscriptEventPipeline() -> TranscriptEventPipeline? {
+  private static func makeTranscriptEventPipeline(
+    eventStore: any ContextEventPersisting
+  ) -> TranscriptEventPipeline? {
     guard
       let mapper = TranscriptEventMapper(
         timezoneIdentifier: TimeZone.current.identifier,
         deviceID: installationID()
       )
     else { return nil }
-    return TranscriptEventPipeline(mapper: mapper, store: makeEventStore())
+    return TranscriptEventPipeline(mapper: mapper, store: eventStore)
   }
 
-  private static func makeEventStore(
+  static func makeContextStore(
     fileManager: FileManager = .default
-  ) -> any ContextEventPersisting {
+  ) -> any AppContextStore {
     guard
       let applicationSupport = fileManager.urls(
         for: .applicationSupportDirectory,
         in: .userDomainMask
       ).first
-    else { return UnavailableContextEventStore() }
+    else { return UnavailableContextStore() }
     let directory = applicationSupport.appendingPathComponent("Dayline", isDirectory: true)
     do {
       try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
-      return RustContextEventStore(
+      return RustContextStore(
         databaseURL: directory.appendingPathComponent("context.sqlite")
       )
     } catch {
-      return UnavailableContextEventStore()
+      return UnavailableContextStore()
     }
   }
 
@@ -65,13 +71,28 @@ enum AppCaptureEnvironment {
   }
 }
 
-private struct UnavailableContextEventStore: ContextEventPersisting {
+private struct UnavailableContextStore: ContextEventPersisting {
   func persist(
     _: TextContextEventDocument
   ) async throws -> TextContextEventDocument {
     throw LocalContextStoreFailure.unavailable
   }
+
+  func buildStoredContext(
+    _: StoredContextRequestDocument
+  ) async throws -> ContextBundleDocument {
+    throw LocalContextStoreFailure.unavailable
+  }
+
+  func persist(
+    _: SemanticArtifactDocument
+  ) async throws -> SemanticArtifactDocument {
+    throw LocalContextStoreFailure.unavailable
+  }
 }
+
+extension UnavailableContextStore: StoredContextBuilding {}
+extension UnavailableContextStore: SemanticArtifactPersisting {}
 
 private enum LocalContextStoreFailure: Error {
   case unavailable
