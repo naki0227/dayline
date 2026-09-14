@@ -38,7 +38,15 @@ rejects blank text, and ignores duplicate final segments. Only finalized segment
 may be mapped into a `ContextEvent`. `TranscriptEventMapper` performs that mapping
 through the versioned `ContextCoreKit` DTO, assigns the event to the configured
 IANA timezone day, and records only duration, locale, and finalization metadata.
-Rust persistence remains a separate composition responsibility.
+Rust persistence remains a separate composition responsibility. The production app
+injects a `TranscriptEventPipeline` backed by the `ContextEventPersisting` protocol;
+`RustContextEventStore` implements it in ContextCoreFFIKit and writes
+`Application Support/Dayline/context.sqlite`. CaptureKit never imports generated FFI
+or SQLite. A per-install UUID is used only as provenance and is not a credential.
+
+Deduplication includes the audio chunk identity. Identical words at identical offsets
+in different chunks remain distinct observations, while repeated final callbacks for
+the same chunk are ignored.
 
 ## Testing
 

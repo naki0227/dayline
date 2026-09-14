@@ -64,6 +64,7 @@ typed structured output, real tokenizer measurement, and bounded Rust-backed con
 shrinking. The iOS client can start/stop five-minute AAC chunks through an isolated,
 interruption-aware capture state machine and remains deployable to iOS 18. On iOS
 26+, completed chunks use on-device progressive speech transcription; volatile
-hypotheses remain UI-only and finalized segments map to versioned ContextEvents.
+hypotheses remain UI-only and finalized segments map to versioned ContextEvents that
+are persisted through the real Rust SQLite boundary.
 Product features are tracked in
 [`docs/TODO.md`](docs/TODO.md).

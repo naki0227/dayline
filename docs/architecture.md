@@ -122,4 +122,7 @@ Migration and rollback details are in `docs/storage.md`.
   never stops Daily capture.
 - Volatile speech hypotheses are presentation state only. Final segments are
   deduplicated before `TranscriptEventMapper` emits versioned ContextEvent DTOs;
-  persistence is composed outside the capture package.
+  persistence is composed through a Core-owned protocol.
+- The app composition root injects ContextCoreFFIKit's typed Rust store. CaptureKit
+  imports neither generated FFI nor SQLite, while every app build/archive must link a
+  freshly generated XCFramework.

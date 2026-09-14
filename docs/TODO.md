@@ -2,12 +2,10 @@
 
 ## In progress
 
-- [ ] Persist finalized transcript ContextEvents through the Rust-owned local store
-      without making ContextCaptureKit depend on FFI or SQLite.
+- [ ] Add Daily and Live Meeting product profiles and presentation flows.
 
 ## Not started
 
-- [ ] Add Daily and Live Meeting product profiles and presentation flows.
 - [ ] Add Notion write and Calendar read/write adapters behind ActionProposal policy.
 - [ ] Add Live Activity, App Intent, and Control Center capture controls.
 - [ ] Add the macOS Terminal and Chrome collector boundaries.
@@ -54,6 +52,9 @@
 - [x] Add iOS 26 progressive on-device speech transcription behind a protocol,
       keep volatile hypotheses separate, and map finalized segments to v1
       ContextEvents with deterministic tests.
+- [x] Link the real Rust XCFramework into app builds and persist finalized transcript
+      ContextEvents through a typed Core protocol without exposing FFI or SQLite to
+      ContextCaptureKit.
 
 ## On hold
 
@@ -76,5 +77,5 @@
    `docs/adr/0005-uniffi-json-boundary.md`.
 2. Read `docs/apple-intelligence.md` and `docs/ffi.md`.
 3. Run `make ci`.
-4. Compose finalized transcript event persistence through ContextCoreFFIKit while
-   preserving the capture -> contract -> FFI dependency direction.
+4. Define the Daily and Live Meeting profiles, then build the first Daily timeline
+   query/presentation flow from the Rust-owned store.
