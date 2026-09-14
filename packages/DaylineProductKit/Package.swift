@@ -11,14 +11,19 @@ let package = Package(
   products: [
     .library(name: "DaylineProductKit", targets: ["DaylineProductKit"])
   ],
+  dependencies: [
+    .package(path: "../ContextCoreKit"),
+    .package(path: "../AppleIntelligenceKit"),
+  ],
   targets: [
     .target(
       name: "DaylineProductKit",
+      dependencies: ["ContextCoreKit", "AppleIntelligenceKit"],
       resources: [.process("Resources")]
     ),
     .testTarget(
       name: "DaylineProductKitTests",
-      dependencies: ["DaylineProductKit"]
+      dependencies: ["DaylineProductKit", "ContextCoreKit", "AppleIntelligenceKit"]
     ),
   ]
 )
