@@ -2,13 +2,11 @@
 
 ## In progress
 
-- [ ] Add Swift runtime availability, actual model token measurement, deterministic
-      shrink retry, structured Foundation Models output, and error mapping.
 - [ ] Add a deterministic UI test harness to the Dayline iOS target.
+- [ ] Implement iPhone audio capture and incremental speech transcription.
 
 ## Not started
 
-- [ ] Implement iPhone audio capture and incremental speech transcription.
 - [ ] Add Daily and Live Meeting product profiles and presentation flows.
 - [ ] Add Notion write and Calendar read/write adapters behind ActionProposal policy.
 - [ ] Add Live Activity, App Intent, and Control Center capture controls.
@@ -43,6 +41,10 @@
 - [x] Complete and test the vertical slice:
       `ContextEvent -> Rust ContextBundle -> ContextCoreKit -> AppleIntelligenceKit
       stub -> SemanticArtifact -> local SQLite persistence`.
+- [x] Close architecture guardrail issue #1 after local `make ci` and all nine
+      responsibility-specific GitHub Actions passed.
+- [x] Add Foundation Models availability mapping, `@Generable` output, actual
+      token measurement on 26.4+, typed errors, and deterministic Rust shrink retry.
 
 ## On hold
 
@@ -61,8 +63,9 @@
 
 ## Start here next time
 
-1. Read `docs/adr/0001-context-platform-boundaries.md` and issue #1.
-2. Read `docs/adr/0005-uniffi-json-boundary.md` and `docs/ffi.md`.
+1. Read `docs/adr/0001-context-platform-boundaries.md` and
+   `docs/adr/0005-uniffi-json-boundary.md`.
+2. Read `docs/apple-intelligence.md` and `docs/ffi.md`.
 3. Run `make ci`.
-4. Implement the Foundation Models availability and measurement adapter without
-   moving model-specific token semantics into Rust.
+4. Implement the iPhone capture state machine and deterministic audio test double
+   before wiring AVFAudio and Speech framework adapters.

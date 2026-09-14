@@ -59,5 +59,7 @@ runs the upload path; manual dispatch defaults to dry-run.
 The repository contains strict v1 contracts, validated Rust domain models,
 deterministic context assembly, pre-persistence redaction, timezone-aware One Day
 validation, a local SQLite store, a reproducible Apple XCFramework, and a tested
-Event-to-Artifact vertical slice. Product features are tracked in
+Event-to-Artifact vertical slice. The Apple adapter includes availability handling,
+typed structured output, real tokenizer measurement, and bounded Rust-backed context
+shrinking. Product features are tracked in
 [`docs/TODO.md`](docs/TODO.md).

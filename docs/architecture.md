@@ -91,3 +91,17 @@ Migration and rollback details are in `docs/storage.md`.
 - Architecture tests block invalid dependency directions.
 - Duplication reporting is advisory so it informs refactoring without blocking
   delivery on incidental similarity.
+
+## Apple model runtime
+
+- The package remains deployable to iOS 18/macOS 15. Foundation Models symbols are
+  isolated behind iOS/macOS 26 availability checks.
+- On 26.4+, Swift measures instructions, prompt, and generated schema with the
+  system model tokenizer. Rust never receives model token semantics.
+- If the measured input does not fit, Swift converts the ratio to a smaller
+  abstract unit budget and calls an injected `ContextReducer`. The production
+  reducer delegates to the Rust `shrink_context_bundle` FFI function.
+- On earlier 26.x versions, an exceeded-context error triggers a deterministic
+  75% abstract-budget retry. Retries are bounded and empty reductions fail closed.
+- Model availability and generation failures are content-free typed errors, so
+  callers can queue work without logging private context.
