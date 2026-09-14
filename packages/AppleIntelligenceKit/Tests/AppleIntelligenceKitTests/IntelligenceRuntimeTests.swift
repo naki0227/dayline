@@ -52,6 +52,53 @@ func stubRejectsEmptyContext() async throws {
   }
 }
 
+@Test
+func measuredContextTargetIncludesSafetyMargin() {
+  let target = ContextWindowPlanner.measuredTarget(
+    currentUnits: 4_000,
+    measuredTokens: 5_000,
+    allowedTokens: 3_000
+  )
+
+  #expect(target == 2_160)
+  #expect(
+    ContextWindowPlanner.measuredTarget(
+      currentUnits: 4_000,
+      measuredTokens: 3_000,
+      allowedTokens: 3_000
+    ) == nil
+  )
+}
+
+@Test
+func fallbackContextTargetIsDeterministic() {
+  #expect(ContextWindowPlanner.fallbackTarget(currentUnits: 4_000) == 3_000)
+  #expect(ContextWindowPlanner.fallbackTarget(currentUnits: 1) == nil)
+}
+
+@Test
+func promptRendererPreservesCitationsAndLanguage() throws {
+  let context = try fixtureBundle()
+  let rendered = PromptRenderer.render(request: request(), context: context)
+
+  #expect(rendered.instructions.contains("Write the result in en"))
+  #expect(rendered.instructions.contains("daily-summary v1"))
+  #expect(rendered.prompt.contains(context.items[0].citationLabel))
+  #expect(rendered.prompt.contains(context.items[0].content))
+}
+
+@Test
+func reducerDelegatesWithoutOwningModelSemantics() async throws {
+  let context = try fixtureBundle()
+  let reducer = ContextReducer { bundle, maximumUnits in
+    #expect(maximumUnits == 32)
+    return bundle
+  }
+
+  let reduced = try await reducer.reduce(context, maximumUnits: 32)
+  #expect(reduced == context)
+}
+
 private func request() -> IntelligenceRequest {
   IntelligenceRequest(
     artifactID: "018f6ea2-8f44-7f00-8000-000000000102",
