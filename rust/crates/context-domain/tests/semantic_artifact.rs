@@ -84,3 +84,16 @@ fn round_trips_the_v1_fixture() -> Result<(), Box<dyn std::error::Error>> {
     assert_eq!(actual, expected);
     Ok(())
 }
+
+#[test]
+fn replaces_content_without_mutating_original() -> Result<(), Box<dyn std::error::Error>> {
+    let fixture = include_str!("../../../../contracts/fixtures/semantic-artifact-v1.json");
+    let artifact: SemanticArtifact = serde_json::from_str(fixture)?;
+    let content = artifact
+        .content()
+        .map_text(|_| "Redacted summary".to_owned());
+    let replaced = artifact.with_content(content)?;
+    assert!(serde_json::to_string(&artifact)?.contains("ContextEvent contract"));
+    assert!(serde_json::to_string(&replaced)?.contains("Redacted summary"));
+    Ok(())
+}

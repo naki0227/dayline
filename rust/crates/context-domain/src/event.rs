@@ -76,9 +76,33 @@ impl EventPayload {
             Self::BrowserVisit { url, title } => {
                 format!(
                     "title: {}\nurl: {url}",
-                    title.as_deref().unwrap_or("untitled")
+                    title.as_deref().map_or("untitled", |value| value)
                 )
             }
+        }
+    }
+
+    #[must_use]
+    pub fn map_text(&self, mut transform: impl FnMut(&str) -> String) -> Self {
+        match self {
+            Self::Text { text } => Self::Text {
+                text: transform(text),
+            },
+            Self::ShellCommand {
+                command,
+                cwd,
+                exit_code,
+                duration_ms,
+            } => Self::ShellCommand {
+                command: transform(command),
+                cwd: transform(cwd),
+                exit_code: *exit_code,
+                duration_ms: *duration_ms,
+            },
+            Self::BrowserVisit { url, title } => Self::BrowserVisit {
+                url: transform(url),
+                title: title.as_deref().map(&mut transform),
+            },
         }
     }
 }
@@ -212,6 +236,27 @@ impl ContextEvent {
     #[must_use]
     pub const fn sensitivity(&self) -> Sensitivity {
         self.sensitivity
+    }
+
+    /// Copies the event with a newly validated payload.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when the replacement payload violates an invariant.
+    pub fn with_payload(&self, payload: EventPayload) -> Result<Self, DomainError> {
+        Self::new(
+            self.id,
+            self.occurred_at,
+            self.day_id.clone(),
+            self.session_id,
+            self.source.clone(),
+            self.kind,
+            payload,
+            self.metadata.clone(),
+            self.sensitivity,
+            self.retention,
+            self.provenance.clone(),
+        )
     }
 }
 

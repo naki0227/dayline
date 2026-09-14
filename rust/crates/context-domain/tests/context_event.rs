@@ -79,3 +79,18 @@ fn round_trips_the_v1_fixture() -> Result<(), Box<dyn std::error::Error>> {
     assert_eq!(actual, expected);
     Ok(())
 }
+
+#[test]
+fn replaces_payload_without_mutating_original() -> Result<(), Box<dyn std::error::Error>> {
+    let fixture = include_str!("../../../../contracts/fixtures/context-event-v1.json");
+    let event: ContextEvent = serde_json::from_str(fixture)?;
+    let payload = event
+        .payload()
+        .map_text(|value| value.replace("cargo", "swift"));
+    let replaced = event.with_payload(payload)?;
+    let original = serde_json::to_string(&event)?;
+    let updated = serde_json::to_string(&replaced)?;
+    assert!(original.contains("cargo test"));
+    assert!(updated.contains("swift test"));
+    Ok(())
+}

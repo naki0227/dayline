@@ -50,6 +50,14 @@ impl SemanticContent {
     pub fn text(&self) -> &str {
         &self.text
     }
+
+    #[must_use]
+    pub fn map_text(&self, transform: impl FnOnce(&str) -> String) -> Self {
+        Self {
+            text: transform(&self.text),
+            attributes: self.attributes.clone(),
+        }
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -188,6 +196,27 @@ impl SemanticArtifact {
     #[must_use]
     pub const fn sensitivity(&self) -> Sensitivity {
         self.sensitivity
+    }
+
+    /// Copies the artifact with newly validated semantic content.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when the replacement content violates an invariant.
+    pub fn with_content(&self, content: SemanticContent) -> Result<Self, DomainError> {
+        Self::new(
+            self.id,
+            self.created_at,
+            self.day_id.clone(),
+            self.session_id,
+            self.kind,
+            content,
+            self.source_event_ids.clone(),
+            self.confidence,
+            self.sensitivity,
+            self.retention,
+            self.generation.clone(),
+        )
     }
 }
 
