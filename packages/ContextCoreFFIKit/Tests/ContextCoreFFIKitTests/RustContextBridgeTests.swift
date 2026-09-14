@@ -16,6 +16,20 @@ func buildsContextThroughTheGeneratedRustBinding() throws {
 }
 
 @Test
+func shrinksContextThroughTheGeneratedRustBinding() throws {
+  let bridge = RustContextBridge()
+  let bundle = try bridge.buildContext(
+    request: fixtureData("fixtures/vertical-slice-request-v1.json")
+  )
+  let shrunk = try bridge.shrinkContext(bundle, maximumUnits: 1)
+
+  #expect(shrunk.items.isEmpty)
+  #expect(shrunk.budget.maximumUnits == 1)
+  #expect(shrunk.budget.includedUnits == 0)
+  #expect(shrunk.omissions.last?.reason == "budget")
+}
+
+@Test
 func persistsAnEventThroughTheGeneratedRustBinding() throws {
   let event = try fixtureData("contracts/fixtures/context-event-v1.json")
   let database = FileManager.default.temporaryDirectory

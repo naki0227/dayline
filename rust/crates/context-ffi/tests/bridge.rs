@@ -1,5 +1,6 @@
 use context_ffi::{
     ContextBridgeError, build_context_bundle, persist_context_event, persist_semantic_artifact,
+    shrink_context_bundle,
 };
 
 const REQUEST: &str = include_str!("../../../../fixtures/vertical-slice-request-v1.json");
@@ -23,6 +24,16 @@ fn rejects_an_unknown_request_version_without_details() {
         build_context_bundle(request),
         Err(ContextBridgeError::InvalidRequest)
     ));
+}
+
+#[test]
+fn shrinks_a_bundle_over_the_public_boundary() -> Result<(), Box<dyn std::error::Error>> {
+    let bundle = build_context_bundle(REQUEST.to_owned())?;
+    let shrunk = shrink_context_bundle(bundle, 1)?;
+    let value: serde_json::Value = serde_json::from_str(&shrunk)?;
+    assert_eq!(value["items"].as_array().map(Vec::len), Some(0));
+    assert_eq!(value["budget"]["maximum_units"], 1);
+    Ok(())
 }
 
 #[test]

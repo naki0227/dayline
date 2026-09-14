@@ -2,7 +2,7 @@
 
 mod request;
 
-use context_domain::{ContextEvent, SemanticArtifact};
+use context_domain::{ContextBundle, ContextEvent, SemanticArtifact};
 use context_engine::ContextEngine;
 use context_store::ContextStore;
 use request::BuildContextRequest;
@@ -38,6 +38,25 @@ pub fn build_context_bundle(request_json: String) -> Result<String, ContextBridg
         .build(plan, &query, &events, &artifacts)
         .map_err(|_| ContextBridgeError::AssemblyFailed)?;
     serde_json::to_string(&bundle).map_err(|_| ContextBridgeError::AssemblyFailed)
+}
+
+/// Shrinks an assembled bundle without introducing model-specific token semantics.
+///
+/// # Errors
+///
+/// Returns a categorized error for invalid JSON, invalid budgets, or serialization failure.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI owns cross-language strings.
+pub fn shrink_context_bundle(
+    bundle_json: String,
+    maximum_units: u64,
+) -> Result<String, ContextBridgeError> {
+    let bundle: ContextBundle =
+        serde_json::from_str(&bundle_json).map_err(|_| ContextBridgeError::InvalidRequest)?;
+    let shrunk = bundle
+        .shrink_to(maximum_units)
+        .map_err(|_| ContextBridgeError::AssemblyFailed)?;
+    serde_json::to_string(&shrunk).map_err(|_| ContextBridgeError::AssemblyFailed)
 }
 
 /// Persists a validated, redacted `ContextEvent` and returns its canonical JSON.

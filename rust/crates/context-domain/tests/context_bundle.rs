@@ -61,3 +61,23 @@ fn accepts_an_empty_context_bundle() -> Result<(), Box<dyn std::error::Error>> {
     assert!(bundle.items().is_empty());
     Ok(())
 }
+
+#[test]
+fn shrinks_in_ranked_order_and_records_omissions() -> Result<(), Box<dyn std::error::Error>> {
+    let bundle: ContextBundle = serde_json::from_str(FIXTURE)?;
+    let shrunk = bundle.shrink_to(1)?;
+    let value = serde_json::to_value(shrunk)?;
+    assert_eq!(value["items"].as_array().map(Vec::len), Some(0));
+    assert_eq!(value["budget"]["maximum_units"], 1);
+    assert_eq!(value["budget"]["included_units"], 0);
+    assert_eq!(value["omissions"].as_array().map(Vec::len), Some(2));
+    assert_eq!(value["omissions"][1]["reason"], "budget");
+    Ok(())
+}
+
+#[test]
+fn rejects_a_zero_shrink_budget() -> Result<(), Box<dyn std::error::Error>> {
+    let bundle: ContextBundle = serde_json::from_str(FIXTURE)?;
+    assert!(bundle.shrink_to(0).is_err());
+    Ok(())
+}

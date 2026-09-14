@@ -40,6 +40,31 @@ public struct RustContextBridge: Sendable {
     )
   }
 
+  public func shrinkContext(
+    _ context: ContextBundleDocument,
+    maximumUnits: UInt64
+  ) throws -> ContextBundleDocument {
+    do {
+      let document = try ContractCodec.encode(context)
+      guard let json = String(data: document, encoding: .utf8) else {
+        throw RustContextBridgeError.invalidUTF8
+      }
+      let response = try shrinkContextBundle(bundleJson: json, maximumUnits: maximumUnits)
+      guard let data = response.data(using: .utf8) else {
+        throw RustContextBridgeError.invalidUTF8
+      }
+      let bundle = try ContractCodec.decode(ContextBundleDocument.self, from: data)
+      try bundle.validateVersion()
+      return bundle
+    } catch let error as RustContextBridgeError {
+      throw error
+    } catch is DecodingError {
+      throw RustContextBridgeError.invalidContract
+    } catch {
+      throw RustContextBridgeError.rustFailure
+    }
+  }
+
   public func persistArtifact(
     databaseURL: URL,
     artifact: SemanticArtifactDocument

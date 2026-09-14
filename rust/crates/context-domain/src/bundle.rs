@@ -4,7 +4,7 @@ use time::OffsetDateTime;
 use crate::validation::{require_text, require_unique};
 use crate::{
     AssemblyProvenance, BundleId, ContextOmission, ContextTask, ContextWindow, DomainError,
-    ProcessingLocation, RecordId, Sensitivity, SuggestedTool, VersionedIdentifier,
+    OmissionReason, ProcessingLocation, RecordId, Sensitivity, SuggestedTool, VersionedIdentifier,
 };
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -237,6 +237,48 @@ impl ContextBundle {
     #[must_use]
     pub fn items(&self) -> &[ContextItem] {
         &self.items
+    }
+
+    /// Returns the same ranked bundle constrained to a smaller abstract budget.
+    ///
+    /// Item order is preserved, making repeated model-runtime retries deterministic.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error for a zero budget or if omission accounting overflows.
+    pub fn shrink_to(&self, maximum_units: u64) -> Result<Self, DomainError> {
+        let mut included_units = 0_u64;
+        let mut omitted_count = 0_u64;
+        let mut items = Vec::new();
+        for item in &self.items {
+            let next = included_units.checked_add(item.estimated_units());
+            if next.is_some_and(|units| units <= maximum_units) {
+                included_units = next.ok_or(DomainError::ContextBudgetExceeded)?;
+                items.push(item.clone());
+            } else {
+                omitted_count = omitted_count
+                    .checked_add(1)
+                    .ok_or(DomainError::ContextBudgetExceeded)?;
+            }
+        }
+
+        let mut omissions = self.omissions.clone();
+        if omitted_count > 0 {
+            omissions.push(ContextOmission::new(OmissionReason::Budget, omitted_count)?);
+        }
+        Self::new(
+            self.id,
+            self.built_at,
+            self.task.clone(),
+            self.profile.clone(),
+            self.window.clone(),
+            items,
+            ContextBudget::new(maximum_units, included_units)?,
+            self.processing,
+            self.suggested_tools.clone(),
+            omissions,
+            self.assembly.clone(),
+        )
     }
 }
 
