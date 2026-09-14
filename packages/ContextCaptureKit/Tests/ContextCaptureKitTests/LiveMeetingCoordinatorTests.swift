@@ -60,6 +60,7 @@ func liveMeetingMapsStartupAndStreamFailuresWithoutContent() async {
   await eventually { failingCoordinator.state == .unavailable }
 
   #expect(failingCoordinator.lastTranscriptionFailure == .analysisFailed)
+  #expect(failing.stopCount == 1)
 }
 
 private func segment(text: String, isFinal: Bool) -> TranscriptionSegment {
@@ -84,6 +85,7 @@ private func eventually(
 
 @MainActor
 private final class FakeLiveSpeechStream: LiveSpeechStreaming {
+  private(set) var stopCount = 0
   private let startFailure: TranscriptionFailure?
   private var continuation: AsyncThrowingStream<TranscriptionSegment, Error>.Continuation?
 
@@ -101,6 +103,7 @@ private final class FakeLiveSpeechStream: LiveSpeechStreaming {
   }
 
   func stop() async {
+    stopCount += 1
     continuation?.finish()
   }
 

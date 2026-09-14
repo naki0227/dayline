@@ -102,11 +102,13 @@ public final class LiveMeetingCoordinator {
           await self.persist(segment, sessionID: sessionID, startedAt: startedAt)
         }
       } catch let failure as TranscriptionFailure {
+        await self?.speech.stop()
         self?.lastTranscriptionFailure = failure
         self?.state = .unavailable
       } catch is CancellationError {
         return
       } catch {
+        await self?.speech.stop()
         self?.lastTranscriptionFailure = .analysisFailed
         self?.state = .unavailable
       }
