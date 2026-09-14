@@ -36,6 +36,24 @@ final class DaylineCaptureUITests: XCTestCase {
     XCTAssertTrue(waitForLabel("今日のContextはまだありません。", element: status))
   }
 
+  func testLiveMeetingShowsPersistentStateAndStopsCleanly() {
+    let app = XCUIApplication()
+    app.launchArguments = ["--ui-testing"]
+    app.launch()
+
+    let toggle = app.buttons["dayline.live.toggle"]
+    let status = app.staticTexts["dayline.live.status"]
+    XCTAssertTrue(toggle.waitForExistence(timeout: 5))
+
+    toggle.tap()
+    XCTAssertTrue(status.waitForExistence(timeout: 5))
+    XCTAssertEqual(toggle.label, "会議を終了")
+
+    toggle.tap()
+    XCTAssertTrue(waitForLabel("会議を開始", element: toggle))
+    XCTAssertFalse(status.exists)
+  }
+
   private func waitForLabel(_ label: String, element: XCUIElement) -> Bool {
     let predicate = NSPredicate(format: "label == %@", label)
     let expectation = XCTNSPredicateExpectation(predicate: predicate, object: element)

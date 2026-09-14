@@ -26,6 +26,24 @@ enum AppCaptureEnvironment {
     )
   }
 
+  static func makeLiveMeetingCoordinator(
+    processInfo: ProcessInfo = .processInfo,
+    eventStore: any ContextEventPersisting
+  ) -> LiveMeetingCoordinator {
+    let speech: any LiveSpeechStreaming
+    if processInfo.arguments.contains("--ui-testing") {
+      speech = DeterministicLiveSpeechStream()
+    } else if #available(iOS 26.0, *) {
+      speech = AppleLiveSpeechStream()
+    } else {
+      speech = UnavailableLiveSpeechStream()
+    }
+    return LiveMeetingCoordinator(
+      speech: speech,
+      eventPipeline: makeTranscriptEventPipeline(eventStore: eventStore)
+    )
+  }
+
   private static func makeTranscriptEventPipeline(
     eventStore: any ContextEventPersisting
   ) -> TranscriptEventPipeline? {
@@ -96,6 +114,35 @@ extension UnavailableContextStore: SemanticArtifactPersisting {}
 
 private enum LocalContextStoreFailure: Error {
   case unavailable
+}
+
+@MainActor
+private final class DeterministicLiveSpeechStream: LiveSpeechStreaming {
+  private var continuation: AsyncThrowingStream<TranscriptionSegment, Error>.Continuation?
+
+  func start(
+    locale _: Locale
+  ) async -> AsyncThrowingStream<TranscriptionSegment, Error> {
+    AsyncThrowingStream { continuation in
+      self.continuation = continuation
+    }
+  }
+
+  func stop() async {
+    continuation?.finish()
+    continuation = nil
+  }
+}
+
+@MainActor
+private struct UnavailableLiveSpeechStream: LiveSpeechStreaming {
+  func start(
+    locale _: Locale
+  ) async throws -> AsyncThrowingStream<TranscriptionSegment, Error> {
+    throw TranscriptionFailure.unsupportedOperatingSystem
+  }
+
+  func stop() async {}
 }
 
 @MainActor

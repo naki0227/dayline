@@ -4,8 +4,12 @@ import DaylineProductKit
 import SwiftUI
 
 struct RootView: View {
-  @Bindable var capture: CaptureCoordinator
-  @Bindable var dailySummary: DailySummaryModel
+  @Bindable var model: DaylineAppModel
+
+  private var capture: CaptureCoordinator { model.capture }
+  private var dailySummary: DailySummaryModel { model.dailySummary }
+  private var liveCapture: LiveMeetingCoordinator { model.liveCapture }
+  private var liveMeeting: LiveMeetingModel { model.liveMeeting }
 
   var body: some View {
     NavigationStack {
@@ -13,6 +17,7 @@ struct RootView: View {
         statusCard
         transcriptCard
         dailySummaryCard
+        liveMeetingCard
         Spacer()
         captureButton
         Text("Context schema v\(ContextCoreKit.schemaVersion)")
@@ -21,6 +26,51 @@ struct RootView: View {
       }
       .padding(24)
       .navigationTitle("Dayline")
+    }
+  }
+
+  private var liveMeetingCard: some View {
+    VStack(alignment: .leading, spacing: 10) {
+      HStack {
+        Text("Live Meeting")
+          .font(.headline)
+        Spacer()
+        if liveCapture.state == .running {
+          Label("Live", systemImage: "waveform.circle.fill")
+            .foregroundStyle(.red)
+            .accessibilityIdentifier("dayline.live.status")
+        }
+      }
+      Text(liveMeetingText)
+        .font(.subheadline)
+        .foregroundStyle(liveMeeting.latest == nil ? .secondary : .primary)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityIdentifier("dayline.live.content")
+      Button {
+        Task { await model.toggleLiveMeeting() }
+      } label: {
+        Label(
+          liveCapture.state == .running ? "会議を終了" : "会議を開始",
+          systemImage: liveCapture.state == .running ? "stop.circle.fill" : "mic.circle.fill"
+        )
+      }
+      .accessibilityIdentifier("dayline.live.toggle")
+    }
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .padding()
+    .background(.quaternary, in: RoundedRectangle(cornerRadius: 16))
+  }
+
+  private var liveMeetingText: String {
+    if let latest = liveMeeting.latest { return latest.content.text }
+    if let volatile = liveCapture.transcript.volatile?.text { return volatile }
+    if let finalized = liveCapture.transcript.finalized.last?.text { return finalized }
+    return switch liveCapture.state {
+    case .stopped: "会議中の発話を端末上で逐次整理します。"
+    case .starting: "Live Meetingを開始中…"
+    case .running: "聞き取り中…"
+    case .stopping: "最後の発話を確定中…"
+    case .unavailable: "この端末ではLive Meetingを開始できません。"
     }
   }
 
@@ -97,7 +147,7 @@ struct RootView: View {
 
   private var captureButton: some View {
     Button {
-      Task { await capture.toggle() }
+      Task { await model.toggleDailyCapture() }
     } label: {
       Label(buttonText, systemImage: capture.dailyState == .running ? "stop.fill" : "record.circle")
         .frame(maxWidth: .infinity)
