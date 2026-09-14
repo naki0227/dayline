@@ -45,6 +45,39 @@ public struct SemanticArtifactDocument: Codable, Equatable, Sendable {
   public func validateVersion() throws {
     try ContractCodec.validate(schemaVersion: schemaVersion)
   }
+
+  public func encode(to encoder: any Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(schemaVersion, forKey: .schemaVersion)
+    try container.encode(id, forKey: .id)
+    try container.encode(createdAt, forKey: .createdAt)
+    try container.encode(dayId, forKey: .dayId)
+    try container.encode(sessionId, forKey: .sessionId)
+    try container.encode(kind, forKey: .kind)
+    try container.encode(content, forKey: .content)
+    try container.encode(sourceEventIds, forKey: .sourceEventIds)
+    try container.encode(sourceArtifactIds, forKey: .sourceArtifactIds)
+    try container.encode(confidence, forKey: .confidence)
+    try container.encode(sensitivity, forKey: .sensitivity)
+    try container.encode(retention, forKey: .retention)
+    try container.encode(generation, forKey: .generation)
+  }
+
+  private enum CodingKeys: String, CodingKey {
+    case schemaVersion
+    case id
+    case createdAt
+    case dayId
+    case sessionId
+    case kind
+    case content
+    case sourceEventIds
+    case sourceArtifactIds
+    case confidence
+    case sensitivity
+    case retention
+    case generation
+  }
 }
 
 public struct DayIDDocument: Codable, Equatable, Sendable {
