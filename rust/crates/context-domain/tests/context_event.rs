@@ -48,8 +48,11 @@ fn rejects_empty_shell_command() {
 #[test]
 fn rejects_zero_day_retention() {
     let result = event(
-        EventPayload::Text {
-            text: "context".to_owned(),
+        EventPayload::ShellCommand {
+            command: "cargo test".to_owned(),
+            cwd: "/workspace".to_owned(),
+            exit_code: Some(0),
+            duration_ms: Some(1),
         },
         RetentionPolicy::Days(0),
     );
@@ -61,6 +64,15 @@ fn rejects_invalid_json_instead_of_bypassing_constructor() {
     let invalid =
         include_str!("../../../../contracts/fixtures/invalid/context-event-zero-retention-v1.json");
     assert!(serde_json::from_str::<ContextEvent>(invalid).is_err());
+}
+
+#[test]
+fn rejects_kind_payload_mismatch() {
+    let invalid = include_str!(
+        "../../../../contracts/fixtures/invalid/context-event-kind-payload-mismatch-v1.json"
+    );
+    let result = serde_json::from_str::<ContextEvent>(invalid);
+    assert!(result.is_err_and(|error| error.to_string().contains("incompatible")));
 }
 
 #[test]

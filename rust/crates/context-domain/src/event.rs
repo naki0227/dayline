@@ -105,6 +105,20 @@ impl EventPayload {
             },
         }
     }
+
+    fn supports_kind(&self, kind: EventKind) -> bool {
+        match self {
+            Self::ShellCommand { .. } => kind == EventKind::Command,
+            Self::BrowserVisit { .. } => kind == EventKind::Visit,
+            Self::Text { .. } => matches!(
+                kind,
+                EventKind::Transcript
+                    | EventKind::CalendarEvent
+                    | EventKind::Message
+                    | EventKind::External
+            ),
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
@@ -187,6 +201,9 @@ impl ContextEvent {
         provenance: Provenance,
     ) -> Result<Self, DomainError> {
         payload.validate()?;
+        if !payload.supports_kind(kind) {
+            return Err(DomainError::IncompatibleEventKind);
+        }
         retention.validate()?;
         provenance.validate()?;
         if let ContextSource::External(identifier) = &source {

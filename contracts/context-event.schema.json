@@ -77,6 +77,20 @@
       "$ref": "#/$defs/provenance"
     }
   },
+  "allOf": [
+    {
+      "if": { "properties": { "payload": { "properties": { "type": { "const": "shell_command" } } } } },
+      "then": { "properties": { "kind": { "const": "command" } } }
+    },
+    {
+      "if": { "properties": { "payload": { "properties": { "type": { "const": "browser_visit" } } } } },
+      "then": { "properties": { "kind": { "const": "visit" } } }
+    },
+    {
+      "if": { "properties": { "payload": { "properties": { "type": { "const": "text" } } } } },
+      "then": { "properties": { "kind": { "enum": ["transcript", "calendar_event", "message", "external"] } } }
+    }
+  ],
   "$defs": {
     "day_id": {
       "type": "object",

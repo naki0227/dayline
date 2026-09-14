@@ -53,4 +53,7 @@ pub enum DomainError {
 
     #[error("retention days must be greater than zero")]
     InvalidRetentionDays,
+
+    #[error("event kind is incompatible with its payload type")]
+    IncompatibleEventKind,
 }
