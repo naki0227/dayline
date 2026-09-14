@@ -38,6 +38,41 @@ public struct TextContextEventDocument: Codable, Equatable, Sendable {
     self.retention = retention
     self.provenance = provenance
   }
+
+  public func validateVersion() throws {
+    try ContractCodec.validate(schemaVersion: schemaVersion)
+  }
+
+  public func encode(to encoder: any Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(schemaVersion, forKey: .schemaVersion)
+    try container.encode(id, forKey: .id)
+    try container.encode(occurredAt, forKey: .occurredAt)
+    try container.encode(dayId, forKey: .dayId)
+    try container.encode(sessionId, forKey: .sessionId)
+    try container.encode(source, forKey: .source)
+    try container.encode(kind, forKey: .kind)
+    try container.encode(payload, forKey: .payload)
+    try container.encode(metadata, forKey: .metadata)
+    try container.encode(sensitivity, forKey: .sensitivity)
+    try container.encode(retention, forKey: .retention)
+    try container.encode(provenance, forKey: .provenance)
+  }
+
+  private enum CodingKeys: String, CodingKey {
+    case schemaVersion
+    case id
+    case occurredAt
+    case dayId
+    case sessionId
+    case source
+    case kind
+    case payload
+    case metadata
+    case sensitivity
+    case retention
+    case provenance
+  }
 }
 
 public struct ContextSourceDocument: Codable, Equatable, Sendable {

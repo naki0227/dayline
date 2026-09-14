@@ -54,8 +54,13 @@ func textContextEventEncodesTheV1Shape() throws {
   let value = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
   #expect(value["schema_version"] as? Int == 1)
   #expect(value["kind"] as? String == "transcript")
+  #expect(value["session_id"] is NSNull)
   let payload = try #require(value["payload"] as? [String: Any])
   #expect(payload["type"] as? String == "text")
+
+  let decoded = try ContractCodec.decode(TextContextEventDocument.self, from: data)
+  try decoded.validateVersion()
+  #expect(decoded == event)
 }
 
 private func fixtureData(_ path: String) throws -> Data {

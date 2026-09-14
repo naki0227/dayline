@@ -41,6 +41,38 @@ func persistsAnEventThroughTheGeneratedRustBinding() throws {
 }
 
 @Test
+func typedEventStorePersistsThroughRust() async throws {
+  let database = FileManager.default.temporaryDirectory
+    .appending(path: "dayline-typed-\(UUID().uuidString).sqlite")
+  defer { try? FileManager.default.removeItem(at: database) }
+  let event = transcriptEvent()
+
+  let persisted = try await RustContextEventStore(databaseURL: database).persist(event)
+
+  #expect(persisted == event)
+}
+
+private func transcriptEvent() -> TextContextEventDocument {
+  TextContextEventDocument(
+    id: "018f6ea2-8f44-7f00-8000-000000000901",
+    occurredAt: "2026-09-14T01:00:00Z",
+    dayId: DayIDDocument(localDate: "2026-09-14", timezone: "Asia/Tokyo"),
+    sessionId: nil,
+    source: ContextSourceDocument(type: "audio"),
+    kind: "transcript",
+    payload: TextPayloadDocument(text: "確定した発話"),
+    metadata: ["finalized": "true", "locale": "ja-JP"],
+    sensitivity: .sensitive,
+    retention: RetentionDocument(type: "days", days: 30),
+    provenance: EventProvenanceDocument(
+      collector: "ios-speech",
+      deviceId: "ios-test",
+      capturedAt: "2026-09-14T01:00:01Z"
+    )
+  )
+}
+
+@Test
 func completesTheEventToArtifactPersistenceSlice() async throws {
   let bridge = RustContextBridge()
   let database = FileManager.default.temporaryDirectory
