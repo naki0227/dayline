@@ -123,12 +123,12 @@ swift-build: ## Swiftパッケージをreleaseビルドする
 project: ## Xcodeプロジェクトを生成する
 	xcodegen generate
 
-app-build: project ## iOS Appを署名なしでビルドする
+app-build: ffi-xcframework project ## 実Rust FFIをリンクしてiOS Appを署名なしでビルドする
 	xcodebuild build -project $(APP_PROJECT) -scheme $(APP_SCHEME) \
 		-destination 'generic/platform=iOS Simulator' \
 		-derivedDataPath build/local CODE_SIGNING_ALLOWED=NO
 
-app-test: project ## deterministic fakeを使うiOS UI testを実行する
+app-test: ffi-xcframework project ## 実Rust FFIをリンクしdeterministic fakeでiOS UI testを実行する
 	xcodebuild test -project $(APP_PROJECT) -scheme $(APP_SCHEME) \
 		-destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest' \
 		-derivedDataPath build/tests CODE_SIGNING_ALLOWED=NO
@@ -141,7 +141,7 @@ export-options: check-release-config ## SecretからApp Store export設定を生
 		ASC_PROFILE_NAME="$(ASC_PROFILE_NAME)" \
 		python3 scripts/render_export_options.py --output $(EXPORT_OPTIONS)
 
-archive: project check-release-config ## App Store提出用archiveを作成する
+archive: ffi-xcframework project check-release-config ## App Store提出用archiveを作成する
 	@xcodebuild archive -project $(APP_PROJECT) -scheme $(APP_SCHEME) \
 		-destination 'generic/platform=iOS' -archivePath $(ARCHIVE_PATH) \
 		DAYLINE_TEAM_ID="$${APPLE_TEAM_ID}" \

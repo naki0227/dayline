@@ -14,29 +14,19 @@ permissions:
 
 jobs:
   build:
-    name: Generate and build iOS app
+    name: Link Rust FFI and verify iOS app
     runs-on: macos-15
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/select-toolchain
+      - uses: dtolnay/rust-toolchain@1.88.0
+        with:
+          targets: aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios,x86_64-apple-darwin
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust
       - name: Install XcodeGen
         run: brew install xcodegen
-      - name: Generate project
-        run: xcodegen generate
-      - name: Build without signing
-        run: |
-          xcodebuild build \
-            -project Dayline.xcodeproj \
-            -scheme Dayline \
-            -destination 'generic/platform=iOS Simulator' \
-            -derivedDataPath build/ci \
-            CODE_SIGNING_ALLOWED=NO
-      - name: Deterministic UI tests
-        run: |
-          xcodebuild test \
-            -project Dayline.xcodeproj \
-            -scheme Dayline \
-            -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest' \
-            -derivedDataPath build/tests \
-            CODE_SIGNING_ALLOWED=NO
+      - name: Build and test the app with the generated FFI artifact
+        run: make app-build app-test
