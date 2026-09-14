@@ -58,6 +58,29 @@ impl EventPayload {
             Self::BrowserVisit { url, .. } => require_text(url, "payload.url"),
         }
     }
+
+    #[must_use]
+    pub fn model_text(&self) -> String {
+        match self {
+            Self::Text { text } => text.clone(),
+            Self::ShellCommand {
+                command,
+                cwd,
+                exit_code,
+                duration_ms,
+            } => format!(
+                "command: {command}\ncwd: {cwd}\nexit_code: {}\nduration_ms: {}",
+                exit_code.map_or_else(|| "unknown".to_owned(), |value| value.to_string()),
+                duration_ms.map_or_else(|| "unknown".to_owned(), |value| value.to_string())
+            ),
+            Self::BrowserVisit { url, title } => {
+                format!(
+                    "title: {}\nurl: {url}",
+                    title.as_deref().unwrap_or("untitled")
+                )
+            }
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]

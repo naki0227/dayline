@@ -35,6 +35,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "context-engine"
+version = "0.1.0"
+dependencies = [
+ "context-domain",
+ "context-query",
+ "context-ranking",
+ "context-redact",
+ "serde_json",
+ "thiserror",
+ "time",
+]
+
+[[package]]
 name = "context-policy"
 version = "0.1.0"
 dependencies = [
