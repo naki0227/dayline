@@ -52,6 +52,24 @@ func typedEventStorePersistsThroughRust() async throws {
   #expect(persisted == event)
 }
 
+@Test
+func buildsStoredContextThroughTheGeneratedRustBinding() throws {
+  let database = FileManager.default.temporaryDirectory
+    .appending(path: "dayline-stored-bundle-\(UUID().uuidString).sqlite")
+  defer { try? FileManager.default.removeItem(at: database) }
+  let bridge = RustContextBridge()
+  let event = try fixtureData("contracts/fixtures/context-event-v1.json")
+  _ = try bridge.persistEvent(databaseURL: database, event: event)
+
+  let bundle = try bridge.buildStoredContext(
+    databaseURL: database,
+    request: fixtureData("fixtures/vertical-slice-store-request-v1.json")
+  )
+
+  #expect(bundle.items.count == 1)
+  #expect(bundle.items.first?.recordType == .contextEvent)
+}
+
 private func transcriptEvent() -> TextContextEventDocument {
   TextContextEventDocument(
     id: "018f6ea2-8f44-7f00-8000-000000000901",
