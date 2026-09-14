@@ -1,0 +1,15 @@
+{
+  "id": "live-meeting",
+  "version": 1,
+  "sources": ["live-transcript", "calendar", "existing-day-context"],
+  "output": ["current-topic", "decisions", "todos", "questions", "response-suggestions"],
+  "display_language": "user-setting",
+  "tools": {
+    "read": ["calendar"],
+    "write": []
+  },
+  "update": {
+    "mode": "incremental",
+    "minimum_interval_seconds": 30
+  }
+}

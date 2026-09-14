@@ -1,0 +1,15 @@
+{
+  "id": "daily-summary",
+  "version": 1,
+  "sources": ["audio", "browser", "shell", "calendar", "live-summary"],
+  "output": ["overview", "highlights", "topics", "decisions", "todos", "ideas", "unresolved-questions"],
+  "display_language": "user-setting",
+  "tools": {
+    "read": ["calendar"],
+    "write": ["notion"]
+  },
+  "update": {
+    "mode": "batch",
+    "minimum_interval_seconds": null
+  }
+}

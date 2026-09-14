@@ -23,6 +23,8 @@ packages:
     path: packages/ContextCaptureKit
   ContextCoreFFIKit:
     path: packages/ContextCoreFFIKit
+  DaylineProductKit:
+    path: packages/DaylineProductKit
 
 targets:
   Dayline:
@@ -35,6 +37,7 @@ targets:
       - package: AppleIntelligenceKit
       - package: ContextCaptureKit
       - package: ContextCoreFFIKit
+      - package: DaylineProductKit
     info:
       path: App/Info.plist
       properties:

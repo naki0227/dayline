@@ -22,7 +22,8 @@ jobs:
       - name: Format
         run: >-
           swift format lint --recursive --strict
-          App packages/ContextCoreKit packages/AppleIntelligenceKit
+          App AppUITests packages/ContextCoreKit packages/AppleIntelligenceKit
+          packages/ContextCaptureKit packages/DaylineProductKit
           packages/ContextCoreFFIKit/Sources/ContextCoreFFIKit
           packages/ContextCoreFFIKit/Tests
       - name: Install SwiftLint
@@ -33,11 +34,17 @@ jobs:
         run: |
           swift build --package-path packages/ContextCoreKit
           swift build --package-path packages/AppleIntelligenceKit
+          swift build --package-path packages/ContextCaptureKit
+          swift build --package-path packages/DaylineProductKit
       - name: Unit tests
         run: |
           swift test --package-path packages/ContextCoreKit --parallel
           swift test --package-path packages/AppleIntelligenceKit --parallel
+          swift test --package-path packages/ContextCaptureKit --parallel
+          swift test --package-path packages/DaylineProductKit --parallel
       - name: Build
         run: |
           swift build --package-path packages/ContextCoreKit -c release
           swift build --package-path packages/AppleIntelligenceKit -c release
+          swift build --package-path packages/ContextCaptureKit -c release
+          swift build --package-path packages/DaylineProductKit -c release

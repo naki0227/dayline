@@ -9,6 +9,7 @@ excluded:
   - packages/ContextCoreFFIKit/.artifacts
   - packages/ContextCoreFFIKit/.generated
   - packages/ContextCaptureKit/.build
+  - packages/DaylineProductKit/.build
 
 strict: true
 
