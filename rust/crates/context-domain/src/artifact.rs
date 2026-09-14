@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 
-use crate::validation::{require_non_empty, require_text, require_unique};
+use crate::validation::{require_text, require_unique};
 use crate::{
     ArtifactId, DayId, DomainError, EventId, RetentionPolicy, RunId, Sensitivity, SessionId,
 };
@@ -122,6 +122,7 @@ pub struct SemanticArtifact {
     kind: ArtifactKind,
     content: SemanticContent,
     source_event_ids: Vec<EventId>,
+    source_artifact_ids: Vec<ArtifactId>,
     confidence: Option<f64>,
     sensitivity: Sensitivity,
     retention: RetentionPolicy,
@@ -144,14 +145,21 @@ impl SemanticArtifact {
         kind: ArtifactKind,
         content: SemanticContent,
         source_event_ids: Vec<EventId>,
+        source_artifact_ids: Vec<ArtifactId>,
         confidence: Option<f64>,
         sensitivity: Sensitivity,
         retention: RetentionPolicy,
         generation: GenerationProvenance,
     ) -> Result<Self, DomainError> {
         content.validate()?;
-        require_non_empty(&source_event_ids, "source_event_ids")?;
+        if source_event_ids.is_empty() && source_artifact_ids.is_empty() {
+            return Err(DomainError::MissingSource);
+        }
         require_unique(&source_event_ids, "source_event_ids")?;
+        require_unique(&source_artifact_ids, "source_artifact_ids")?;
+        if source_artifact_ids.contains(&id) {
+            return Err(DomainError::ArtifactSelfReference);
+        }
         if confidence.is_some_and(|value| !value.is_finite() || !(0.0..=1.0).contains(&value)) {
             return Err(DomainError::InvalidConfidence);
         }
@@ -166,6 +174,7 @@ impl SemanticArtifact {
             kind,
             content,
             source_event_ids,
+            source_artifact_ids,
             confidence,
             sensitivity,
             retention,
@@ -212,6 +221,7 @@ impl SemanticArtifact {
             self.kind,
             content,
             self.source_event_ids.clone(),
+            self.source_artifact_ids.clone(),
             self.confidence,
             self.sensitivity,
             self.retention,
@@ -231,6 +241,7 @@ struct RawSemanticArtifact {
     kind: ArtifactKind,
     content: SemanticContent,
     source_event_ids: Vec<EventId>,
+    source_artifact_ids: Vec<ArtifactId>,
     confidence: Option<f64>,
     sensitivity: Sensitivity,
     retention: RetentionPolicy,
@@ -255,6 +266,7 @@ impl TryFrom<RawSemanticArtifact> for SemanticArtifact {
             raw.kind,
             raw.content,
             raw.source_event_ids,
+            raw.source_artifact_ids,
             raw.confidence,
             raw.sensitivity,
             raw.retention,

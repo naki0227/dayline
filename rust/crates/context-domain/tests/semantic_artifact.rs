@@ -22,6 +22,7 @@ fn artifact(
         ArtifactKind::Summary,
         SemanticContent::new("A summary", BTreeMap::new())?,
         source_ids,
+        Vec::new(),
         confidence,
         Sensitivity::Sensitive,
         RetentionPolicy::Days(30),
@@ -40,9 +41,7 @@ fn artifact(
 fn rejects_missing_or_duplicate_sources() -> Result<(), DomainError> {
     assert_eq!(
         artifact(Vec::new(), Some(0.5)),
-        Err(DomainError::EmptyCollection {
-            field: "source_event_ids"
-        })
+        Err(DomainError::MissingSource)
     );
     let id = event_id()?;
     assert_eq!(
@@ -51,6 +50,20 @@ fn rejects_missing_or_duplicate_sources() -> Result<(), DomainError> {
             field: "source_event_ids"
         })
     );
+    Ok(())
+}
+
+#[test]
+fn accepts_artifact_only_provenance_and_rejects_self_reference()
+-> Result<(), Box<dyn std::error::Error>> {
+    let fixture = include_str!("../../../../contracts/fixtures/semantic-artifact-v1.json");
+    let mut value: serde_json::Value = serde_json::from_str(fixture)?;
+    value["source_event_ids"] = serde_json::json!([]);
+    value["source_artifact_ids"] = serde_json::json!(["018f6ea2-8f44-7f00-8000-000000000102"]);
+    assert!(serde_json::from_value::<SemanticArtifact>(value.clone()).is_ok());
+    value["source_artifact_ids"] = serde_json::json!(["018f6ea2-8f44-7f00-8000-000000000101"]);
+    let result = serde_json::from_value::<SemanticArtifact>(value);
+    assert!(result.is_err_and(|error| error.to_string().contains("reference itself")));
     Ok(())
 }
 

@@ -17,6 +17,7 @@
   "source_event_ids": [
     "018f6ea2-8f44-7f00-8000-000000000001"
   ],
+  "source_artifact_ids": [],
   "confidence": 0.96,
   "sensitivity": "sensitive",
   "retention": {

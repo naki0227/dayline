@@ -56,4 +56,10 @@ pub enum DomainError {
 
     #[error("event kind is incompatible with its payload type")]
     IncompatibleEventKind,
+
+    #[error("an artifact or proposal must reference at least one source")]
+    MissingSource,
+
+    #[error("semantic artifact cannot reference itself")]
+    ArtifactSelfReference,
 }

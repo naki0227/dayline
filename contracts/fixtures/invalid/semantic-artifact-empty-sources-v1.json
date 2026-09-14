@@ -13,6 +13,7 @@
     "attributes": {}
   },
   "source_event_ids": [],
+  "source_artifact_ids": [],
   "confidence": null,
   "sensitivity": "standard",
   "retention": { "type": "session" },
