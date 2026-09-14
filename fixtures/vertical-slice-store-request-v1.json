@@ -1,0 +1,39 @@
+{
+  "request_version": 1,
+  "day_id": {
+    "local_date": "2026-09-13",
+    "timezone": "Asia/Tokyo"
+  },
+  "plan": {
+    "id": "018f6ea2-8f44-7f00-8000-000000000302",
+    "built_at": "2026-09-13T23:59:00+09:00",
+    "task": {
+      "id": "daily_summary",
+      "objective": "Summarize today's work with decisions and next actions."
+    },
+    "profile": {
+      "id": "daily_summary",
+      "version": 1
+    },
+    "timezone": "Asia/Tokyo",
+    "processing": {
+      "location": "on_device_only"
+    },
+    "suggested_tools": [],
+    "assembly": {
+      "engine": "context-core",
+      "engine_version": "0.1.0",
+      "policy_version": 1,
+      "ranking_version": 1
+    }
+  },
+  "query": {
+    "start": "2026-09-13T00:00:00+09:00",
+    "end": "2026-09-14T00:00:00+09:00",
+    "sources": [],
+    "session_id": null,
+    "project_hint": null,
+    "maximum_sensitivity": "sensitive",
+    "maximum_context_units": 4096
+  }
+}

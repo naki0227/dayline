@@ -1,9 +1,11 @@
 use context_ffi::{
-    ContextBridgeError, build_context_bundle, persist_context_event, persist_semantic_artifact,
-    shrink_context_bundle,
+    ContextBridgeError, build_context_bundle, build_stored_context_bundle, persist_context_event,
+    persist_semantic_artifact, shrink_context_bundle,
 };
 
 const REQUEST: &str = include_str!("../../../../fixtures/vertical-slice-request-v1.json");
+const STORE_REQUEST: &str =
+    include_str!("../../../../fixtures/vertical-slice-store-request-v1.json");
 const EVENT: &str = include_str!("../../../../contracts/fixtures/context-event-v1.json");
 const ARTIFACT: &str = include_str!("../../../../contracts/fixtures/semantic-artifact-v1.json");
 
@@ -46,5 +48,20 @@ fn persists_the_event_then_generated_artifact() -> Result<(), Box<dyn std::error
     let value: serde_json::Value = serde_json::from_str(&saved)?;
     assert_eq!(value["kind"], "summary");
     assert_eq!(value["source_event_ids"].as_array().map(Vec::len), Some(1));
+    Ok(())
+}
+
+#[test]
+fn builds_context_from_the_rust_owned_store() -> Result<(), Box<dyn std::error::Error>> {
+    let directory = tempfile::tempdir()?;
+    let database = directory.path().join("stored-context.sqlite");
+    let path = database.to_string_lossy().into_owned();
+    persist_context_event(path.clone(), EVENT.to_owned())?;
+
+    let bundle_json = build_stored_context_bundle(path, STORE_REQUEST.to_owned())?;
+    let bundle: serde_json::Value = serde_json::from_str(&bundle_json)?;
+
+    assert_eq!(bundle["items"].as_array().map(Vec::len), Some(1));
+    assert_eq!(bundle["items"][0]["record_type"], "context_event");
     Ok(())
 }

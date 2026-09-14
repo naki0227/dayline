@@ -5,7 +5,7 @@ mod request;
 use context_domain::{ContextBundle, ContextEvent, SemanticArtifact};
 use context_engine::ContextEngine;
 use context_store::ContextStore;
-use request::BuildContextRequest;
+use request::{BuildContextRequest, BuildStoredContextRequest};
 use thiserror::Error;
 
 uniffi::setup_scaffolding!();
@@ -33,6 +33,35 @@ pub fn build_context_bundle(request_json: String) -> Result<String, ContextBridg
     let request: BuildContextRequest =
         serde_json::from_str(&request_json).map_err(|_| ContextBridgeError::InvalidRequest)?;
     let (plan, query, events, artifacts) = request.into_parts()?;
+    let engine = ContextEngine::new().map_err(|_| ContextBridgeError::AssemblyFailed)?;
+    let bundle = engine
+        .build(plan, &query, &events, &artifacts)
+        .map_err(|_| ContextBridgeError::AssemblyFailed)?;
+    serde_json::to_string(&bundle).map_err(|_| ContextBridgeError::AssemblyFailed)
+}
+
+/// Builds a validated `ContextBundle` from records in the Rust-owned local store.
+///
+/// # Errors
+///
+/// Returns a categorized error without exposing request content or the database path.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI owns cross-language strings.
+pub fn build_stored_context_bundle(
+    database_path: String,
+    request_json: String,
+) -> Result<String, ContextBridgeError> {
+    let request: BuildStoredContextRequest =
+        serde_json::from_str(&request_json).map_err(|_| ContextBridgeError::InvalidRequest)?;
+    let (day_id, plan, query) = request.into_parts()?;
+    let store =
+        ContextStore::open(database_path).map_err(|_| ContextBridgeError::PersistenceFailed)?;
+    let events = store
+        .events_for_day(&day_id)
+        .map_err(|_| ContextBridgeError::PersistenceFailed)?;
+    let artifacts = store
+        .artifacts_for_day(&day_id)
+        .map_err(|_| ContextBridgeError::PersistenceFailed)?;
     let engine = ContextEngine::new().map_err(|_| ContextBridgeError::AssemblyFailed)?;
     let bundle = engine
         .build(plan, &query, &events, &artifacts)

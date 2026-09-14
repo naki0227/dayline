@@ -1,6 +1,6 @@
 use context_domain::{
     AssemblyProvenance, BundleId, ContextEvent, ContextProcessing, ContextSource, ContextTask,
-    SemanticArtifact, Sensitivity, SessionId, SuggestedTool, VersionedIdentifier,
+    DayId, SemanticArtifact, Sensitivity, SessionId, SuggestedTool, VersionedIdentifier,
 };
 use context_engine::BundlePlan;
 use context_query::{ContextQuery, QueryError};
@@ -40,6 +40,29 @@ impl BuildContextRequest {
                 .map_err(|_| ContextBridgeError::InvalidRequest)?,
             self.events,
             self.artifacts,
+        ))
+    }
+}
+
+#[derive(Deserialize)]
+pub(crate) struct BuildStoredContextRequest {
+    request_version: u32,
+    day_id: DayId,
+    plan: PlanRequest,
+    query: QueryRequest,
+}
+
+impl BuildStoredContextRequest {
+    pub fn into_parts(self) -> Result<(DayId, BundlePlan, ContextQuery), ContextBridgeError> {
+        if self.request_version != 1 {
+            return Err(ContextBridgeError::InvalidRequest);
+        }
+        Ok((
+            self.day_id,
+            self.plan.into_plan(),
+            self.query
+                .into_query()
+                .map_err(|_| ContextBridgeError::InvalidRequest)?,
         ))
     }
 }
