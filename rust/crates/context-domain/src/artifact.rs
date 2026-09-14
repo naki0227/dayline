@@ -193,6 +193,11 @@ impl SemanticArtifact {
     }
 
     #[must_use]
+    pub const fn day_id(&self) -> &DayId {
+        &self.day_id
+    }
+
+    #[must_use]
     pub const fn session_id(&self) -> Option<SessionId> {
         self.session_id
     }
