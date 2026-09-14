@@ -12,7 +12,8 @@ let package = Package(
     .library(name: "ContextCoreFFIKit", targets: ["ContextCoreFFIKit"])
   ],
   dependencies: [
-    .package(path: "../ContextCoreKit")
+    .package(path: "../ContextCoreKit"),
+    .package(path: "../AppleIntelligenceKit"),
   ],
   targets: [
     .binaryTarget(
@@ -33,7 +34,10 @@ let package = Package(
     ),
     .testTarget(
       name: "ContextCoreFFIKitTests",
-      dependencies: ["ContextCoreFFIKit"]
+      dependencies: [
+        "ContextCoreFFIKit",
+        .product(name: "AppleIntelligenceKit", package: "AppleIntelligenceKit"),
+      ]
     ),
   ]
 )
