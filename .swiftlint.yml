@@ -5,6 +5,9 @@ included:
 excluded:
   - packages/ContextCoreKit/.build
   - packages/AppleIntelligenceKit/.build
+  - packages/ContextCoreFFIKit/.build
+  - packages/ContextCoreFFIKit/.artifacts
+  - packages/ContextCoreFFIKit/.generated
 
 strict: true
 

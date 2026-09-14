@@ -18,6 +18,8 @@ rust/target/
 # Generated artifacts
 artifacts/
 *.xcframework/
+packages/ContextCoreFFIKit/.artifacts/
+packages/ContextCoreFFIKit/.generated/
 
 # Signing and distribution secrets
 *.p8
