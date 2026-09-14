@@ -12,7 +12,10 @@ enum AppCaptureEnvironment {
         automaticChunkDuration: nil
       )
     }
-    return CaptureCoordinator(recorder: AVAudioRecorderAdapter())
+    return CaptureCoordinator(
+      recorder: AVAudioRecorderAdapter(),
+      transcriber: AppleSpeechFileTranscriber()
+    )
   }
 }
 

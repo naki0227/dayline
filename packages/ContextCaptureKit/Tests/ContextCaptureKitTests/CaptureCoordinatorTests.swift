@@ -34,6 +34,23 @@ private final class RecorderFake: AudioRecording {
   }
 }
 
+private struct TranscriberFake: SpeechTranscribing {
+  let output: Result<[TranscriptionSegment], TranscriptionFailure>
+
+  func segments(
+    for _: URL,
+    locale _: Locale
+  ) async throws -> AsyncThrowingStream<TranscriptionSegment, Error> {
+    let values = try output.get()
+    return AsyncThrowingStream { continuation in
+      for value in values {
+        continuation.yield(value)
+      }
+      continuation.finish()
+    }
+  }
+}
+
 @MainActor
 @Test
 func startsAndStopsDailyCapture() async {
@@ -112,4 +129,47 @@ func rotatesChunksWithoutChangingDailyState() async {
   #expect(coordinator.audioState == .recording)
   #expect(recorder.startCount == 2)
   #expect(recorder.stopCount == 1)
+}
+
+@MainActor
+@Test
+func completedChunkPublishesOnlyFinalizedTranscriptEvidence() async {
+  let draft = TranscriptionSegment(
+    text: "draft",
+    localeIdentifier: "ja-JP",
+    startTime: 0,
+    duration: 1,
+    isFinal: false
+  )
+  let final = TranscriptionSegment(
+    text: "final",
+    localeIdentifier: "ja-JP",
+    startTime: 0,
+    duration: 1,
+    isFinal: true
+  )
+  let coordinator = CaptureCoordinator(
+    recorder: RecorderFake(),
+    transcriber: TranscriberFake(output: .success([draft, final])),
+    automaticChunkDuration: nil
+  )
+
+  await coordinator.processCompletedChunk(URL(filePath: "/tmp/chunk.m4a"))
+  #expect(coordinator.transcript.volatile == nil)
+  #expect(coordinator.transcript.finalized == [final])
+}
+
+@MainActor
+@Test
+func transcriptionFailureDoesNotStopDailyCapture() async {
+  let coordinator = CaptureCoordinator(
+    recorder: RecorderFake(),
+    transcriber: TranscriberFake(output: .failure(.assetsUnavailable)),
+    automaticChunkDuration: nil
+  )
+  await coordinator.start()
+
+  await coordinator.processCompletedChunk(URL(filePath: "/tmp/chunk.m4a"))
+  #expect(coordinator.dailyState == .running)
+  #expect(coordinator.lastTranscriptionFailure == .assetsUnavailable)
 }

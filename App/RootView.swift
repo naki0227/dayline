@@ -9,6 +9,7 @@ struct RootView: View {
     NavigationStack {
       VStack(spacing: 24) {
         statusCard
+        transcriptCard
         Spacer()
         captureButton
         Text("Context schema v\(ContextCoreKit.schemaVersion)")
@@ -17,6 +18,21 @@ struct RootView: View {
       }
       .padding(24)
       .navigationTitle("Dayline")
+    }
+  }
+
+  @ViewBuilder
+  private var transcriptCard: some View {
+    if let text = capture.transcript.volatile?.text ?? capture.transcript.finalized.last?.text {
+      VStack(alignment: .leading, spacing: 6) {
+        Text("文字起こし")
+          .font(.headline)
+        Text(text)
+          .frame(maxWidth: .infinity, alignment: .leading)
+          .accessibilityIdentifier("dayline.transcript.latest")
+      }
+      .padding()
+      .background(.quaternary, in: RoundedRectangle(cornerRadius: 16))
     }
   }
 
