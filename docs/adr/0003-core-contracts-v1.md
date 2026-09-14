@@ -2,6 +2,7 @@
 
 - Status: Accepted
 - Date: 2026-09-13
+- Clarified: 2026-09-14
 
 ## Context
 
@@ -28,7 +29,7 @@ Use option 3 with JSON Schema Draft 2020-12:
 
 - `ContextEvent` stores an observed fact and collection provenance.
 - `SemanticArtifact` stores generated meaning and references one or more source
-  Event IDs.
+  Event or Artifact IDs. Artifact provenance is an acyclic graph.
 - `ContextBundle` stores ordered, policy-filtered, model-ready items that cite
   canonical Event or Artifact IDs.
 - `ActionProposal` stores only an unexecuted external side effect. Deterministic
@@ -46,8 +47,11 @@ execution. Destructive proposals require explicit confirmation at the schema
 boundary.
 
 Cross-record and cross-field rules that JSON Schema cannot express reliably,
-such as sensitivity propagation, time ordering, token-budget arithmetic, and
-unique record IDs inside a bundle, belong in Rust domain constructors.
+such as sensitivity propagation, time ordering, abstract estimate-budget
+arithmetic, unique record IDs inside a bundle, and artifact graph acyclicity,
+belong in Rust constructors and persistence boundaries. Rust does not reserve or
+measure model tokens. Swift measures the assembled bundle against the selected
+runtime and requests a smaller bundle when required.
 
 ## Benefits
 

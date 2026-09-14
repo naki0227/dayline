@@ -18,7 +18,7 @@ composes both boundaries.
 
 | Path | Responsibility |
 | --- | --- |
-| `rust/` | Platform-neutral context domain and engine |
+| `rust/` | Platform-neutral domain, engine, policy, time, and local store |
 | `packages/ContextCoreKit/` | Stable Swift facade over the Rust boundary |
 | `packages/AppleIntelligenceKit/` | Apple model runtime adapter |
 | `apps/` | Product-specific Apple clients |
@@ -54,6 +54,7 @@ runs the upload path; manual dispatch defaults to dry-run.
 
 ## Current status
 
-The repository contains the validated build, CI, minimal iOS target, and tag-based
-CD foundation. Product features and Rust/Swift FFI are tracked in
-[`docs/TODO.md`](docs/TODO.md).
+The repository contains strict v1 contracts, validated Rust domain models,
+deterministic context assembly, pre-persistence redaction, timezone-aware One Day
+validation, and a local SQLite store. The Rust/Swift vertical slice and product
+features are tracked in [`docs/TODO.md`](docs/TODO.md).

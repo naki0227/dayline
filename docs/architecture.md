@@ -11,7 +11,8 @@ ContextCoreKit (Swift facade)
              |
              v
 Context Engine (Rust)
-  domain -> normalization -> policy -> query -> ranking -> assembly -> store
+  domain -> normalization -> policy -> query -> ranking -> assembly
+       time validation -> redaction -> local store
              |
              v
 ContextBundle
@@ -41,9 +42,10 @@ workflow. Package and Cargo manifests provide additional compile-time boundaries
 ## Core records
 
 - `ContextEvent` is an observed fact with provenance and sensitivity metadata.
-- `SemanticArtifact` is model-derived meaning and references its source events.
+- `SemanticArtifact` is model-derived meaning and references source Events and/or
+  earlier Artifacts without cycles.
 - `ContextBundle` is the versioned model-runtime input selected for a task and
-  budget.
+  an abstract estimate budget. Model-specific token limits are not Rust concepts.
 - `ActionProposal` is an unexecuted external side effect subject to policy.
 
 Raw observations and generated meaning must never share the same record type.
@@ -51,11 +53,17 @@ Raw observations and generated meaning must never share the same record type.
 ## Storage and synchronization
 
 - Rust-owned SQLite is the device-local source of detailed context.
+- The store validates an IANA timezone-derived local day and redacts secrets before
+  every write. Records are immutable; duplicate IDs are rejected.
+- Artifact evidence uses normalized foreign-key tables and must form an acyclic
+  provenance graph.
 - Audio, raw transcripts, shell details, and browser details stay local by
   default.
 - CloudKit carries explicitly allowed lightweight events, semantic artifacts,
   summaries, settings, policies, and connector configuration.
 - A SQLite database file is never synchronized directly through iCloud.
+
+Migration and rollback details are in `docs/storage.md`.
 
 ## Security and privacy
 
@@ -78,4 +86,3 @@ Raw observations and generated meaning must never share the same record type.
 - Architecture tests block invalid dependency directions.
 - Duplication reporting is advisory so it informs refactoring without blocking
   delivery on incidental similarity.
-
