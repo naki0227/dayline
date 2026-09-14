@@ -2,8 +2,8 @@
 
 ## In progress
 
-- [ ] Implement incremental SpeechAnalyzer/SpeechTranscriber transcription and
-      convert finalized segments into ContextEvents.
+- [ ] Persist finalized transcript ContextEvents through the Rust-owned local store
+      without making ContextCaptureKit depend on FFI or SQLite.
 
 ## Not started
 
@@ -51,6 +51,9 @@
       test harness, and run it in the Apple App workflow.
 - [x] Keep the app target on iOS 18 so capture/storage work without Apple
       Intelligence; model features remain availability-gated.
+- [x] Add iOS 26 progressive on-device speech transcription behind a protocol,
+      keep volatile hypotheses separate, and map finalized segments to v1
+      ContextEvents with deterministic tests.
 
 ## On hold
 
@@ -73,5 +76,5 @@
    `docs/adr/0005-uniffi-json-boundary.md`.
 2. Read `docs/apple-intelligence.md` and `docs/ffi.md`.
 3. Run `make ci`.
-4. Implement SpeechAnalyzer/SpeechTranscriber behind a protocol and test finalized
-   segment buffering without requiring speech assets in CI.
+4. Compose finalized transcript event persistence through ContextCoreFFIKit while
+   preserving the capture -> contract -> FFI dependency direction.

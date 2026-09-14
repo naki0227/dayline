@@ -21,12 +21,29 @@ rotates chunks every five minutes. Files are placed below
 `Application Support/audio/YYYY-MM-DD/<uuid>.m4a`. Raw audio remains local and is
 not part of CloudKit synchronization.
 
-The production target declares the audio background mode and microphone usage
-description. Speech permission is declared for the next transcription adapter.
+The production target declares the audio background mode plus microphone and
+speech usage descriptions.
+
+## Transcription boundary
+
+`SpeechTranscribing` isolates speech analysis from capture orchestration. On iOS
+26 or later, `AppleSpeechFileTranscriber` requests speech authorization, resolves
+an equivalent supported locale, installs required on-device assets, and streams
+progressive `SpeechTranscriber` results from each completed audio chunk. Capture
+continues when authorization, assets, locale support, audio decoding, or analysis
+fails; callers receive only a finite, content-free `TranscriptionFailure`.
+
+`TranscriptBuffer` keeps volatile hypotheses separate from finalized evidence,
+rejects blank text, and ignores duplicate final segments. Only finalized segments
+may be mapped into a `ContextEvent`. `TranscriptEventMapper` performs that mapping
+through the versioned `ContextCoreKit` DTO, assigns the event to the configured
+IANA timezone day, and records only duration, locale, and finalization metadata.
+Rust persistence remains a separate composition responsibility.
 
 ## Testing
 
-Package tests use a deterministic recorder fake for success, permission failure,
-manual rotation, and interruption/resume. The XCUITest launches with
+Package tests use deterministic recorder and transcriber fakes for success,
+permission failure, manual rotation, interruption/resume, volatile/final segment
+handling, duplicate rejection, and ContextEvent mapping. The XCUITest launches with
 `--ui-testing`; the composition root then injects a fake recorder, so CI never sees
 a microphone permission dialog or writes a real recording.

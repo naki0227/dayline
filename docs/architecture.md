@@ -117,3 +117,9 @@ Migration and rollback details are in `docs/storage.md`.
 - The app targets iOS 18. Foundation Models availability never gates recording.
 - The UI test launch argument injects an in-memory deterministic recorder and is
   used only by the test composition root; production still uses AVAudioRecorder.
+- `SpeechTranscribing` isolates iOS 26 SpeechAnalyzer APIs. Missing authorization,
+  locale support, assets, or valid audio produces content-free typed failures and
+  never stops Daily capture.
+- Volatile speech hypotheses are presentation state only. Final segments are
+  deduplicated before `TranscriptEventMapper` emits versioned ContextEvent DTOs;
+  persistence is composed outside the capture package.

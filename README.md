@@ -62,5 +62,8 @@ validation, a local SQLite store, a reproducible Apple XCFramework, and a tested
 Event-to-Artifact vertical slice. The Apple adapter includes availability handling,
 typed structured output, real tokenizer measurement, and bounded Rust-backed context
 shrinking. The iOS client can start/stop five-minute AAC chunks through an isolated,
-interruption-aware capture state machine and remains deployable to iOS 18. Product features are tracked in
+interruption-aware capture state machine and remains deployable to iOS 18. On iOS
+26+, completed chunks use on-device progressive speech transcription; volatile
+hypotheses remain UI-only and finalized segments map to versioned ContextEvents.
+Product features are tracked in
 [`docs/TODO.md`](docs/TODO.md).
