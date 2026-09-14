@@ -126,3 +126,19 @@ Migration and rollback details are in `docs/storage.md`.
 - The app composition root injects ContextCoreFFIKit's typed Rust store. CaptureKit
   imports neither generated FFI nor SQLite, while every app build/archive must link a
   freshly generated XCFramework.
+
+## Product runtime
+
+- `DaylineProductKit` owns versioned Daily and Live Meeting profiles, product use
+  cases, and presentation state. It does not own SQLite, generated FFI, or SwiftUI.
+- `DailySummaryService` calculates a half-open One Day interval in the selected IANA
+  timezone, asks the Core-owned store port for a ContextBundle, invokes an injected
+  `IntelligenceRuntime`, and persists the resulting SemanticArtifact through a
+  separate Core-owned port.
+- The app composition root provides one `RustContextStore` to capture, context
+  assembly, and artifact persistence. This keeps storage identity consistent without
+  allowing ProductKit or CaptureKit to know the database path.
+- Empty context stops before model invocation. Store, runtime, and persistence
+  failures cross the product boundary as finite content-free states.
+- UI tests inject a deterministic empty-day generator and never invoke the system
+  model. Actual Apple Intelligence generation remains an on-device verification item.

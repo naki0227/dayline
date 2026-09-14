@@ -2,7 +2,8 @@
 
 ## In progress
 
-- [ ] Add Daily and Live Meeting product profiles and presentation flows.
+- [ ] Implement the Live Meeting streaming path with session-scoped incremental
+      transcript state and 30-second profile updates.
 
 ## Not started
 
@@ -55,6 +56,12 @@
 - [x] Link the real Rust XCFramework into app builds and persist finalized transcript
       ContextEvents through a typed Core protocol without exposing FFI or SQLite to
       ContextCaptureKit.
+- [x] Add versioned Daily Summary and Live Meeting profiles as validated package
+      resources.
+- [x] Build the Daily Summary vertical slice from a timezone-correct One Day Rust
+      store query through Apple runtime generation to SemanticArtifact persistence.
+- [x] Add Daily Summary presentation states and deterministic UI coverage without
+      invoking Apple Intelligence in CI.
 
 ## On hold
 
@@ -75,7 +82,7 @@
 
 1. Read `docs/adr/0001-context-platform-boundaries.md` and
    `docs/adr/0005-uniffi-json-boundary.md`.
-2. Read `docs/apple-intelligence.md` and `docs/ffi.md`.
+2. Read `docs/product-profiles.md`, `docs/capture.md`, and GitHub Issue #11.
 3. Run `make ci`.
-4. Define the Daily and Live Meeting profiles, then build the first Daily timeline
-   query/presentation flow from the Rust-owned store.
+4. Implement session-scoped Live Meeting streaming without reusing the completed-file
+   Daily transcription path as the live transport.

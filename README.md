@@ -66,5 +66,10 @@ interruption-aware capture state machine and remains deployable to iOS 18. On iO
 26+, completed chunks use on-device progressive speech transcription; volatile
 hypotheses remain UI-only and finalized segments map to versioned ContextEvents that
 are persisted through the real Rust SQLite boundary.
+The versioned Daily profile now queries the local store with a timezone-correct
+One Day window, sends the assembled ContextBundle through the Apple runtime, persists
+the resulting SemanticArtifact, and exposes explicit empty/unavailable states in the
+iOS client. Live Meeting, external outputs, and macOS collectors remain tracked Phase
+1 work rather than implied completed features.
 Product features are tracked in
 [`docs/TODO.md`](docs/TODO.md).
