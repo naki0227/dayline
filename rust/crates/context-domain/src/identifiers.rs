@@ -44,6 +44,18 @@ uuid_identifier!(ProposalId, "proposal_id");
 uuid_identifier!(RecordId, "record_id");
 uuid_identifier!(RunId, "run_id");
 
+impl From<EventId> for RecordId {
+    fn from(value: EventId) -> Self {
+        Self(value.0)
+    }
+}
+
+impl From<ArtifactId> for RecordId {
+    fn from(value: ArtifactId) -> Self {
+        Self(value.0)
+    }
+}
+
 #[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
 #[serde(try_from = "RawDayId")]
 pub struct DayId {

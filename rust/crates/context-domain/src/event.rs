@@ -60,7 +60,7 @@ impl EventPayload {
     }
 }
 
-#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Sensitivity {
     Standard,
@@ -159,6 +159,36 @@ impl ContextEvent {
             retention,
             provenance,
         })
+    }
+
+    #[must_use]
+    pub const fn id(&self) -> EventId {
+        self.id
+    }
+
+    #[must_use]
+    pub const fn occurred_at(&self) -> OffsetDateTime {
+        self.occurred_at
+    }
+
+    #[must_use]
+    pub const fn session_id(&self) -> Option<SessionId> {
+        self.session_id
+    }
+
+    #[must_use]
+    pub const fn source(&self) -> &ContextSource {
+        &self.source
+    }
+
+    #[must_use]
+    pub const fn payload(&self) -> &EventPayload {
+        &self.payload
+    }
+
+    #[must_use]
+    pub const fn sensitivity(&self) -> Sensitivity {
+        self.sensitivity
     }
 }
 

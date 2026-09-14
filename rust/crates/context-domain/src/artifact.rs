@@ -45,6 +45,11 @@ impl SemanticContent {
     fn validate(&self) -> Result<(), DomainError> {
         require_text(&self.text, "content.text")
     }
+
+    #[must_use]
+    pub fn text(&self) -> &str {
+        &self.text
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -158,6 +163,31 @@ impl SemanticArtifact {
             retention,
             generation,
         })
+    }
+
+    #[must_use]
+    pub const fn id(&self) -> ArtifactId {
+        self.id
+    }
+
+    #[must_use]
+    pub const fn created_at(&self) -> OffsetDateTime {
+        self.created_at
+    }
+
+    #[must_use]
+    pub const fn session_id(&self) -> Option<SessionId> {
+        self.session_id
+    }
+
+    #[must_use]
+    pub const fn content(&self) -> &SemanticContent {
+        &self.content
+    }
+
+    #[must_use]
+    pub const fn sensitivity(&self) -> Sensitivity {
+        self.sensitivity
     }
 }
 

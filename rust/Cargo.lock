@@ -44,6 +44,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "context-query"
+version = "0.1.0"
+dependencies = [
+ "context-domain",
+ "serde_json",
+ "thiserror",
+ "time",
+]
+
+[[package]]
 name = "context-redact"
 version = "0.1.0"
 dependencies = [
