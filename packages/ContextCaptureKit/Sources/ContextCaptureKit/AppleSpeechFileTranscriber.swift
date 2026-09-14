@@ -14,20 +14,10 @@
       guard #available(iOS 26.0, *) else {
         throw TranscriptionFailure.unsupportedOperatingSystem
       }
-      try await requestPermission()
-      guard SpeechTranscriber.isAvailable else {
-        throw TranscriptionFailure.assetsUnavailable
-      }
-      guard let supportedLocale = await SpeechTranscriber.supportedLocale(equivalentTo: locale)
-      else {
-        throw TranscriptionFailure.unsupportedLocale
-      }
-
-      let transcriber = SpeechTranscriber(
-        locale: supportedLocale,
+      let (transcriber, supportedLocale) = try await AppleSpeechSupport.makeTranscriber(
+        locale: locale,
         preset: .progressiveTranscription
       )
-      try await prepareAssets(for: transcriber)
       let audioFile: AVAudioFile
       do {
         audioFile = try AVAudioFile(forReading: audioFileURL)
@@ -76,39 +66,5 @@
       }
     }
 
-    @available(iOS 26.0, *)
-    private func prepareAssets(for transcriber: SpeechTranscriber) async throws {
-      let modules: [any SpeechModule] = [transcriber]
-      let status = await AssetInventory.status(forModules: modules)
-      switch status {
-      case .installed:
-        return
-      case .supported, .downloading:
-        do {
-          if let request = try await AssetInventory.assetInstallationRequest(
-            supporting: modules
-          ) {
-            try await request.downloadAndInstall()
-          }
-        } catch {
-          throw TranscriptionFailure.assetsUnavailable
-        }
-      case .unsupported:
-        throw TranscriptionFailure.assetsUnavailable
-      @unknown default:
-        throw TranscriptionFailure.assetsUnavailable
-      }
-    }
-
-    private func requestPermission() async throws {
-      let status = await withCheckedContinuation { continuation in
-        SFSpeechRecognizer.requestAuthorization { status in
-          continuation.resume(returning: status)
-        }
-      }
-      guard status == .authorized else {
-        throw TranscriptionFailure.speechPermissionDenied
-      }
-    }
   }
 #endif

@@ -37,3 +37,12 @@ public protocol SpeechTranscribing: Sendable {
     locale: Locale
   ) async throws -> AsyncThrowingStream<TranscriptionSegment, Error>
 }
+
+@MainActor
+public protocol LiveSpeechStreaming: Sendable {
+  func start(
+    locale: Locale
+  ) async throws -> AsyncThrowingStream<TranscriptionSegment, Error>
+
+  func stop() async
+}
