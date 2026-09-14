@@ -33,6 +33,25 @@ func ignoresBlankAndDuplicateFinalSegments() {
   #expect(buffer.finalized == [final])
 }
 
+@Test
+func acceptsIdenticalSpeechFromDifferentChunks() {
+  var buffer = TranscriptBuffer()
+  let segment = TranscriptionSegment(
+    text: "same words",
+    localeIdentifier: "en-US",
+    startTime: 0,
+    duration: 1,
+    isFinal: true
+  )
+
+  let acceptedFromFirstChunk = buffer.ingest(segment, sourceID: "chunk-a")
+  let acceptedFromSecondChunk = buffer.ingest(segment, sourceID: "chunk-b")
+
+  #expect(acceptedFromFirstChunk)
+  #expect(acceptedFromSecondChunk)
+  #expect(buffer.finalized.count == 2)
+}
+
 private func segment(text: String, isFinal: Bool) -> TranscriptionSegment {
   TranscriptionSegment(
     text: text,

@@ -1,3 +1,4 @@
+import ContextCoreKit
 import Foundation
 import Testing
 
@@ -48,6 +49,17 @@ private struct TranscriberFake: SpeechTranscribing {
       }
       continuation.finish()
     }
+  }
+}
+
+private actor EventStoreFake: ContextEventPersisting {
+  private(set) var events: [TextContextEventDocument] = []
+
+  func persist(
+    _ event: TextContextEventDocument
+  ) async throws -> TextContextEventDocument {
+    events.append(event)
+    return event
   }
 }
 
@@ -154,7 +166,10 @@ func completedChunkPublishesOnlyFinalizedTranscriptEvidence() async {
     automaticChunkDuration: nil
   )
 
-  await coordinator.processCompletedChunk(URL(filePath: "/tmp/chunk.m4a"))
+  await coordinator.processCompletedChunk(
+    URL(filePath: "/tmp/chunk.m4a"),
+    startedAt: Date(timeIntervalSince1970: 1_789_320_598)
+  )
   #expect(coordinator.transcript.volatile == nil)
   #expect(coordinator.transcript.finalized == [final])
 }
@@ -169,7 +184,45 @@ func transcriptionFailureDoesNotStopDailyCapture() async {
   )
   await coordinator.start()
 
-  await coordinator.processCompletedChunk(URL(filePath: "/tmp/chunk.m4a"))
+  await coordinator.processCompletedChunk(
+    URL(filePath: "/tmp/chunk.m4a"),
+    startedAt: Date(timeIntervalSince1970: 1_789_320_598)
+  )
   #expect(coordinator.dailyState == .running)
   #expect(coordinator.lastTranscriptionFailure == .assetsUnavailable)
+}
+
+@MainActor
+@Test
+func finalizedTranscriptFlowsThroughTheEventPipeline() async throws {
+  let final = TranscriptionSegment(
+    text: "persist me",
+    localeIdentifier: "en-US",
+    startTime: 2,
+    duration: 1,
+    isFinal: true
+  )
+  let mapperCandidate = TranscriptEventMapper(
+    timezoneIdentifier: "Asia/Tokyo",
+    deviceID: "ios-test"
+  )
+  let mapper = try #require(mapperCandidate)
+  let store = EventStoreFake()
+  let coordinator = CaptureCoordinator(
+    recorder: RecorderFake(),
+    transcriber: TranscriberFake(output: .success([final])),
+    transcriptEventPipeline: TranscriptEventPipeline(mapper: mapper, store: store),
+    automaticChunkDuration: nil
+  )
+
+  await coordinator.processCompletedChunk(
+    URL(filePath: "/tmp/chunk.m4a"),
+    startedAt: Date(timeIntervalSince1970: 1_789_320_598)
+  )
+  let persisted = await store.events
+
+  #expect(persisted.count == 1)
+  #expect(persisted.first?.payload.content.text == "persist me")
+  #expect(coordinator.persistedTranscriptEventCount == 1)
+  #expect(coordinator.lastTranscriptEventFailure == nil)
 }

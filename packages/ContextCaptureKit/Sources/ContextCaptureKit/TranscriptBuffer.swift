@@ -8,7 +8,10 @@ public struct TranscriptBuffer: Equatable, Sendable {
   public init() {}
 
   @discardableResult
-  public mutating func ingest(_ segment: TranscriptionSegment) -> Bool {
+  public mutating func ingest(
+    _ segment: TranscriptionSegment,
+    sourceID: String = "direct"
+  ) -> Bool {
     guard !segment.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
       return false
     }
@@ -18,7 +21,7 @@ public struct TranscriptBuffer: Equatable, Sendable {
     }
 
     volatile = nil
-    let key = "\(segment.startTime)|\(segment.duration)|\(segment.text)"
+    let key = "\(sourceID)|\(segment.startTime)|\(segment.duration)|\(segment.text)"
     guard finalizedKeys.insert(key).inserted else { return false }
     finalized.append(segment)
     return true

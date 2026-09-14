@@ -11,9 +11,12 @@ public final class CaptureCoordinator {
   public private(set) var lastFailure: CaptureFailure?
   public private(set) var transcript = TranscriptBuffer()
   public private(set) var lastTranscriptionFailure: TranscriptionFailure?
+  public private(set) var persistedTranscriptEventCount = 0
+  public private(set) var lastTranscriptEventFailure: TranscriptEventPipelineFailure?
 
   private let recorder: any AudioRecording
   private let transcriber: (any SpeechTranscribing)?
+  private let transcriptEventPipeline: TranscriptEventPipeline?
   private let transcriptionLocale: Locale
   private let now: @MainActor @Sendable () -> Date
   private let automaticChunkDuration: Duration?
@@ -22,12 +25,14 @@ public final class CaptureCoordinator {
   public init(
     recorder: any AudioRecording,
     transcriber: (any SpeechTranscribing)? = nil,
+    transcriptEventPipeline: TranscriptEventPipeline? = nil,
     transcriptionLocale: Locale = Locale(identifier: "ja-JP"),
     now: @escaping @MainActor @Sendable () -> Date = Date.init,
     automaticChunkDuration: Duration? = .seconds(300)
   ) {
     self.recorder = recorder
     self.transcriber = transcriber
+    self.transcriptEventPipeline = transcriptEventPipeline
     self.transcriptionLocale = transcriptionLocale
     self.now = now
     self.automaticChunkDuration = automaticChunkDuration
@@ -39,16 +44,6 @@ public final class CaptureCoordinator {
         await self?.interruptionEnded(shouldResume: shouldResume)
       }
     }
-  }
-
-  public var snapshot: CaptureSnapshot {
-    CaptureSnapshot(
-      daily: dailyState,
-      audio: audioState,
-      activeFileURL: activeFileURL,
-      startedAt: startedAt,
-      lastFailure: lastFailure
-    )
   }
 
   public func toggle() async {
@@ -85,28 +80,33 @@ public final class CaptureCoordinator {
     rotationTask?.cancel()
     rotationTask = nil
     let completedChunk = activeFileURL
+    let completedChunkStartedAt = startedAt
     await recorder.stopChunk()
     dailyState = .stopped
     audioState = .stopped
     activeFileURL = nil
     startedAt = nil
-    scheduleTranscription(for: completedChunk)
+    scheduleTranscription(for: completedChunk, startedAt: completedChunkStartedAt)
   }
 
   public func rotateChunk() async {
     guard dailyState == .running, audioState == .recording else { return }
     let completedChunk = activeFileURL
+    let completedChunkStartedAt = startedAt
     await recorder.stopChunk()
-    scheduleTranscription(for: completedChunk)
+    scheduleTranscription(for: completedChunk, startedAt: completedChunkStartedAt)
     do {
       activeFileURL = try await recorder.startChunk()
+      startedAt = now()
     } catch let failure as CaptureFailure {
       audioState = .unavailable
       activeFileURL = nil
+      startedAt = nil
       lastFailure = failure
     } catch {
       audioState = .unavailable
       activeFileURL = nil
+      startedAt = nil
       lastFailure = .recordingFailed
     }
   }
@@ -114,22 +114,27 @@ public final class CaptureCoordinator {
   public func interruptionBegan() async {
     guard dailyState == .running else { return }
     let completedChunk = activeFileURL
+    let completedChunkStartedAt = startedAt
     await recorder.stopChunk()
     audioState = .interrupted
     activeFileURL = nil
-    scheduleTranscription(for: completedChunk)
+    startedAt = nil
+    scheduleTranscription(for: completedChunk, startedAt: completedChunkStartedAt)
   }
 
   public func interruptionEnded(shouldResume: Bool) async {
     guard dailyState == .running, audioState == .interrupted, shouldResume else { return }
     do {
       activeFileURL = try await recorder.startChunk()
+      startedAt = now()
       audioState = .recording
     } catch let failure as CaptureFailure {
       audioState = .unavailable
+      startedAt = nil
       lastFailure = failure
     } catch {
       audioState = .unavailable
+      startedAt = nil
       lastFailure = .recordingFailed
     }
   }
@@ -142,7 +147,10 @@ public final class CaptureCoordinator {
     lastFailure = failure
   }
 
-  public func processCompletedChunk(_ fileURL: URL) async {
+  public func processCompletedChunk(
+    _ fileURL: URL,
+    startedAt chunkStartedAt: Date
+  ) async {
     guard let transcriber else { return }
     do {
       let segments = try await transcriber.segments(
@@ -150,7 +158,8 @@ public final class CaptureCoordinator {
         locale: transcriptionLocale
       )
       for try await segment in segments {
-        transcript.ingest(segment)
+        guard transcript.ingest(segment, sourceID: fileURL.lastPathComponent) else { continue }
+        await persist(segment, chunkStartedAt: chunkStartedAt)
       }
       lastTranscriptionFailure = nil
     } catch let failure as TranscriptionFailure {
@@ -160,10 +169,29 @@ public final class CaptureCoordinator {
     }
   }
 
-  private func scheduleTranscription(for fileURL: URL?) {
-    guard let fileURL, transcriber != nil else { return }
+  private func persist(
+    _ segment: TranscriptionSegment,
+    chunkStartedAt: Date
+  ) async {
+    guard let transcriptEventPipeline else { return }
+    do {
+      _ = try await transcriptEventPipeline.process(
+        segment,
+        chunkStartedAt: chunkStartedAt
+      )
+      persistedTranscriptEventCount += 1
+      lastTranscriptEventFailure = nil
+    } catch let failure as TranscriptEventPipelineFailure {
+      lastTranscriptEventFailure = failure
+    } catch {
+      lastTranscriptEventFailure = .persistenceFailed
+    }
+  }
+
+  private func scheduleTranscription(for fileURL: URL?, startedAt: Date?) {
+    guard let fileURL, let startedAt, transcriber != nil else { return }
     Task { [weak self] in
-      await self?.processCompletedChunk(fileURL)
+      await self?.processCompletedChunk(fileURL, startedAt: startedAt)
     }
   }
 
