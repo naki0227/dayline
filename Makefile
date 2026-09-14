@@ -1,5 +1,5 @@
-SWIFT_PACKAGES := packages/ContextCoreKit packages/AppleIntelligenceKit
-SWIFT_CHECK_PATHS := App packages/ContextCoreKit packages/AppleIntelligenceKit packages/ContextCoreFFIKit/Sources/ContextCoreFFIKit packages/ContextCoreFFIKit/Tests
+SWIFT_PACKAGES := packages/ContextCoreKit packages/AppleIntelligenceKit packages/ContextCaptureKit
+SWIFT_CHECK_PATHS := App AppUITests packages/ContextCoreKit packages/AppleIntelligenceKit packages/ContextCaptureKit packages/ContextCoreFFIKit/Sources/ContextCoreFFIKit packages/ContextCoreFFIKit/Tests
 SWIFT_ENV := CLANG_MODULE_CACHE_PATH=$(CURDIR)/.build/clang-module-cache SWIFTPM_MODULECACHE_OVERRIDE=$(CURDIR)/.build/swift-module-cache
 APP_PROJECT := Dayline.xcodeproj
 APP_SCHEME := Dayline
@@ -14,12 +14,12 @@ MARKETING_VERSION ?= 0.1.0
 BUILD_NUMBER ?= 1
 CONTRACTS_VENV := contracts/.venv
 
-.PHONY: help ci quality architecture duplication contracts-venv contracts-check rust-format rust-lint rust-check rust-test rust-build ffi-xcframework ffi-check swift-format swift-format-check swift-lint swift-check swift-test swift-build project app-build export-options archive export-ipa asc-venv asc-dev-venv release-tools-format release-tools-format-check release-tools-lint release-tools-typecheck release-tools-test release-tools-build release-tools-ci asc-status asc-profile asc-build validate-ipa upload release-dry-run release-upload clean
+.PHONY: help ci quality architecture duplication contracts-venv contracts-check rust-format rust-lint rust-check rust-test rust-build ffi-xcframework ffi-check swift-format swift-format-check swift-lint swift-check swift-test swift-build project app-build app-test export-options archive export-ipa asc-venv asc-dev-venv release-tools-format release-tools-format-check release-tools-lint release-tools-typecheck release-tools-test release-tools-build release-tools-ci asc-status asc-profile asc-build validate-ipa upload release-dry-run release-upload clean
 
 help: ## 利用できるターゲットを表示する
 	@awk 'BEGIN {FS = ":.*## "}; /^[a-zA-Z_-]+:.*## / {printf "  %-22s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-ci: architecture rust-format rust-lint rust-check rust-test rust-build ffi-check swift-format-check swift-lint swift-check swift-test swift-build app-build ## blocking CIと同じ検証を実行する
+ci: architecture rust-format rust-lint rust-check rust-test rust-build ffi-check swift-format-check swift-lint swift-check swift-test swift-build app-build app-test ## blocking CIと同じ検証を実行する
 
 quality: duplication ## 警告扱いの横断的品質検査を実行する
 
@@ -127,6 +127,11 @@ app-build: project ## iOS Appを署名なしでビルドする
 	xcodebuild build -project $(APP_PROJECT) -scheme $(APP_SCHEME) \
 		-destination 'generic/platform=iOS Simulator' \
 		-derivedDataPath build/local CODE_SIGNING_ALLOWED=NO
+
+app-test: project ## deterministic fakeを使うiOS UI testを実行する
+	xcodebuild test -project $(APP_PROJECT) -scheme $(APP_SCHEME) \
+		-destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest' \
+		-derivedDataPath build/tests CODE_SIGNING_ALLOWED=NO
 
 check-release-config:
 	@test -n "$${APPLE_TEAM_ID:-}" || (echo "APPLE_TEAM_ID is required" && exit 1)

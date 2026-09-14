@@ -32,3 +32,11 @@ jobs:
             -destination 'generic/platform=iOS Simulator' \
             -derivedDataPath build/ci \
             CODE_SIGNING_ALLOWED=NO
+      - name: Deterministic UI tests
+        run: |
+          xcodebuild test \
+            -project Dayline.xcodeproj \
+            -scheme Dayline \
+            -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest' \
+            -derivedDataPath build/tests \
+            CODE_SIGNING_ALLOWED=NO

@@ -8,6 +8,7 @@ excluded:
   - packages/ContextCoreFFIKit/.build
   - packages/ContextCoreFFIKit/.artifacts
   - packages/ContextCoreFFIKit/.generated
+  - packages/ContextCaptureKit/.build
 
 strict: true
 

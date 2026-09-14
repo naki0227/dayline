@@ -34,5 +34,9 @@ reject_pattern \
   '^import (SwiftUI|SwiftData|CloudKit|AVFAudio|Speech)$' \
   'AppleIntelligenceKit must not own UI, capture, or persistence'
 
-exit "$status"
+reject_pattern \
+  packages/ContextCaptureKit/Sources \
+  '^import (FoundationModels|SwiftUI|SwiftData|CloudKit|ContextCoreFFIKit)$' \
+  'ContextCaptureKit must not own model runtime, UI, synchronization, or FFI'
 
+exit "$status"

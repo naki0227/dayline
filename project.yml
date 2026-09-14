@@ -19,6 +19,8 @@ packages:
     path: packages/ContextCoreKit
   AppleIntelligenceKit:
     path: packages/AppleIntelligenceKit
+  ContextCaptureKit:
+    path: packages/ContextCaptureKit
 
 targets:
   Dayline:
@@ -29,6 +31,7 @@ targets:
     dependencies:
       - package: ContextCoreKit
       - package: AppleIntelligenceKit
+      - package: ContextCaptureKit
     info:
       path: App/Info.plist
       properties:
@@ -40,6 +43,7 @@ targets:
         NSSpeechRecognitionUsageDescription: "録音した音声を端末上で文字起こしするために使用します。"
         UILaunchScreen: {}
         UIApplicationSupportsIndirectInputEvents: true
+        UIBackgroundModes: [audio]
         UIStatusBarStyle: UIStatusBarStyleDefault
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         UISupportedInterfaceOrientations~ipad:
@@ -64,6 +68,18 @@ targets:
           PROVISIONING_PROFILE_SPECIFIER: "Dayline App Store"
           DEVELOPMENT_TEAM: $(DAYLINE_TEAM_ID)
 
+  DaylineUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: AppUITests
+    dependencies:
+      - target: Dayline
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.dayline.DaylineUITests
+        GENERATE_INFOPLIST_FILE: YES
+
 schemes:
   Dayline:
     build:
@@ -71,3 +87,7 @@ schemes:
         Dayline: all
     run:
       config: Debug
+    test:
+      config: Debug
+      targets:
+        - DaylineUITests
