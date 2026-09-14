@@ -2,17 +2,12 @@
 
 ## In progress
 
-- [ ] Complete the vertical slice:
-      `ContextEvent -> Rust ContextBundle -> ContextCoreKit -> AppleIntelligenceKit
-      stub -> SemanticArtifact -> local persistence`.
-- [ ] Select and record the Rust/Swift FFI approach, then generate a reproducible
-      XCFramework and Swift bindings.
+- [ ] Add Swift runtime availability, actual model token measurement, deterministic
+      shrink retry, structured Foundation Models output, and error mapping.
+- [ ] Add a deterministic UI test harness to the Dayline iOS target.
 
 ## Not started
 
-- [ ] Add Swift runtime availability, actual model token measurement, deterministic
-      shrink retry, structured output mapping, and error mapping.
-- [ ] Add a deterministic UI test harness to the Dayline iOS target.
 - [ ] Implement iPhone audio capture and incremental speech transcription.
 - [ ] Add Daily and Live Meeting product profiles and presentation flows.
 - [ ] Add Notion write and Calendar read/write adapters behind ActionProposal policy.
@@ -41,6 +36,13 @@
 - [x] Validate One Day against an IANA timezone, including date-boundary tests.
 - [x] Add a Rust-owned SQLite store with pre-persistence redaction, immutable IDs,
       evidence foreign keys, cycle checks, migrations, and rollback documentation.
+- [x] Select pinned UniFFI with a narrow versioned JSON boundary and record ADR 0005.
+- [x] Generate iOS device, universal iOS Simulator, and universal macOS XCFramework
+      slices through `make ffi-xcframework`.
+- [x] Add typed Swift contract DTOs and a content-safe Rust bridge adapter.
+- [x] Complete and test the vertical slice:
+      `ContextEvent -> Rust ContextBundle -> ContextCoreKit -> AppleIntelligenceKit
+      stub -> SemanticArtifact -> local SQLite persistence`.
 
 ## On hold
 
@@ -51,7 +53,6 @@
 
 ## Technical debt and checks
 
-- [ ] Replace marker Swift APIs with versioned generated bindings.
 - [ ] Add coverage thresholds after the vertical slice has meaningful integration
       coverage.
 - [ ] Review GitHub Actions using deprecated Node.js 20 before the compatibility
@@ -60,7 +61,8 @@
 
 ## Start here next time
 
-1. Read issue #1 and `docs/adr/0001-context-platform-boundaries.md`.
-2. Read `docs/adr/0004-local-store-and-day-boundaries.md` and `docs/storage.md`.
+1. Read `docs/adr/0001-context-platform-boundaries.md` and issue #1.
+2. Read `docs/adr/0005-uniffi-json-boundary.md` and `docs/ffi.md`.
 3. Run `make ci`.
-4. Write the FFI ADR and implement the smallest ContextEvent-to-ContextBundle call.
+4. Implement the Foundation Models availability and measurement adapter without
+   moving model-specific token semantics into Rust.

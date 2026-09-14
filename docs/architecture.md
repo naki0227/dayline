@@ -10,6 +10,9 @@ Apple clients
 ContextCoreKit (Swift facade)
              |
              v
+ContextCoreFFIKit (generated UniFFI adapter)
+             |
+             v
 Context Engine (Rust)
   domain -> normalization -> policy -> query -> ranking -> assembly
        time validation -> redaction -> local store
@@ -29,11 +32,13 @@ AppleIntelligenceKit
 2. Context Engine components depend inward on domain contracts.
 3. `ContextCoreKit` exposes stable Swift DTOs and cannot import UI, capture,
    persistence, or model-runtime frameworks.
-4. `AppleIntelligenceKit` may depend on `ContextCoreKit`; the reverse dependency
+4. `ContextCoreFFIKit` owns generated bindings and binary linkage. Its public
+   adapter maps failures to content-free categories.
+5. `AppleIntelligenceKit` may depend on `ContextCoreKit`; the reverse dependency
    is forbidden.
-5. Apps compose packages and platform adapters. Business policy does not belong
+6. Apps compose packages and platform adapters. Business policy does not belong
    in SwiftUI views.
-6. Integrations execute an `ActionProposal` only after deterministic permission
+7. Integrations execute an `ActionProposal` only after deterministic permission
    evaluation. AI output never bypasses policy.
 
 These rules are checked by `scripts/check-architecture.sh` and the Architecture

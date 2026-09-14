@@ -20,6 +20,7 @@ composes both boundaries.
 | --- | --- |
 | `rust/` | Platform-neutral domain, engine, policy, time, and local store |
 | `packages/ContextCoreKit/` | Stable Swift facade over the Rust boundary |
+| `packages/ContextCoreFFIKit/` | Generated UniFFI binary adapter and integration tests |
 | `packages/AppleIntelligenceKit/` | Apple model runtime adapter |
 | `apps/` | Product-specific Apple clients |
 | `contracts/` | Versioned cross-language schemas |
@@ -36,6 +37,7 @@ duplication report.
 ```bash
 make ci       # blocking checks
 make quality  # advisory cross-cutting checks
+make ffi-check # regenerate XCFramework and run the real Swift/Rust bridge tests
 ```
 
 CI is split by responsibility under `.github/workflows/`. Development is based
@@ -56,5 +58,6 @@ runs the upload path; manual dispatch defaults to dry-run.
 
 The repository contains strict v1 contracts, validated Rust domain models,
 deterministic context assembly, pre-persistence redaction, timezone-aware One Day
-validation, and a local SQLite store. The Rust/Swift vertical slice and product
-features are tracked in [`docs/TODO.md`](docs/TODO.md).
+validation, a local SQLite store, a reproducible Apple XCFramework, and a tested
+Event-to-Artifact vertical slice. Product features are tracked in
+[`docs/TODO.md`](docs/TODO.md).
