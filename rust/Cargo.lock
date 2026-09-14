@@ -39,12 +39,20 @@ name = "context-engine"
 version = "0.1.0"
 dependencies = [
  "context-domain",
+ "context-normalize",
  "context-query",
  "context-ranking",
  "context-redact",
  "serde_json",
  "thiserror",
  "time",
+]
+
+[[package]]
+name = "context-normalize"
+version = "0.1.0"
+dependencies = [
+ "thiserror",
 ]
 
 [[package]]

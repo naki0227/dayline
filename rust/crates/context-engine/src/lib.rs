@@ -10,6 +10,7 @@ use context_domain::{
     ContextProcessing, ContextTask, ContextWindow, DomainError, OmissionReason, SemanticArtifact,
     SuggestedTool, TokenBudget, VersionedIdentifier,
 };
+use context_normalize::NormalizationError;
 use context_query::ContextQuery;
 use context_ranking::{RankingCandidate, RelevanceRanker};
 use context_redact::{RedactionError, SecretRedactor};
@@ -24,8 +25,11 @@ pub enum EngineError {
     #[error(transparent)]
     Redaction(#[from] RedactionError),
 
-    #[error("context content is too large to measure")]
-    ContentTooLarge,
+    #[error(transparent)]
+    Normalization(#[from] NormalizationError),
+
+    #[error("context collection is too large to count")]
+    CollectionTooLarge,
 }
 
 pub struct BundlePlan {
@@ -128,7 +132,7 @@ impl ContextEngine {
         if deduplicated > 0 {
             omissions.push(ContextOmission::new(
                 OmissionReason::Deduplicated,
-                u64::try_from(deduplicated).map_err(|_| EngineError::ContentTooLarge)?,
+                u64::try_from(deduplicated).map_err(|_| EngineError::CollectionTooLarge)?,
             )?);
         }
         if budget_omissions > 0 {

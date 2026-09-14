@@ -1,6 +1,7 @@
 use context_domain::{
     ContentFormat, ContextEvent, ContextRecordType, RecordId, SemanticArtifact, Sensitivity,
 };
+use context_normalize::{deduplication_key, estimate_tokens, normalize_model_text};
 use context_redact::SecretRedactor;
 use time::OffsetDateTime;
 
@@ -25,7 +26,7 @@ impl Candidate {
         redactor: &SecretRedactor,
     ) -> Result<Self, EngineError> {
         let redacted = redactor.redact(&event.payload().model_text());
-        let content = redacted.value().to_owned();
+        let content = normalize_model_text(redacted.value());
         Ok(Self {
             record_type: ContextRecordType::ContextEvent,
             record_id: event.id().into(),
@@ -44,7 +45,7 @@ impl Candidate {
         redactor: &SecretRedactor,
     ) -> Result<Self, EngineError> {
         let redacted = redactor.redact(artifact.content().text());
-        let content = redacted.value().to_owned();
+        let content = normalize_model_text(redacted.value());
         Ok(Self {
             record_type: ContextRecordType::SemanticArtifact,
             record_id: artifact.id().into(),
@@ -59,11 +60,7 @@ impl Candidate {
     }
 
     pub fn deduplication_key(&self) -> String {
-        self.content
-            .split_whitespace()
-            .collect::<Vec<_>>()
-            .join(" ")
-            .to_lowercase()
+        deduplication_key(&self.content)
     }
 }
 
@@ -77,10 +74,4 @@ fn source_weight(event: &ContextEvent) -> f64 {
         ContextSource::Browser => 0.6,
         ContextSource::External(_) => 0.5,
     }
-}
-
-fn estimate_tokens(content: &str) -> Result<u64, EngineError> {
-    let characters =
-        u64::try_from(content.chars().count()).map_err(|_| EngineError::ContentTooLarge)?;
-    Ok(characters.div_ceil(4).max(1))
 }

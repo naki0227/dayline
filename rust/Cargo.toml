@@ -3,6 +3,7 @@ resolver = "3"
 members = [
     "crates/context-domain",
     "crates/context-engine",
+    "crates/context-normalize",
     "crates/context-policy",
     "crates/context-query",
     "crates/context-ranking",
