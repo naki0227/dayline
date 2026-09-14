@@ -3,6 +3,7 @@ resolver = "3"
 members = [
     "crates/context-domain",
     "crates/context-engine",
+    "crates/context-ffi",
     "crates/context-normalize",
     "crates/context-policy",
     "crates/context-query",
@@ -10,6 +11,7 @@ members = [
     "crates/context-redact",
     "crates/context-store",
     "crates/context-time",
+    "tools/uniffi-bindgen",
 ]
 
 [workspace.package]
@@ -25,6 +27,7 @@ rusqlite = { version = "0.40.1", features = ["bundled"] }
 thiserror = "2"
 time = { version = ">=0.3.47, <0.4", features = ["formatting", "macros", "parsing", "serde", "serde-human-readable"] }
 time-tz = "2"
+uniffi = "=0.31.2"
 uuid = { version = "1", features = ["serde", "v4"] }
 
 [workspace.lints.rust]
