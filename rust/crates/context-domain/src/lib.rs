@@ -12,7 +12,8 @@ mod validation;
 
 pub use artifact::{ArtifactKind, GenerationProvenance, SemanticArtifact, SemanticContent};
 pub use bundle::{
-    ContentFormat, ContextBundle, ContextItem, ContextProcessing, ContextRecordType, TokenBudget,
+    BudgetUnit, ContentFormat, ContextBudget, ContextBundle, ContextItem, ContextProcessing,
+    ContextRecordType,
 };
 pub use bundle_metadata::{
     AssemblyProvenance, ContextOmission, ContextTask, ContextWindow, OmissionReason,

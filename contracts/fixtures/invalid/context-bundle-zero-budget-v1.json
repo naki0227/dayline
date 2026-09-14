@@ -11,9 +11,9 @@
   },
   "items": [],
   "budget": {
-    "maximum_input_tokens": 0,
-    "included_input_tokens": 0,
-    "reserved_output_tokens": 0
+    "unit": "quarter_character_estimate",
+    "maximum_units": 0,
+    "included_units": 0
   },
   "processing": { "location": "on_device_only" },
   "suggested_tools": [],

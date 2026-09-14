@@ -37,16 +37,16 @@ fn rejects_duplicate_record_ids() -> Result<(), Box<dyn std::error::Error>> {
         .as_array_mut()
         .ok_or("items must be an array")?
         .push(first);
-    value["budget"]["included_input_tokens"] = serde_json::json!(28);
+    value["budget"]["included_units"] = serde_json::json!(28);
     let result = serde_json::from_value::<ContextBundle>(value);
     assert!(result.is_err_and(|error| error.to_string().contains("duplicate identifiers")));
     Ok(())
 }
 
 #[test]
-fn rejects_mismatched_item_token_total() -> Result<(), Box<dyn std::error::Error>> {
+fn rejects_mismatched_item_unit_total() -> Result<(), Box<dyn std::error::Error>> {
     let mut value = fixture_value()?;
-    value["budget"]["included_input_tokens"] = serde_json::json!(13);
+    value["budget"]["included_units"] = serde_json::json!(13);
     let result = serde_json::from_value::<ContextBundle>(value);
     assert!(result.is_err_and(|error| error.to_string().contains("does not match")));
     Ok(())
@@ -56,7 +56,7 @@ fn rejects_mismatched_item_token_total() -> Result<(), Box<dyn std::error::Error
 fn accepts_an_empty_context_bundle() -> Result<(), Box<dyn std::error::Error>> {
     let mut value = fixture_value()?;
     value["items"] = serde_json::json!([]);
-    value["budget"]["included_input_tokens"] = serde_json::json!(0);
+    value["budget"]["included_units"] = serde_json::json!(0);
     let bundle = serde_json::from_value::<ContextBundle>(value)?;
     assert!(bundle.items().is_empty());
     Ok(())

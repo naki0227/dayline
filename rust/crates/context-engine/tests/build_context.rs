@@ -22,7 +22,7 @@ fn plan() -> Result<BundlePlan, Box<dyn std::error::Error>> {
     })
 }
 
-fn query(maximum: u64, reserved: u64) -> Result<ContextQuery, Box<dyn std::error::Error>> {
+fn query(maximum: u64) -> Result<ContextQuery, Box<dyn std::error::Error>> {
     Ok(ContextQuery::new(
         datetime!(2026-09-13 00:00:00 +09:00),
         datetime!(2026-09-14 00:00:00 +09:00),
@@ -31,7 +31,6 @@ fn query(maximum: u64, reserved: u64) -> Result<ContextQuery, Box<dyn std::error
         Some("context".to_owned()),
         Sensitivity::Sensitive,
         maximum,
-        reserved,
     )?)
 }
 
@@ -53,12 +52,8 @@ fn redacts_and_deduplicates_before_assembly() -> Result<(), Box<dyn std::error::
         "export API_KEY=top-secret",
     )?;
     let artifact: SemanticArtifact = serde_json::from_str(ARTIFACT)?;
-    let bundle = ContextEngine::new()?.build(
-        plan()?,
-        &query(4096, 1024)?,
-        &[first, duplicate],
-        &[artifact],
-    )?;
+    let bundle =
+        ContextEngine::new()?.build(plan()?, &query(4096)?, &[first, duplicate], &[artifact])?;
     let value = serde_json::to_value(bundle)?;
     let encoded = serde_json::to_string(&value)?;
     assert!(!encoded.contains("top-secret"));
@@ -72,7 +67,7 @@ fn redacts_and_deduplicates_before_assembly() -> Result<(), Box<dyn std::error::
 #[test]
 fn omits_oversized_candidates_without_failing_bundle() -> Result<(), Box<dyn std::error::Error>> {
     let event: ContextEvent = serde_json::from_str(EVENT)?;
-    let bundle = ContextEngine::new()?.build(plan()?, &query(10, 5)?, &[event], &[])?;
+    let bundle = ContextEngine::new()?.build(plan()?, &query(10)?, &[event], &[])?;
     let value = serde_json::to_value(bundle)?;
     assert_eq!(value["items"].as_array().map(Vec::len), Some(0));
     assert_eq!(value["omissions"][0]["reason"], "budget");

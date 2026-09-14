@@ -24,14 +24,14 @@
       "content_format": "plain_text",
       "sensitivity": "sensitive",
       "relevance_score": 0.98,
-      "estimated_tokens": 14,
+      "estimated_units": 14,
       "citation_label": "artifact:018f6ea2"
     }
   ],
   "budget": {
-    "maximum_input_tokens": 4096,
-    "included_input_tokens": 14,
-    "reserved_output_tokens": 1024
+    "unit": "quarter_character_estimate",
+    "maximum_units": 4096,
+    "included_units": 14
   },
   "processing": {
     "location": "on_device_only"

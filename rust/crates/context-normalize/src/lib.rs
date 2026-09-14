@@ -27,7 +27,7 @@ pub fn deduplication_key(input: &str) -> String {
         .to_lowercase()
 }
 
-/// Estimates tokens without depending on a model-specific tokenizer.
+/// Estimates abstract context units without depending on a model tokenizer.
 ///
 /// Swift must measure the assembled bundle with the selected Apple model and may
 /// request another shrink pass. The estimate deliberately rounds up.
@@ -35,7 +35,7 @@ pub fn deduplication_key(input: &str) -> String {
 /// # Errors
 ///
 /// Returns an error only when the platform string length cannot fit in `u64`.
-pub fn estimate_tokens(input: &str) -> Result<u64, NormalizationError> {
+pub fn estimate_units(input: &str) -> Result<u64, NormalizationError> {
     let characters =
         u64::try_from(input.chars().count()).map_err(|_| NormalizationError::ContentTooLarge)?;
     Ok(characters.div_ceil(4).max(1))
@@ -43,7 +43,7 @@ pub fn estimate_tokens(input: &str) -> Result<u64, NormalizationError> {
 
 #[cfg(test)]
 mod tests {
-    use super::{deduplication_key, estimate_tokens, normalize_model_text};
+    use super::{deduplication_key, estimate_units, normalize_model_text};
 
     #[test]
     fn normalizes_lines_without_destroying_structure() {
@@ -62,8 +62,8 @@ mod tests {
     }
 
     #[test]
-    fn token_estimate_rounds_up_and_never_returns_zero() {
-        assert_eq!(estimate_tokens("").ok(), Some(1));
-        assert_eq!(estimate_tokens("12345").ok(), Some(2));
+    fn unit_estimate_rounds_up_and_never_returns_zero() {
+        assert_eq!(estimate_units("").ok(), Some(1));
+        assert_eq!(estimate_units("12345").ok(), Some(2));
     }
 }

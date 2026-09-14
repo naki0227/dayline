@@ -9,8 +9,8 @@ pub enum QueryError {
     #[error("query end must be later than start")]
     InvalidTimeRange,
 
-    #[error("maximum input tokens must exceed reserved output tokens")]
-    InvalidTokenLimit,
+    #[error("maximum context units must be greater than zero")]
+    InvalidContextLimit,
 
     #[error("project hint must not be blank")]
     BlankProjectHint,
@@ -24,8 +24,7 @@ pub struct ContextQuery {
     session_id: Option<SessionId>,
     project_hint: Option<String>,
     maximum_sensitivity: Sensitivity,
-    maximum_input_tokens: u64,
-    reserved_output_tokens: u64,
+    maximum_context_units: u64,
 }
 
 impl ContextQuery {
@@ -45,14 +44,13 @@ impl ContextQuery {
         session_id: Option<SessionId>,
         project_hint: Option<String>,
         maximum_sensitivity: Sensitivity,
-        maximum_input_tokens: u64,
-        reserved_output_tokens: u64,
+        maximum_context_units: u64,
     ) -> Result<Self, QueryError> {
         if end <= start {
             return Err(QueryError::InvalidTimeRange);
         }
-        if maximum_input_tokens == 0 || reserved_output_tokens >= maximum_input_tokens {
-            return Err(QueryError::InvalidTokenLimit);
+        if maximum_context_units == 0 {
+            return Err(QueryError::InvalidContextLimit);
         }
         if project_hint
             .as_ref()
@@ -67,8 +65,7 @@ impl ContextQuery {
             session_id,
             project_hint,
             maximum_sensitivity,
-            maximum_input_tokens,
-            reserved_output_tokens,
+            maximum_context_units,
         })
     }
 
@@ -93,13 +90,8 @@ impl ContextQuery {
     }
 
     #[must_use]
-    pub const fn maximum_input_tokens(&self) -> u64 {
-        self.maximum_input_tokens
-    }
-
-    #[must_use]
-    pub const fn reserved_output_tokens(&self) -> u64 {
-        self.reserved_output_tokens
+    pub const fn maximum_context_units(&self) -> u64 {
+        self.maximum_context_units
     }
 
     #[must_use]
@@ -140,7 +132,6 @@ mod tests {
             Some("dayline".to_owned()),
             maximum_sensitivity,
             4096,
-            1024,
         )
     }
 
@@ -165,7 +156,7 @@ mod tests {
     fn rejects_invalid_range_and_budget() {
         let at = datetime!(2026-09-13 00:00:00 +09:00);
         assert_eq!(
-            ContextQuery::new(at, at, Vec::new(), None, None, Sensitivity::Standard, 10, 1)
+            ContextQuery::new(at, at, Vec::new(), None, None, Sensitivity::Standard, 10)
                 .map(|_| ()),
             Err(QueryError::InvalidTimeRange)
         );
@@ -177,11 +168,10 @@ mod tests {
                 None,
                 None,
                 Sensitivity::Standard,
-                10,
-                10,
+                0,
             )
             .map(|_| ()),
-            Err(QueryError::InvalidTokenLimit)
+            Err(QueryError::InvalidContextLimit)
         );
     }
 }

@@ -6,9 +6,9 @@ use std::collections::HashSet;
 
 use candidate::Candidate;
 use context_domain::{
-    AssemblyProvenance, BundleId, ContextBundle, ContextEvent, ContextItem, ContextOmission,
-    ContextProcessing, ContextTask, ContextWindow, DomainError, OmissionReason, SemanticArtifact,
-    SuggestedTool, TokenBudget, VersionedIdentifier,
+    AssemblyProvenance, BundleId, ContextBudget, ContextBundle, ContextEvent, ContextItem,
+    ContextOmission, ContextProcessing, ContextTask, ContextWindow, DomainError, OmissionReason,
+    SemanticArtifact, SuggestedTool, VersionedIdentifier,
 };
 use context_normalize::NormalizationError;
 use context_query::ContextQuery;
@@ -102,12 +102,12 @@ impl ContextEngine {
                 .then_with(|| left.record_id.cmp(&right.record_id))
         });
 
-        let available = query.maximum_input_tokens() - query.reserved_output_tokens();
+        let available = query.maximum_context_units();
         let mut used = 0_u64;
         let mut budget_omissions = 0_u64;
         let mut items = Vec::new();
         for (candidate, score) in scored_candidates {
-            let Some(next_used) = used.checked_add(candidate.estimated_tokens) else {
+            let Some(next_used) = used.checked_add(candidate.estimated_units) else {
                 budget_omissions += 1;
                 continue;
             };
@@ -124,7 +124,7 @@ impl ContextEngine {
                 candidate.content_format,
                 candidate.sensitivity,
                 score,
-                candidate.estimated_tokens,
+                candidate.estimated_units,
                 candidate.citation_label,
             )?);
         }
@@ -148,11 +148,7 @@ impl ContextEngine {
             plan.profile,
             ContextWindow::new(query.start(), query.end(), plan.timezone)?,
             items,
-            TokenBudget::new(
-                query.maximum_input_tokens(),
-                used,
-                query.reserved_output_tokens(),
-            )?,
+            ContextBudget::new(available, used)?,
             plan.processing,
             plan.suggested_tools,
             omissions,

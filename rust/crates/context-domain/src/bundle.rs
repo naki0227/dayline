@@ -31,7 +31,7 @@ pub struct ContextItem {
     content_format: ContentFormat,
     sensitivity: Sensitivity,
     relevance_score: f64,
-    estimated_tokens: u64,
+    estimated_units: u64,
     citation_label: String,
 }
 
@@ -40,7 +40,7 @@ impl ContextItem {
     ///
     /// # Errors
     ///
-    /// Returns a validation error for blank content, invalid score, or zero tokens.
+    /// Returns a validation error for blank content, invalid score, or zero units.
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         record_type: ContextRecordType,
@@ -50,7 +50,7 @@ impl ContextItem {
         content_format: ContentFormat,
         sensitivity: Sensitivity,
         relevance_score: f64,
-        estimated_tokens: u64,
+        estimated_units: u64,
         citation_label: impl Into<String>,
     ) -> Result<Self, DomainError> {
         let value = Self {
@@ -61,7 +61,7 @@ impl ContextItem {
             content_format,
             sensitivity,
             relevance_score,
-            estimated_tokens,
+            estimated_units,
             citation_label: citation_label.into(),
         };
         value.validate()?;
@@ -76,9 +76,9 @@ impl ContextItem {
                 field: "items.relevance_score",
             });
         }
-        if self.estimated_tokens == 0 {
+        if self.estimated_units == 0 {
             return Err(DomainError::ValueOutOfRange {
-                field: "items.estimated_tokens",
+                field: "items.estimated_units",
             });
         }
         Ok(())
@@ -90,60 +90,56 @@ impl ContextItem {
     }
 
     #[must_use]
-    pub const fn estimated_tokens(&self) -> u64 {
-        self.estimated_tokens
+    pub const fn estimated_units(&self) -> u64 {
+        self.estimated_units
     }
 }
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
-#[allow(clippy::struct_field_names)] // Field names are fixed by the JSON contract.
-pub struct TokenBudget {
-    maximum_input_tokens: u64,
-    included_input_tokens: u64,
-    reserved_output_tokens: u64,
+#[serde(rename_all = "snake_case")]
+pub enum BudgetUnit {
+    QuarterCharacterEstimate,
 }
 
-impl TokenBudget {
-    /// Creates a token budget that fits within the model input limit.
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[allow(clippy::struct_field_names)] // Field names are fixed by the JSON contract.
+pub struct ContextBudget {
+    unit: BudgetUnit,
+    maximum_units: u64,
+    included_units: u64,
+}
+
+impl ContextBudget {
+    /// Creates an abstract estimate budget for deterministic shrinking.
     ///
     /// # Errors
     ///
-    /// Returns an error for a zero maximum or an exceeded budget.
-    pub fn new(
-        maximum_input_tokens: u64,
-        included_input_tokens: u64,
-        reserved_output_tokens: u64,
-    ) -> Result<Self, DomainError> {
+    /// Returns an error for a zero maximum or usage above the estimate limit.
+    pub fn new(maximum_units: u64, included_units: u64) -> Result<Self, DomainError> {
         let value = Self {
-            maximum_input_tokens,
-            included_input_tokens,
-            reserved_output_tokens,
+            unit: BudgetUnit::QuarterCharacterEstimate,
+            maximum_units,
+            included_units,
         };
         value.validate()?;
         Ok(value)
     }
 
     fn validate(self) -> Result<(), DomainError> {
-        if self.maximum_input_tokens == 0 {
+        if self.maximum_units == 0 {
             return Err(DomainError::ValueOutOfRange {
-                field: "budget.maximum_input_tokens",
+                field: "budget.maximum_units",
             });
         }
-        let Some(total) = self
-            .included_input_tokens
-            .checked_add(self.reserved_output_tokens)
-        else {
-            return Err(DomainError::TokenBudgetExceeded);
-        };
-        if total > self.maximum_input_tokens {
-            return Err(DomainError::TokenBudgetExceeded);
+        if self.included_units > self.maximum_units {
+            return Err(DomainError::ContextBudgetExceeded);
         }
         Ok(())
     }
 
     #[must_use]
-    pub const fn included_input_tokens(self) -> u64 {
-        self.included_input_tokens
+    pub const fn included_units(self) -> u64 {
+        self.included_units
     }
 }
 
@@ -170,7 +166,7 @@ pub struct ContextBundle {
     profile: VersionedIdentifier,
     window: ContextWindow,
     items: Vec<ContextItem>,
-    budget: TokenBudget,
+    budget: ContextBudget,
     processing: ContextProcessing,
     suggested_tools: Vec<SuggestedTool>,
     omissions: Vec<ContextOmission>,
@@ -183,7 +179,7 @@ impl ContextBundle {
     /// # Errors
     ///
     /// Returns a validation error for invalid metadata, duplicate records, or a
-    /// token count that does not match the included items.
+    /// unit count that does not match the included items.
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         id: BundleId,
@@ -192,7 +188,7 @@ impl ContextBundle {
         profile: VersionedIdentifier,
         window: ContextWindow,
         items: Vec<ContextItem>,
-        budget: TokenBudget,
+        budget: ContextBudget,
         processing: ContextProcessing,
         suggested_tools: Vec<SuggestedTool>,
         omissions: Vec<ContextOmission>,
@@ -209,11 +205,11 @@ impl ContextBundle {
         require_unique(&record_ids, "items.record_id")?;
         let included = items.iter().try_fold(0_u64, |total, item| {
             total
-                .checked_add(item.estimated_tokens())
-                .ok_or(DomainError::TokenBudgetExceeded)
+                .checked_add(item.estimated_units())
+                .ok_or(DomainError::ContextBudgetExceeded)
         })?;
-        if included != budget.included_input_tokens() {
-            return Err(DomainError::TokenCountMismatch);
+        if included != budget.included_units() {
+            return Err(DomainError::UnitCountMismatch);
         }
         for tool in &suggested_tools {
             tool.validate()?;
@@ -254,7 +250,7 @@ struct RawContextBundle {
     profile: VersionedIdentifier,
     window: ContextWindow,
     items: Vec<ContextItem>,
-    budget: TokenBudget,
+    budget: ContextBudget,
     processing: ContextProcessing,
     suggested_tools: Vec<SuggestedTool>,
     omissions: Vec<ContextOmission>,

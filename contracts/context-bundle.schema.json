@@ -95,7 +95,7 @@
         "content_format",
         "sensitivity",
         "relevance_score",
-        "estimated_tokens",
+        "estimated_units",
         "citation_label"
       ],
       "properties": {
@@ -106,18 +106,18 @@
         "content_format": { "enum": ["plain_text", "json"] },
         "sensitivity": { "enum": ["standard", "sensitive", "restricted"] },
         "relevance_score": { "type": "number", "minimum": 0, "maximum": 1 },
-        "estimated_tokens": { "type": "integer", "minimum": 1 },
+        "estimated_units": { "type": "integer", "minimum": 1 },
         "citation_label": { "type": "string", "minLength": 1 }
       }
     },
     "budget": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["maximum_input_tokens", "included_input_tokens", "reserved_output_tokens"],
+      "required": ["unit", "maximum_units", "included_units"],
       "properties": {
-        "maximum_input_tokens": { "type": "integer", "minimum": 1 },
-        "included_input_tokens": { "type": "integer", "minimum": 0 },
-        "reserved_output_tokens": { "type": "integer", "minimum": 0 }
+        "unit": { "const": "quarter_character_estimate" },
+        "maximum_units": { "type": "integer", "minimum": 1 },
+        "included_units": { "type": "integer", "minimum": 0 }
       }
     },
     "suggested_tool": {

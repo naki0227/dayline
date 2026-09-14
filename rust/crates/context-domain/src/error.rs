@@ -30,11 +30,11 @@ pub enum DomainError {
     #[error("time window end must be later than start")]
     InvalidTimeWindow,
 
-    #[error("token budget exceeds its maximum")]
-    TokenBudgetExceeded,
+    #[error("context estimate exceeds its maximum")]
+    ContextBudgetExceeded,
 
-    #[error("included token count does not match the context items")]
-    TokenCountMismatch,
+    #[error("included estimate does not match the context items")]
+    UnitCountMismatch,
 
     #[error("proposal expiration must be later than its proposal time")]
     InvalidExpiration,

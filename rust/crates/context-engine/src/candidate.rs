@@ -1,7 +1,7 @@
 use context_domain::{
     ContentFormat, ContextEvent, ContextRecordType, RecordId, SemanticArtifact, Sensitivity,
 };
-use context_normalize::{deduplication_key, estimate_tokens, normalize_model_text};
+use context_normalize::{deduplication_key, estimate_units, normalize_model_text};
 use context_redact::SecretRedactor;
 use time::OffsetDateTime;
 
@@ -16,7 +16,7 @@ pub(crate) struct Candidate {
     pub content_format: ContentFormat,
     pub sensitivity: Sensitivity,
     pub source_weight: f64,
-    pub estimated_tokens: u64,
+    pub estimated_units: u64,
     pub citation_label: String,
 }
 
@@ -31,7 +31,7 @@ impl Candidate {
             record_type: ContextRecordType::ContextEvent,
             record_id: event.id().into(),
             occurred_at: event.occurred_at(),
-            estimated_tokens: estimate_tokens(&content)?,
+            estimated_units: estimate_units(&content)?,
             content,
             content_format: ContentFormat::PlainText,
             sensitivity: event.sensitivity(),
@@ -50,7 +50,7 @@ impl Candidate {
             record_type: ContextRecordType::SemanticArtifact,
             record_id: artifact.id().into(),
             occurred_at: artifact.created_at(),
-            estimated_tokens: estimate_tokens(&content)?,
+            estimated_units: estimate_units(&content)?,
             content,
             content_format: ContentFormat::PlainText,
             sensitivity: artifact.sensitivity(),
