@@ -11,8 +11,14 @@ let package = Package(
   products: [
     .library(name: "ContextCaptureKit", targets: ["ContextCaptureKit"])
   ],
+  dependencies: [
+    .package(path: "../ContextCoreKit")
+  ],
   targets: [
-    .target(name: "ContextCaptureKit"),
+    .target(
+      name: "ContextCaptureKit",
+      dependencies: ["ContextCoreKit"]
+    ),
     .testTarget(
       name: "ContextCaptureKitTests",
       dependencies: ["ContextCaptureKit"]
