@@ -212,6 +212,16 @@ impl SemanticArtifact {
         self.sensitivity
     }
 
+    #[must_use]
+    pub fn source_event_ids(&self) -> &[EventId] {
+        &self.source_event_ids
+    }
+
+    #[must_use]
+    pub fn source_artifact_ids(&self) -> &[ArtifactId] {
+        &self.source_artifact_ids
+    }
+
     /// Copies the artifact with newly validated semantic content.
     ///
     /// # Errors
