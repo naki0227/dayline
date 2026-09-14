@@ -105,3 +105,15 @@ Migration and rollback details are in `docs/storage.md`.
   75% abstract-budget retry. Retries are bounded and empty reductions fail closed.
 - Model availability and generation failures are content-free typed errors, so
   callers can queue work without logging private context.
+
+## Capture runtime
+
+- `ContextCaptureKit` owns capture state and AVFAudio adapters, but not UI, model
+  generation, FFI, or persistence.
+- Daily capture and audio-source state are independent. An interruption changes
+  audio from recording to interrupted while Daily remains running.
+- Passive audio is AAC-LC, mono, 16 kHz, 32 kbps and rotates into a new local file
+  every five minutes. Files live below Application Support/audio/One-Day-date.
+- The app targets iOS 18. Foundation Models availability never gates recording.
+- The UI test launch argument injects an in-memory deterministic recorder and is
+  used only by the test composition root; production still uses AVAudioRecorder.

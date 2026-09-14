@@ -61,5 +61,6 @@ deterministic context assembly, pre-persistence redaction, timezone-aware One Da
 validation, a local SQLite store, a reproducible Apple XCFramework, and a tested
 Event-to-Artifact vertical slice. The Apple adapter includes availability handling,
 typed structured output, real tokenizer measurement, and bounded Rust-backed context
-shrinking. Product features are tracked in
+shrinking. The iOS client can start/stop five-minute AAC chunks through an isolated,
+interruption-aware capture state machine and remains deployable to iOS 18. Product features are tracked in
 [`docs/TODO.md`](docs/TODO.md).

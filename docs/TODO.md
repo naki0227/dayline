@@ -2,8 +2,8 @@
 
 ## In progress
 
-- [ ] Add a deterministic UI test harness to the Dayline iOS target.
-- [ ] Implement iPhone audio capture and incremental speech transcription.
+- [ ] Implement incremental SpeechAnalyzer/SpeechTranscriber transcription and
+      convert finalized segments into ContextEvents.
 
 ## Not started
 
@@ -45,6 +45,12 @@
       responsibility-specific GitHub Actions passed.
 - [x] Add Foundation Models availability mapping, `@Generable` output, actual
       token measurement on 26.4+, typed errors, and deterministic Rust shrink retry.
+- [x] Add ContextCaptureKit with iPhone AAC mono long recording, five-minute chunk
+      rotation, interruption recovery, and independent Daily/Audio state.
+- [x] Add the Dayline start/stop screen and a permission-free deterministic UI
+      test harness, and run it in the Apple App workflow.
+- [x] Keep the app target on iOS 18 so capture/storage work without Apple
+      Intelligence; model features remain availability-gated.
 
 ## On hold
 
@@ -67,5 +73,5 @@
    `docs/adr/0005-uniffi-json-boundary.md`.
 2. Read `docs/apple-intelligence.md` and `docs/ffi.md`.
 3. Run `make ci`.
-4. Implement the iPhone capture state machine and deterministic audio test double
-   before wiring AVFAudio and Speech framework adapters.
+4. Implement SpeechAnalyzer/SpeechTranscriber behind a protocol and test finalized
+   segment buffering without requiring speech assets in CI.
