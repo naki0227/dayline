@@ -17,6 +17,10 @@ public final class DailySummaryModel {
   public private(set) var state: DailySummaryLoadState = .idle
   public private(set) var summary: SemanticArtifactDocument?
 
+  public var presentation: ArtifactPresentation? {
+    summary.map(ArtifactPresentation.init)
+  }
+
   private let generator: any DailySummaryGenerating
 
   public init(generator: any DailySummaryGenerating) {

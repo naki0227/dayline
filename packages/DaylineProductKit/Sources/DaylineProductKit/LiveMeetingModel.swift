@@ -18,6 +18,10 @@ public final class LiveMeetingModel {
   public private(set) var state: LiveMeetingLoadState = .stopped
   public private(set) var latest: SemanticArtifactDocument?
 
+  public var presentation: ArtifactPresentation? {
+    latest.map(ArtifactPresentation.init)
+  }
+
   private let generator: any LiveMeetingGenerating
   private let sleep: @Sendable (Duration) async throws -> Void
   private var sessionID: String?
