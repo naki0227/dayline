@@ -9,15 +9,23 @@ final class DaylineAppModel {
   let dailySummary: DailySummaryModel
   let liveCapture: LiveMeetingCoordinator
   let liveMeeting: LiveMeetingModel
+  private(set) var sourcePolicy: DaylineSourcePolicy
+
+  private let sourcePolicyStore: DaylineSourcePolicyStore
+  private let sourcePolicyPersistence: AppSourcePolicyPersistence
 
   init(environment: AppEnvironment) {
     capture = environment.capture
     dailySummary = environment.dailySummary
     liveCapture = environment.liveCapture
     liveMeeting = environment.liveMeeting
+    sourcePolicy = environment.initialSourcePolicy
+    sourcePolicyStore = environment.sourcePolicyStore
+    sourcePolicyPersistence = environment.sourcePolicyPersistence
   }
 
   func toggleDailyCapture() async {
+    guard sourcePolicy.isEnabled(.audio) else { return }
     if capture.dailyState == .stopped, liveCapture.state == .running {
       await stopLiveMeeting()
     }
@@ -25,6 +33,7 @@ final class DaylineAppModel {
   }
 
   func toggleLiveMeeting() async {
+    guard sourcePolicy.isEnabled(.audio) else { return }
     if liveCapture.state == .running {
       await stopLiveMeeting()
       return
@@ -39,6 +48,21 @@ final class DaylineAppModel {
       let startedAt = liveCapture.startedAt
     else { return }
     liveMeeting.begin(sessionID: sessionID, startedAt: startedAt)
+  }
+
+  func setSource(_ source: DaylineContextSource, enabled: Bool) async {
+    if source == .audio, !enabled {
+      if capture.dailyState != .stopped {
+        await capture.stop()
+      }
+      if liveCapture.state != .stopped {
+        await stopLiveMeeting()
+      }
+    }
+    let updated = sourcePolicy.setting(source, enabled: enabled)
+    sourcePolicy = updated
+    await sourcePolicyStore.replace(with: updated)
+    sourcePolicyPersistence.save(updated)
   }
 
   private func stopLiveMeeting() async {

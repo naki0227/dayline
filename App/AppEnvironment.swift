@@ -11,23 +11,41 @@ struct AppEnvironment {
   let dailySummary: DailySummaryModel
   let liveCapture: LiveMeetingCoordinator
   let liveMeeting: LiveMeetingModel
+  let sourcePolicyStore: DaylineSourcePolicyStore
+  let sourcePolicyPersistence: AppSourcePolicyPersistence
+  let initialSourcePolicy: DaylineSourcePolicy
 
   static func make(processInfo: ProcessInfo = .processInfo) -> AppEnvironment {
     let store = AppCaptureEnvironment.makeContextStore()
-    if processInfo.arguments.contains("--ui-testing") {
-      return AppEnvironment(
-        capture: AppCaptureEnvironment.makeCoordinator(
-          processInfo: processInfo,
-          eventStore: store
-        ),
-        dailySummary: DailySummaryModel(generator: EmptyDailySummaryGenerator()),
-        liveCapture: AppCaptureEnvironment.makeLiveMeetingCoordinator(
-          processInfo: processInfo,
-          eventStore: store
-        ),
-        liveMeeting: LiveMeetingModel(generator: EmptyLiveMeetingGenerator())
+    let persistence = AppSourcePolicyPersistence()
+    let isUITesting = processInfo.arguments.contains("--ui-testing")
+    let initialPolicy = isUITesting ? DaylineSourcePolicy.localDefault : persistence.load()
+    let sourcePolicyStore = DaylineSourcePolicyStore(policy: initialPolicy)
+    if isUITesting {
+      return makeUITest(
+        processInfo: processInfo,
+        store: store,
+        policyStore: sourcePolicyStore,
+        persistence: persistence,
+        initialPolicy: initialPolicy
       )
     }
+    return makeProduction(
+      processInfo: processInfo,
+      store: store,
+      policyStore: sourcePolicyStore,
+      persistence: persistence,
+      initialPolicy: initialPolicy
+    )
+  }
+
+  private static func makeProduction(
+    processInfo: ProcessInfo,
+    store: any AppContextStore,
+    policyStore: DaylineSourcePolicyStore,
+    persistence: AppSourcePolicyPersistence,
+    initialPolicy: DaylineSourcePolicy
+  ) -> AppEnvironment {
     let bridge = RustContextBridge()
     let reducer = ContextReducer { context, maximumUnits in
       try bridge.shrinkContext(context, maximumUnits: maximumUnits)
@@ -35,14 +53,16 @@ struct AppEnvironment {
     let dailyService = DailySummaryService(
       contextBuilder: store,
       runtime: AppleFoundationModelRuntime(reducer: reducer),
-      artifactStore: store
+      artifactStore: store,
+      sourcePolicy: policyStore
     )
     let liveGenerator: any LiveMeetingGenerating
     do {
       liveGenerator = try LiveMeetingService(
         contextBuilder: store,
         runtime: AppleFoundationModelRuntime(reducer: reducer),
-        artifactStore: store
+        artifactStore: store,
+        sourcePolicy: policyStore
       )
     } catch {
       liveGenerator = UnavailableLiveMeetingGenerator()
@@ -57,7 +77,34 @@ struct AppEnvironment {
         processInfo: processInfo,
         eventStore: store
       ),
-      liveMeeting: LiveMeetingModel(generator: liveGenerator)
+      liveMeeting: LiveMeetingModel(generator: liveGenerator),
+      sourcePolicyStore: policyStore,
+      sourcePolicyPersistence: persistence,
+      initialSourcePolicy: initialPolicy
+    )
+  }
+
+  private static func makeUITest(
+    processInfo: ProcessInfo,
+    store: any AppContextStore,
+    policyStore: DaylineSourcePolicyStore,
+    persistence: AppSourcePolicyPersistence,
+    initialPolicy: DaylineSourcePolicy
+  ) -> AppEnvironment {
+    AppEnvironment(
+      capture: AppCaptureEnvironment.makeCoordinator(
+        processInfo: processInfo,
+        eventStore: store
+      ),
+      dailySummary: DailySummaryModel(generator: EmptyDailySummaryGenerator()),
+      liveCapture: AppCaptureEnvironment.makeLiveMeetingCoordinator(
+        processInfo: processInfo,
+        eventStore: store
+      ),
+      liveMeeting: LiveMeetingModel(generator: EmptyLiveMeetingGenerator()),
+      sourcePolicyStore: policyStore,
+      sourcePolicyPersistence: persistence,
+      initialSourcePolicy: initialPolicy
     )
   }
 }

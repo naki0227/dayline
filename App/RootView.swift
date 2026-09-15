@@ -13,18 +13,22 @@ struct RootView: View {
 
   var body: some View {
     NavigationStack {
-      VStack(spacing: 24) {
-        statusCard
-        transcriptCard
-        dailySummaryCard
-        liveMeetingCard
-        Spacer()
-        captureButton
-        Text("Context schema v\(ContextCoreKit.schemaVersion)")
-          .font(.caption)
-          .foregroundStyle(.secondary)
+      ScrollView {
+        VStack(spacing: 24) {
+          statusCard
+          transcriptCard
+          dailySummaryCard
+          liveMeetingCard
+          PrivacySourcesView(policy: model.sourcePolicy) { source, isEnabled in
+            Task { await model.setSource(source, enabled: isEnabled) }
+          }
+          captureButton
+          Text("Context schema v\(ContextCoreKit.schemaVersion)")
+            .font(.caption)
+            .foregroundStyle(.secondary)
+        }
+        .padding(24)
       }
-      .padding(24)
       .navigationTitle("Dayline")
     }
   }
@@ -115,6 +119,7 @@ struct RootView: View {
     case .generating: "要約を作成中…"
     case .ready: "要約ができました。"
     case .empty: "今日のContextはまだありません。"
+    case .sourceDisabled: "要約に使う情報源を1つ以上有効にしてください。"
     case .intelligenceUnavailable: "Apple Intelligenceが利用可能になると要約できます。"
     case .failed: "要約を作成できませんでした。"
     }
@@ -163,7 +168,10 @@ struct RootView: View {
     }
     .buttonStyle(.borderedProminent)
     .tint(capture.dailyState == .running ? .red : .accentColor)
-    .disabled(capture.dailyState == .starting || capture.dailyState == .stopping)
+    .disabled(
+      capture.dailyState == .starting || capture.dailyState == .stopping
+        || !model.sourcePolicy.isEnabled(.audio)
+    )
     .accessibilityIdentifier("dayline.capture.toggle")
   }
 
