@@ -11,7 +11,12 @@ public protocol NotionCredentialProviding: Sendable {
   func accessToken() async throws -> String
 }
 
-public actor KeychainNotionCredentialStore: NotionCredentialProviding {
+public protocol NotionCredentialStoring: NotionCredentialProviding {
+  func save(accessToken: String) async throws
+  func remove() async throws
+}
+
+public actor KeychainNotionCredentialStore: NotionCredentialStoring {
   private let service: String
   private let account = "access-token"
 
