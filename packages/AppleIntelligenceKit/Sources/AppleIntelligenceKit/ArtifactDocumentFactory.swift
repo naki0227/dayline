@@ -9,17 +9,20 @@ enum ArtifactDocumentFactory {
   static func make(
     request: IntelligenceRequest,
     context: ContextBundleDocument,
-    text: String,
-    attributes: [String: String],
+    sections: SemanticSections,
     generation: ArtifactGenerationIdentity
-  ) -> SemanticArtifactDocument {
-    SemanticArtifactDocument(
+  ) throws -> SemanticArtifactDocument {
+    let attributes = try SemanticSectionsCodec.attributes(
+      for: sections,
+      language: request.language
+    )
+    return SemanticArtifactDocument(
       id: request.artifactID,
       createdAt: request.createdAt,
       dayId: request.dayID,
       sessionId: request.sessionID,
       kind: "summary",
-      content: SemanticContentDocument(text: text, attributes: attributes),
+      content: SemanticContentDocument(text: sections.summary, attributes: attributes),
       sourceEventIds: evidenceIDs(in: context, type: .contextEvent),
       sourceArtifactIds: evidenceIDs(in: context, type: .semanticArtifact),
       confidence: nil,

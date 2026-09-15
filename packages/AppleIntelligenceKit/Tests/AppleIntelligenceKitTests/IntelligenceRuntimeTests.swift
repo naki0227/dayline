@@ -31,7 +31,29 @@ func stubMapsArtifactEvidenceAndSensitivity() async throws {
   #expect(artifact.sourceArtifactIds == [context.items[0].recordId])
   #expect(artifact.sensitivity == .sensitive)
   #expect(artifact.content.attributes["language"] == "en")
+  let sections = try SemanticSectionsCodec.decode(from: artifact.content.attributes)
+  #expect(sections.summary == artifact.content.text)
+  #expect(sections.highlights == [context.items[0].content])
+  #expect(sections.decisions.isEmpty)
   #expect(artifact.generation.runtime == "stub")
+}
+
+@Test
+func semanticSectionsRoundTripWithoutDelimiterLoss() throws {
+  let sections = SemanticSections(
+    summary: "Summary",
+    highlights: ["line one\nline two"],
+    topics: ["Context Engine"],
+    decisions: ["Ship locally"],
+    todos: ["Verify device"],
+    ideas: ["Reusable runtime"],
+    questions: ["When?"]
+  )
+
+  let attributes = try SemanticSectionsCodec.attributes(for: sections, language: "ja")
+
+  #expect(attributes["language"] == "ja")
+  #expect(try SemanticSectionsCodec.decode(from: attributes) == sections)
 }
 
 @Test

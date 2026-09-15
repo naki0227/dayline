@@ -10,8 +10,23 @@ import Foundation
     @Guide(description: "A concise evidence-grounded summary")
     var summary: String
 
-    @Guide(description: "The most important evidence-grounded points")
-    var keyPoints: [String]
+    @Guide(description: "The most important evidence-grounded moments")
+    var highlights: [String]
+
+    @Guide(description: "Topics discussed or worked on")
+    var topics: [String]
+
+    @Guide(description: "Decisions explicitly supported by evidence")
+    var decisions: [String]
+
+    @Guide(description: "Concrete TODO items, including an owner only when known")
+    var todos: [String]
+
+    @Guide(description: "Ideas or possibilities, kept separate from decisions")
+    var ideas: [String]
+
+    @Guide(description: "Open or unanswered questions")
+    var questions: [String]
   }
 #endif
 
@@ -136,14 +151,19 @@ public struct AppleFoundationModelRuntime: IntelligenceRuntime {
         to: rendered.prompt,
         generating: GeneratedSemanticArtifact.self
       )
-      return ArtifactDocumentFactory.make(
+      let sections = SemanticSections(
+        summary: response.content.summary,
+        highlights: response.content.highlights,
+        topics: response.content.topics,
+        decisions: response.content.decisions,
+        todos: response.content.todos,
+        ideas: response.content.ideas,
+        questions: response.content.questions
+      )
+      return try ArtifactDocumentFactory.make(
         request: request,
         context: context,
-        text: response.content.summary,
-        attributes: [
-          "language": request.language,
-          "key_points": response.content.keyPoints.joined(separator: "\n"),
-        ],
+        sections: sections,
         generation: ArtifactGenerationIdentity(
           runtime: "apple-foundation-models",
           model: "system-language-model"

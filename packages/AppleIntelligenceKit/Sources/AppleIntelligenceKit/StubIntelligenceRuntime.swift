@@ -27,11 +27,18 @@ public struct StubIntelligenceRuntime: IntelligenceRuntime {
       .map(\.content)
       .joined(separator: "\n")
 
-    return ArtifactDocumentFactory.make(
+    return try ArtifactDocumentFactory.make(
       request: request,
       context: context,
-      text: summary,
-      attributes: ["language": request.language],
+      sections: SemanticSections(
+        summary: summary,
+        highlights: Array(context.items.prefix(3).map(\.content)),
+        topics: [],
+        decisions: [],
+        todos: [],
+        ideas: [],
+        questions: []
+      ),
       generation: ArtifactGenerationIdentity(
         runtime: "stub",
         model: "deterministic-stub"
