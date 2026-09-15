@@ -216,6 +216,7 @@ version = "0.1.0"
 dependencies = [
  "context-domain",
  "context-engine",
+ "context-policy",
  "context-query",
  "context-store",
  "serde",

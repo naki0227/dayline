@@ -1,6 +1,7 @@
 use context_ffi::{
-    ContextBridgeError, build_context_bundle, build_stored_context_bundle, persist_context_event,
-    persist_semantic_artifact, shrink_context_bundle,
+    ContextBridgeError, build_context_bundle, build_stored_context_bundle,
+    evaluate_action_proposal, persist_context_event, persist_semantic_artifact,
+    shrink_context_bundle,
 };
 
 const REQUEST: &str = include_str!("../../../../fixtures/vertical-slice-request-v1.json");
@@ -8,6 +9,26 @@ const STORE_REQUEST: &str =
     include_str!("../../../../fixtures/vertical-slice-store-request-v1.json");
 const EVENT: &str = include_str!("../../../../contracts/fixtures/context-event-v1.json");
 const ARTIFACT: &str = include_str!("../../../../contracts/fixtures/semantic-artifact-v1.json");
+const PROPOSAL: &str = include_str!("../../../../contracts/fixtures/action-proposal-v1.json");
+
+#[test]
+fn validates_and_requires_confirmation_for_external_output()
+-> Result<(), Box<dyn std::error::Error>> {
+    let response = evaluate_action_proposal(PROPOSAL.to_owned())?;
+    let value: serde_json::Value = serde_json::from_str(&response)?;
+    assert_eq!(value["decision"], "ask");
+    assert_eq!(value["reason"], "proposal_requires_confirmation");
+    Ok(())
+}
+
+#[test]
+fn rejects_invalid_action_proposal_without_leaking_arguments() {
+    let invalid = PROPOSAL.replace("\"schema_version\": 1", "\"schema_version\": 2");
+    assert!(matches!(
+        evaluate_action_proposal(invalid),
+        Err(ContextBridgeError::InvalidRequest)
+    ));
+}
 
 #[test]
 fn builds_a_context_bundle_over_the_public_boundary() -> Result<(), Box<dyn std::error::Error>> {

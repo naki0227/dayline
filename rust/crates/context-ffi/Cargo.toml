@@ -11,6 +11,7 @@ crate-type = ["lib", "staticlib", "cdylib"]
 [dependencies]
 context-domain = { path = "../context-domain" }
 context-engine = { path = "../context-engine" }
+context-policy = { path = "../context-policy" }
 context-query = { path = "../context-query" }
 context-store = { path = "../context-store" }
 serde.workspace = true

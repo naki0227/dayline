@@ -2,8 +2,9 @@
 
 mod request;
 
-use context_domain::{ContextBundle, ContextEvent, SemanticArtifact};
+use context_domain::{ActionProposal, ContextBundle, ContextEvent, SemanticArtifact};
 use context_engine::ContextEngine;
+use context_policy::{DecisionReason, PermissionDecision, PolicyEngine};
 use context_store::ContextStore;
 use request::{BuildContextRequest, BuildStoredContextRequest};
 use thiserror::Error;
@@ -20,6 +21,40 @@ pub enum ContextBridgeError {
 
     #[error("local persistence failed")]
     PersistenceFailed,
+}
+
+#[derive(serde::Serialize)]
+struct PolicyEvaluationResponse {
+    decision: &'static str,
+    reason: &'static str,
+}
+
+/// Validates an `ActionProposal` and evaluates the deterministic default policy.
+///
+/// # Errors
+///
+/// Returns a categorized error without exposing proposal arguments.
+#[uniffi::export]
+#[allow(clippy::needless_pass_by_value)] // UniFFI owns cross-language strings.
+pub fn evaluate_action_proposal(proposal_json: String) -> Result<String, ContextBridgeError> {
+    let proposal: ActionProposal =
+        serde_json::from_str(&proposal_json).map_err(|_| ContextBridgeError::InvalidRequest)?;
+    let evaluation = PolicyEngine::default().evaluate(&proposal);
+    let response = PolicyEvaluationResponse {
+        decision: match evaluation.decision {
+            PermissionDecision::Allow => "allow",
+            PermissionDecision::Ask => "ask",
+            PermissionDecision::Deny => "deny",
+        },
+        reason: match evaluation.reason {
+            DecisionReason::MatchingRule => "matching_rule",
+            DecisionReason::ProposalRequiresConfirmation => "proposal_requires_confirmation",
+            DecisionReason::DestructiveWithoutRule => "destructive_without_rule",
+            DecisionReason::DestructiveRequiresConfirmation => "destructive_requires_confirmation",
+            DecisionReason::NoMatchingRule => "no_matching_rule",
+        },
+    };
+    serde_json::to_string(&response).map_err(|_| ContextBridgeError::AssemblyFailed)
 }
 
 /// Builds a validated `ContextBundle` from a versioned JSON request.
