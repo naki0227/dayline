@@ -7,6 +7,7 @@ public enum DailySummaryLoadState: Equatable, Sendable {
   case generating
   case ready
   case empty
+  case sourceDisabled
   case intelligenceUnavailable
   case failed
 }
@@ -43,6 +44,8 @@ public final class DailySummaryModel {
       state = .ready
     } catch DailySummaryFailure.emptyContext {
       state = .empty
+    } catch DailySummaryFailure.sourceDisabled {
+      state = .sourceDisabled
     } catch DailySummaryFailure.generationUnavailable {
       state = .intelligenceUnavailable
     } catch {

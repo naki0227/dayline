@@ -13,6 +13,7 @@ func liveMeetingBuildsAndPersistsSessionScopedState() async throws {
     contextBuilder: contextBuilder,
     runtime: StubIntelligenceRuntime(),
     artifactStore: artifactStore,
+    sourcePolicy: DaylineSourcePolicyStore(policy: .allEnabled),
     now: { Date(timeIntervalSince1970: 1_789_320_660) },
     bundleID: { "018f6ea2-8f44-7f00-8000-000000000921" },
     artifactID: { "018f6ea2-8f44-7f00-8000-000000000922" },
@@ -43,6 +44,7 @@ func liveMeetingRejectsInvalidAndEmptySessionsBeforeGeneration() async throws {
     contextBuilder: LiveContextBuilderFake(bundle: liveContextBundle(items: [])),
     runtime: StubIntelligenceRuntime(),
     artifactStore: LiveArtifactStoreFake(),
+    sourcePolicy: DaylineSourcePolicyStore(policy: .allEnabled),
     now: { Date(timeIntervalSince1970: 1_789_320_660) }
   )
   let timezone = try #require(TimeZone(identifier: "Asia/Tokyo"))
@@ -63,6 +65,30 @@ func liveMeetingRejectsInvalidAndEmptySessionsBeforeGeneration() async throws {
       language: "ja"
     )
   }
+}
+
+@Test
+func liveMeetingRejectsGenerationWhenAudioIsDisabled() async throws {
+  let contextBuilder = LiveContextBuilderFake(bundle: liveContextBundle(items: [liveContextItem()]))
+  let service = try LiveMeetingService(
+    contextBuilder: contextBuilder,
+    runtime: StubIntelligenceRuntime(),
+    artifactStore: LiveArtifactStoreFake(),
+    sourcePolicy: DaylineSourcePolicyStore(
+      policy: DaylineSourcePolicy(enabledSources: [.calendar])
+    ),
+    now: { Date(timeIntervalSince1970: 1_789_320_660) }
+  )
+
+  await #expect(throws: LiveMeetingFailure.sourceDisabled) {
+    try await service.generate(
+      sessionID: "018f6ea2-8f44-7f00-8000-000000000920",
+      startedAt: Date(timeIntervalSince1970: 1_789_320_600),
+      timezone: try #require(TimeZone(identifier: "Asia/Tokyo")),
+      language: "ja"
+    )
+  }
+  #expect(await contextBuilder.request == nil)
 }
 
 private actor LiveContextBuilderFake: StoredContextBuilding {

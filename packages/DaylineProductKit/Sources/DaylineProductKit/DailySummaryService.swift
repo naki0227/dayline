@@ -5,6 +5,7 @@ import Foundation
 public enum DailySummaryFailure: Error, Equatable, Sendable {
   case invalidDay
   case invalidProfile
+  case sourceDisabled
   case contextUnavailable
   case emptyContext
   case generationUnavailable
@@ -23,6 +24,7 @@ public struct DailySummaryService: Sendable {
   private let contextBuilder: any StoredContextBuilding
   private let runtime: any IntelligenceRuntime
   private let artifactStore: any SemanticArtifactPersisting
+  private let sourcePolicy: any DaylineSourcePolicyReading
   private let profiles: DaylineProfileCatalog
   private let now: @Sendable () -> Date
   private let bundleID: @Sendable () -> String
@@ -33,6 +35,7 @@ public struct DailySummaryService: Sendable {
     contextBuilder: any StoredContextBuilding,
     runtime: any IntelligenceRuntime,
     artifactStore: any SemanticArtifactPersisting,
+    sourcePolicy: any DaylineSourcePolicyReading,
     profiles: DaylineProfileCatalog = DaylineProfileCatalog(),
     now: @escaping @Sendable () -> Date = Date.init,
     bundleID: @escaping @Sendable () -> String = { UUID().uuidString.lowercased() },
@@ -42,6 +45,7 @@ public struct DailySummaryService: Sendable {
     self.contextBuilder = contextBuilder
     self.runtime = runtime
     self.artifactStore = artifactStore
+    self.sourcePolicy = sourcePolicy
     self.profiles = profiles
     self.now = now
     self.bundleID = bundleID
@@ -62,10 +66,15 @@ public struct DailySummaryService: Sendable {
     }
     let timestamp = now()
     let window = try dayWindow(containing: date, timezone: timezone)
+    let policy = await sourcePolicy.currentPolicy()
+    let sources = policy.enabledSources
+      .filter { profile.sources.contains($0.rawValue) }
+      .map { ContextSourceDocument(type: $0.rawValue) }
+    guard !sources.isEmpty else { throw DailySummaryFailure.sourceDisabled }
     let context: ContextBundleDocument
     do {
       context = try await contextBuilder.buildStoredContext(
-        contextRequest(profile: profile, window: window, builtAt: timestamp)
+        contextRequest(profile: profile, window: window, builtAt: timestamp, sources: sources)
       )
     } catch {
       throw DailySummaryFailure.contextUnavailable
@@ -101,7 +110,8 @@ public struct DailySummaryService: Sendable {
   private func contextRequest(
     profile: DaylineAIProfile,
     window: OneDayWindow,
-    builtAt: Date
+    builtAt: Date,
+    sources: [ContextSourceDocument]
   ) -> StoredContextRequestDocument {
     StoredContextRequestDocument(
       dayId: window.dayID,
@@ -126,7 +136,7 @@ public struct DailySummaryService: Sendable {
       query: StoredContextQueryDocument(
         start: iso8601(window.start),
         end: iso8601(window.end),
-        sources: [],
+        sources: sources,
         sessionId: nil,
         projectHint: nil,
         maximumSensitivity: .sensitive,

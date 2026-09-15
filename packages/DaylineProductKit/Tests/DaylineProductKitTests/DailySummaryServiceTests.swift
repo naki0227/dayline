@@ -40,6 +40,7 @@ func generatesAndPersistsADailySummaryFromOneDayContext() async throws {
     contextBuilder: contextBuilder,
     runtime: StubIntelligenceRuntime(),
     artifactStore: artifactStore,
+    sourcePolicy: DaylineSourcePolicyStore(policy: .allEnabled),
     now: { Date(timeIntervalSince1970: 1_789_344_000) },
     bundleID: { "018f6ea2-8f44-7f00-8000-000000000911" },
     artifactID: { "018f6ea2-8f44-7f00-8000-000000000912" },
@@ -56,6 +57,7 @@ func generatesAndPersistsADailySummaryFromOneDayContext() async throws {
 
   #expect(request?.dayId.localDate == "2026-09-14")
   #expect(request?.plan.profile.id == "daily-summary")
+  #expect(request?.query.sources.map(\.type) == ["audio", "browser", "shell", "calendar"])
   #expect(request?.plan.suggestedTools.map(\.name) == ["calendar", "notion"])
   #expect(artifact.sourceEventIds == ["018f6ea2-8f44-7f00-8000-000000000901"])
   #expect(artifact.generation.promptId == "daily-summary")
@@ -67,13 +69,36 @@ func doesNotInvokeTheModelForAnEmptyDay() async throws {
   let service = DailySummaryService(
     contextBuilder: ContextBuilderFake(bundle: contextBundle(items: [])),
     runtime: StubIntelligenceRuntime(),
-    artifactStore: ArtifactStoreFake()
+    artifactStore: ArtifactStoreFake(),
+    sourcePolicy: DaylineSourcePolicyStore(policy: .allEnabled)
   )
   let timezone = try #require(TimeZone(identifier: "Asia/Tokyo"))
 
   await #expect(throws: DailySummaryFailure.emptyContext) {
     try await service.generate(for: Date(), timezone: timezone, language: "ja")
   }
+}
+
+@Test
+func doesNotBuildContextWhenEverySourceIsDisabled() async throws {
+  let contextBuilder = ContextBuilderFake(bundle: contextBundle(items: [contextItem()]))
+  let service = DailySummaryService(
+    contextBuilder: contextBuilder,
+    runtime: StubIntelligenceRuntime(),
+    artifactStore: ArtifactStoreFake(),
+    sourcePolicy: DaylineSourcePolicyStore(
+      policy: DaylineSourcePolicy(enabledSources: [])
+    )
+  )
+
+  await #expect(throws: DailySummaryFailure.sourceDisabled) {
+    try await service.generate(
+      for: Date(),
+      timezone: try #require(TimeZone(identifier: "Asia/Tokyo")),
+      language: "ja"
+    )
+  }
+  #expect(await contextBuilder.request == nil)
 }
 
 private func contextBundle(items: [ContextItemDocument]) -> ContextBundleDocument {

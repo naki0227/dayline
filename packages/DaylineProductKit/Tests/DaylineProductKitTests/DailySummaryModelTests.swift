@@ -39,12 +39,17 @@ func exposesContentFreeEmptyAndUnavailableStates() async {
   let unavailable = DailySummaryModel(
     generator: DailySummaryGeneratorFake(result: .failure(.generationUnavailable))
   )
+  let sourceDisabled = DailySummaryModel(
+    generator: DailySummaryGeneratorFake(result: .failure(.sourceDisabled))
+  )
 
   await empty.generate()
   await unavailable.generate()
+  await sourceDisabled.generate()
 
   #expect(empty.state == .empty)
   #expect(unavailable.state == .intelligenceUnavailable)
+  #expect(sourceDisabled.state == .sourceDisabled)
 }
 
 private func dailyArtifact() -> SemanticArtifactDocument {

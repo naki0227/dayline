@@ -8,6 +8,7 @@ public enum LiveMeetingLoadState: Equatable, Sendable {
   case updating
   case ready
   case empty
+  case sourceDisabled
   case intelligenceUnavailable
   case failed
 }
@@ -80,6 +81,8 @@ public final class LiveMeetingModel {
       state = .ready
     } catch LiveMeetingFailure.emptyContext {
       state = .empty
+    } catch LiveMeetingFailure.sourceDisabled {
+      state = .sourceDisabled
     } catch LiveMeetingFailure.generationUnavailable {
       state = .intelligenceUnavailable
     } catch {

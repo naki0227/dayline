@@ -35,16 +35,22 @@ func liveMeetingExposesEmptyAndUnavailableStates() async {
   let unavailable = LiveMeetingModel(
     generator: LiveMeetingGeneratorFake(result: .failure(.generationUnavailable))
   )
+  let sourceDisabled = LiveMeetingModel(
+    generator: LiveMeetingGeneratorFake(result: .failure(.sourceDisabled))
+  )
   let sessionID = "018f6ea2-8f44-7f00-8000-000000000920"
   let startedAt = Date(timeIntervalSince1970: 1_789_320_600)
 
   empty.begin(sessionID: sessionID, startedAt: startedAt)
   unavailable.begin(sessionID: sessionID, startedAt: startedAt)
+  sourceDisabled.begin(sessionID: sessionID, startedAt: startedAt)
   await empty.refresh()
   await unavailable.refresh()
+  await sourceDisabled.refresh()
 
   #expect(empty.state == .empty)
   #expect(unavailable.state == .intelligenceUnavailable)
+  #expect(sourceDisabled.state == .sourceDisabled)
 }
 
 private struct LiveMeetingGeneratorFake: LiveMeetingGenerating {

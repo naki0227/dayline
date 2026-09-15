@@ -5,6 +5,7 @@ import Foundation
 public enum LiveMeetingFailure: Error, Equatable, Sendable {
   case invalidProfile
   case invalidSession
+  case sourceDisabled
   case contextUnavailable
   case emptyContext
   case generationUnavailable
@@ -28,6 +29,7 @@ public struct LiveMeetingService: LiveMeetingGenerating, Sendable {
   private let contextBuilder: any StoredContextBuilding
   private let runtime: any IntelligenceRuntime
   private let artifactStore: any SemanticArtifactPersisting
+  private let sourcePolicy: any DaylineSourcePolicyReading
   private let profile: DaylineAIProfile
   private let now: @Sendable () -> Date
   private let bundleID: @Sendable () -> String
@@ -38,6 +40,7 @@ public struct LiveMeetingService: LiveMeetingGenerating, Sendable {
     contextBuilder: any StoredContextBuilding,
     runtime: any IntelligenceRuntime,
     artifactStore: any SemanticArtifactPersisting,
+    sourcePolicy: any DaylineSourcePolicyReading,
     profiles: DaylineProfileCatalog = DaylineProfileCatalog(),
     now: @escaping @Sendable () -> Date = Date.init,
     bundleID: @escaping @Sendable () -> String = { UUID().uuidString.lowercased() },
@@ -56,6 +59,7 @@ public struct LiveMeetingService: LiveMeetingGenerating, Sendable {
     self.contextBuilder = contextBuilder
     self.runtime = runtime
     self.artifactStore = artifactStore
+    self.sourcePolicy = sourcePolicy
     self.profile = profile
     updateIntervalSeconds = interval
     self.now = now
@@ -75,6 +79,8 @@ public struct LiveMeetingService: LiveMeetingGenerating, Sendable {
     }
     let timestamp = now()
     guard startedAt < timestamp else { throw LiveMeetingFailure.invalidSession }
+    let policy = await sourcePolicy.currentPolicy()
+    guard policy.isEnabled(.audio) else { throw LiveMeetingFailure.sourceDisabled }
     let dayID = dayID(for: startedAt, timezone: timezone)
     let context: ContextBundleDocument
     do {
