@@ -47,6 +47,27 @@ func deniedNotionProposalNeverReachesTheWriter() async throws {
   #expect(await writer.proposals.isEmpty)
 }
 
+@MainActor
+@Test
+func exportModelPublishesConfirmationAndSuccessStates() async {
+  let writer = NotionWriterProbe()
+  let model = NotionExportModel(
+    service: NotionExportService(
+      policy: FixedActionPolicy(decision: .ask),
+      writer: writer
+    )
+  )
+
+  model.prepare(artifact: notionArtifact(), parentPageID: "parent", title: "Summary")
+  #expect(model.state == .awaitingConfirmation)
+  #expect(model.pending != nil)
+
+  await model.confirm()
+  #expect(model.state == .succeeded)
+  #expect(model.pending == nil)
+  #expect(model.receipt?.remoteID == "notion-page")
+}
+
 private struct FixedActionPolicy: ExternalActionPolicyEvaluating {
   let decision: ExternalActionDecision
 
