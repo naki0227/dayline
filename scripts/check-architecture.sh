@@ -39,4 +39,9 @@ reject_pattern \
   '^import (FoundationModels|SwiftUI|SwiftData|CloudKit|ContextCoreFFIKit)$' \
   'ContextCaptureKit must not own model runtime, UI, synchronization, or FFI'
 
+reject_pattern \
+  integrations \
+  '^import (SwiftUI|FoundationModels|ContextCaptureKit|ContextCoreFFIKit)$' \
+  'Integration adapters must not own UI, capture, model runtime, or generated FFI'
+
 exit "$status"

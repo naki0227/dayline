@@ -1,0 +1,29 @@
+name: CI / Integrations
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-integrations-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  notion:
+    name: Notion adapter
+    runs-on: macos-15
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Format
+        run: swift format lint --recursive --strict integrations/NotionKit
+      - name: Type check
+        run: swift build --package-path integrations/NotionKit
+      - name: Unit tests
+        run: swift test --package-path integrations/NotionKit --parallel
+      - name: Release build
+        run: swift build --package-path integrations/NotionKit -c release
