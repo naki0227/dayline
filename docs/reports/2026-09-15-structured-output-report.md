@@ -61,7 +61,8 @@ FFI、CD signing、外部送信には変更なし。
 - `swift test --package-path packages/AppleIntelligenceKit --parallel`: 8件成功。
 - `swift test --package-path packages/DaylineProductKit --parallel`: 12件成功。
 - `make app-build app-test`: iOS build成功、XCUITest 3件成功。
-- `make ci`: ドキュメント更新後に全体確認する。
+- `make ci`: 成功。初回は古いSwiftPM build planが新規sourceを認識せず失敗したが、
+  FFIKitの生成build cacheだけをcleanし、同一コマンドの再実行で全項目成功した。
 
 ## CIで確認される内容
 

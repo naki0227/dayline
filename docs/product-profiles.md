@@ -39,6 +39,12 @@ read and Notion write declarations become suggested tools in a ContextBundle. An
 external write must still become an ActionProposal and pass deterministic permission
 evaluation before an integration may execute it.
 
+Source declarations are also upper bounds, not grants. The query source list is the
+intersection of the versioned profile and the user's persisted `DaylineSourcePolicy`.
+Audio is the only default-enabled source. Browser, shell, and calendar are opt-in;
+disabling audio immediately ends active Daily or Live capture. An empty intersection
+returns an explicit disabled state before Rust is called.
+
 ## Testing
 
 Unit tests cover profile invariants, One Day boundaries, session queries, 30-second

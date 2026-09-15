@@ -74,7 +74,9 @@ iOS 26 microphone-to-SpeechAnalyzer stream, session-scoped finalized evidence, a
 profile-driven 30-second meeting-state update loop. Daily and Live artifacts now carry
 typed summary, highlight, topic, decision, TODO, idea, and question groups; the iOS UI
 shows non-empty groups and their evidence count while preserving legacy summaries.
-Privacy/source controls, explicit Notion output, and macOS collectors remain unfinished
-Phase 1 work.
+The app now exposes persisted audio/browser/shell/calendar controls, defaults to audio
+only, stops capture when audio is revoked, filters context through both profile and
+user policy, and visibly states that processing is local-only. Explicit Notion output
+and macOS collectors remain unfinished Phase 1 work.
 Product features are tracked in
 [`docs/TODO.md`](docs/TODO.md).

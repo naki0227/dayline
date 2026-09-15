@@ -2,11 +2,11 @@
 
 ## In progress
 
-- [ ] Add clear privacy and per-source controls without weakening local-only defaults.
+- [ ] Add Notion as an explicit SemanticArtifact output behind ActionProposal policy.
 
 ## Not started
 
-- [ ] Add Notion write and Calendar read/write adapters behind ActionProposal policy.
+- [ ] Add Calendar read/write adapters behind source allowlisting and ActionProposal policy.
 - [ ] Add Live Activity, App Intent, and Control Center capture controls.
 - [ ] Add the macOS Terminal and Chrome collector boundaries.
 - [ ] Add CloudKit synchronization for explicitly allowed lightweight records;
@@ -71,6 +71,10 @@
       TODOs, ideas, and questions while preserving source provenance.
 - [x] Decode structured artifacts in DaylineProductKit and render reusable, non-empty
       Daily and Live sections with an evidence count in the iOS app.
+- [x] Add persisted, typed audio/browser/shell/calendar source controls with audio-only
+      defaults, immediate capture shutdown, and profile/user-policy query intersection.
+- [x] Show an explicit local-only processing policy and test that disabling audio
+      prevents capture without turning an empty source list into an unrestricted query.
 
 ## On hold
 
@@ -93,5 +97,5 @@
    `docs/adr/0005-uniffi-json-boundary.md`.
 2. Read `docs/product-profiles.md`, `docs/capture.md`, and GitHub Issue #11.
 3. Run `make ci`.
-4. Implement privacy and source controls as product policy and composition state;
-   do not put authorization decisions in SwiftUI or the model runtime.
+4. Implement explicit Notion output by converting a selected SemanticArtifact to an
+   ActionProposal, evaluating deterministic policy, and requiring user confirmation.

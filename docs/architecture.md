@@ -78,6 +78,12 @@ Migration and rollback details are in `docs/storage.md`.
 - Credentials are stored in Keychain locally and GitHub Secrets in CD.
 - Logs must contain identifiers needed for diagnosis but no raw secrets or
   unnecessary personal content.
+- `DaylineSourcePolicy` is the shared user allowlist. Product services intersect it
+  with profile declarations before querying Rust. An empty intersection fails closed;
+  it is never encoded as Rust's intentionally broad empty-source filter.
+- The app persists only source identifiers in UserDefaults. Disabling audio stops
+  active Daily/Live capture before the new policy is published. Detailed context and
+  connector credentials are not part of this settings record.
 
 ## Test strategy
 
@@ -152,3 +158,6 @@ Migration and rollback details are in `docs/storage.md`.
   groups into the `sections_v1` content attribute without changing the v1 artifact
   envelope. DaylineProductKit owns decoding and presentation DTOs; SwiftUI only maps
   those DTOs to reusable Daily and Live sections. Legacy artifacts remain readable.
+- A single actor-backed source-policy snapshot is injected into Daily and Live
+  services. SwiftUI requests changes through the app composition model and does not
+  decide query authorization itself.
