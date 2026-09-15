@@ -8,6 +8,17 @@ public enum RustContextBridgeError: Error, Equatable {
   case rustFailure
 }
 
+public enum ActionPermissionDecision: String, Codable, Equatable, Sendable {
+  case allow
+  case ask
+  case deny
+}
+
+public struct ActionPolicyEvaluation: Codable, Equatable, Sendable {
+  public let decision: ActionPermissionDecision
+  public let reason: String
+}
+
 public struct RustContextBridge: Sendable {
   public init() {}
 
@@ -65,6 +76,28 @@ public struct RustContextBridge: Sendable {
       document: event,
       operation: persistContextEvent
     )
+  }
+
+  public func evaluateAction(
+    _ proposal: ActionProposalDocument
+  ) throws -> ActionPolicyEvaluation {
+    do {
+      let document = try ContractCodec.encode(proposal)
+      guard let json = String(data: document, encoding: .utf8) else {
+        throw RustContextBridgeError.invalidUTF8
+      }
+      let response = try evaluateActionProposal(proposalJson: json)
+      guard let data = response.data(using: .utf8) else {
+        throw RustContextBridgeError.invalidUTF8
+      }
+      return try JSONDecoder().decode(ActionPolicyEvaluation.self, from: data)
+    } catch let error as RustContextBridgeError {
+      throw error
+    } catch is DecodingError {
+      throw RustContextBridgeError.invalidContract
+    } catch {
+      throw RustContextBridgeError.rustFailure
+    }
   }
 
   public func shrinkContext(

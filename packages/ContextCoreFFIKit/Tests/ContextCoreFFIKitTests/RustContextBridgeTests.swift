@@ -30,6 +30,17 @@ func shrinksContextThroughTheGeneratedRustBinding() throws {
 }
 
 @Test
+func evaluatesNotionOutputAsRequiringConfirmation() throws {
+  let proposalData = try fixtureData("contracts/fixtures/action-proposal-v1.json")
+  let proposal = try ContractCodec.decode(ActionProposalDocument.self, from: proposalData)
+
+  let evaluation = try RustContextBridge().evaluateAction(proposal)
+
+  #expect(evaluation.decision == .ask)
+  #expect(evaluation.reason == "proposal_requires_confirmation")
+}
+
+@Test
 func persistsAnEventThroughTheGeneratedRustBinding() throws {
   let event = try fixtureData("contracts/fixtures/context-event-v1.json")
   let database = FileManager.default.temporaryDirectory
