@@ -1,5 +1,5 @@
-SWIFT_PACKAGES := packages/ContextCoreKit packages/AppleIntelligenceKit packages/ContextCaptureKit packages/DaylineProductKit
-SWIFT_CHECK_PATHS := App AppUITests packages/ContextCoreKit packages/AppleIntelligenceKit packages/ContextCaptureKit packages/DaylineProductKit packages/ContextCoreFFIKit/Sources/ContextCoreFFIKit packages/ContextCoreFFIKit/Tests
+SWIFT_PACKAGES := packages/ContextCoreKit packages/AppleIntelligenceKit packages/ContextCaptureKit packages/DaylineProductKit integrations/NotionKit
+SWIFT_CHECK_PATHS := App AppUITests packages/ContextCoreKit packages/AppleIntelligenceKit packages/ContextCaptureKit packages/DaylineProductKit packages/ContextCoreFFIKit/Sources/ContextCoreFFIKit packages/ContextCoreFFIKit/Tests integrations/NotionKit
 SWIFT_ENV := CLANG_MODULE_CACHE_PATH=$(CURDIR)/.build/clang-module-cache SWIFTPM_MODULECACHE_OVERRIDE=$(CURDIR)/.build/swift-module-cache
 APP_PROJECT := Dayline.xcodeproj
 APP_SCHEME := Dayline
