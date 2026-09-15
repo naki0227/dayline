@@ -26,3 +26,15 @@ SemanticArtifact must first become an ActionProposal and pass deterministic poli
 credentials stay in platform-secure storage and outside model context. Raw audio,
 transcripts, browser history, terminal context, database paths, and signing identifiers
 must not be logged or sent by default.
+
+## Notion output
+
+Notion export sends only the selected SemanticArtifact's rendered summary sections and
+provenance identifiers. It does not send raw audio, full transcript records, browser or
+terminal history, the SQLite path, or signing configuration. Rust evaluates the
+ActionProposal before the confirmation prompt and again immediately before execution.
+
+The Notion access token is stored with a device-only Keychain accessibility class and
+is never persisted in UserDefaults. The parent page ID is non-secret configuration and
+may be stored in UserDefaults. User-facing and internal integration errors are finite,
+content-free categories; response bodies and credentials are not logged.

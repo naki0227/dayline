@@ -76,7 +76,9 @@ typed summary, highlight, topic, decision, TODO, idea, and question groups; the 
 shows non-empty groups and their evidence count while preserving legacy summaries.
 The app now exposes persisted audio/browser/shell/calendar controls, defaults to audio
 only, stops capture when audio is revoked, filters context through both profile and
-user policy, and visibly states that processing is local-only. Explicit Notion output
-and macOS collectors remain unfinished Phase 1 work.
+user policy, and visibly states that processing is local-only. A selected artifact can
+be exported to Notion only after Rust policy evaluation and explicit confirmation;
+the access token stays in Keychain and raw capture data is not included. macOS Terminal
+and Chrome collectors remain unfinished Phase 1 work.
 Product features are tracked in
 [`docs/TODO.md`](docs/TODO.md).

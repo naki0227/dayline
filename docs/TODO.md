@@ -2,13 +2,12 @@
 
 ## In progress
 
-- [ ] Add Notion as an explicit SemanticArtifact output behind ActionProposal policy.
+- [ ] Add the macOS Terminal and Chrome collector boundaries.
 
 ## Not started
 
 - [ ] Add Calendar read/write adapters behind source allowlisting and ActionProposal policy.
 - [ ] Add Live Activity, App Intent, and Control Center capture controls.
-- [ ] Add the macOS Terminal and Chrome collector boundaries.
 - [ ] Add CloudKit synchronization for explicitly allowed lightweight records;
       never synchronize the SQLite file.
 - [ ] Add Swift dependency auditing when third-party Swift dependencies are introduced.
@@ -75,6 +74,8 @@
       defaults, immediate capture shutdown, and profile/user-policy query intersection.
 - [x] Show an explicit local-only processing policy and test that disabling audio
       prevents capture without turning an empty source list into an unrestricted query.
+- [x] Add explicit Notion output for a selected SemanticArtifact behind Rust
+      ActionProposal policy, confirmation UI, Keychain credentials, and adapter tests.
 
 ## On hold
 
@@ -97,5 +98,5 @@
    `docs/adr/0005-uniffi-json-boundary.md`.
 2. Read `docs/product-profiles.md`, `docs/capture.md`, and GitHub Issue #11.
 3. Run `make ci`.
-4. Implement explicit Notion output by converting a selected SemanticArtifact to an
-   ActionProposal, evaluating deterministic policy, and requiring user confirmation.
+4. Implement opt-in macOS Terminal and Chrome collector boundaries that emit only
+   normalized ContextEvents and obey the shared source policy.

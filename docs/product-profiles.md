@@ -45,6 +45,12 @@ Audio is the only default-enabled source. Browser, shell, and calendar are opt-i
 disabling audio immediately ends active Daily or Live capture. An empty intersection
 returns an explicit disabled state before Rust is called.
 
+Notion export is initiated only from a ready Daily artifact. ProductKit renders its
+structured sections to Markdown and creates a versioned `notion.page.create`
+ActionProposal containing source artifact/event IDs. Rust policy returns `ask`; the app
+shows the target parent and sends only after explicit confirmation. The integration
+revalidates the approved proposal immediately before the network request.
+
 ## Testing
 
 Unit tests cover profile invariants, One Day boundaries, session queries, 30-second
@@ -52,3 +58,5 @@ scheduling, empty-context short circuits, runtime invocation, artifact persisten
 structured section decoding, legacy fallback, and presentation state. App UI tests
 inject deterministic empty generators and audio sources so CI never depends on Apple
 Intelligence, microphone permission, or private context outside the local process.
+The Notion suite uses an in-memory HTTP transport and fake credential store; CI never
+sends a real page or reads a developer token.
