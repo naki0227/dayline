@@ -31,6 +31,20 @@ func semanticArtifactRoundTrips() throws {
 }
 
 @Test
+func actionProposalRoundTripsWithRequiredNullAndGenericArguments() throws {
+  let fixture = try fixtureData("contracts/fixtures/action-proposal-v1.json")
+  let proposal = try ContractCodec.decode(ActionProposalDocument.self, from: fixture)
+  try proposal.validateVersion()
+  let encoded = try ContractCodec.encode(proposal)
+  let value = try #require(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+  let decoded = try ContractCodec.decode(ActionProposalDocument.self, from: encoded)
+
+  #expect(decoded == proposal)
+  #expect(proposal.arguments["body"] == .string("The ContextEvent contract was completed."))
+  #expect(value.keys.contains("expires_at"))
+}
+
+@Test
 func textContextEventEncodesTheV1Shape() throws {
   let event = TextContextEventDocument(
     id: "018f6ea2-8f44-7f00-8000-000000000901",
