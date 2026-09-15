@@ -2,8 +2,7 @@
 
 ## In progress
 
-- [ ] Expand Apple structured output and iOS presentation into summary, decisions,
-      TODOs, ideas, and questions while preserving source provenance.
+- [ ] Add clear privacy and per-source controls without weakening local-only defaults.
 
 ## Not started
 
@@ -68,6 +67,10 @@
       volatile results remain presentation-only.
 - [x] Add profile-driven 30-second Live Meeting context updates, artifact persistence,
       visible Live state, exclusive audio ownership, and deterministic UI coverage.
+- [x] Expand Apple structured output into summary, highlights, topics, decisions,
+      TODOs, ideas, and questions while preserving source provenance.
+- [x] Decode structured artifacts in DaylineProductKit and render reusable, non-empty
+      Daily and Live sections with an evidence count in the iOS app.
 
 ## On hold
 
@@ -90,5 +93,5 @@
    `docs/adr/0005-uniffi-json-boundary.md`.
 2. Read `docs/product-profiles.md`, `docs/capture.md`, and GitHub Issue #11.
 3. Run `make ci`.
-4. Extend the generated model schema and artifact presentation into the structured
-   Phase 1 sections without changing the language-neutral v1 record envelope.
+4. Implement privacy and source controls as product policy and composition state;
+   do not put authorization decisions in SwiftUI or the model runtime.

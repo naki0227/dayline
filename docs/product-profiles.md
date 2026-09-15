@@ -14,9 +14,10 @@ It builds a stored ContextBundle with the `daily-summary` profile, refuses to ca
 model for an empty bundle, generates one traceable SemanticArtifact, and persists it
 to the same Rust-owned SQLite store used by capture.
 
-Current UI output is the artifact text with explicit idle, generating, empty,
-runtime-unavailable, ready, and failed states. Structured cards for decisions, todos,
-ideas, and questions remain Phase 1 work.
+The UI keeps explicit idle, generating, empty, runtime-unavailable, ready, and failed
+states. Ready artifacts are decoded into summary, highlights, topics, decisions,
+TODOs, ideas, and questions. Empty groups are omitted, the source evidence count is
+visible, and legacy artifacts fall back to their plain summary.
 
 ## Live Meeting v1
 
@@ -42,6 +43,6 @@ evaluation before an integration may execute it.
 
 Unit tests cover profile invariants, One Day boundaries, session queries, 30-second
 scheduling, empty-context short circuits, runtime invocation, artifact persistence,
-and presentation state. App UI tests inject deterministic empty generators and audio
-sources so CI never depends on Apple Intelligence, microphone permission, or private
-context outside the local process.
+structured section decoding, legacy fallback, and presentation state. App UI tests
+inject deterministic empty generators and audio sources so CI never depends on Apple
+Intelligence, microphone permission, or private context outside the local process.

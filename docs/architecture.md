@@ -148,3 +148,7 @@ Migration and rollback details are in `docs/storage.md`.
 - Final Live segments receive a meeting session ID before persistence. ProductKit
   queries only that session and uses the profile's 30-second interval for incremental
   generation; volatile speech never reaches context assembly.
+- AppleIntelligenceKit owns the typed generated schema and encodes its seven semantic
+  groups into the `sections_v1` content attribute without changing the v1 artifact
+  envelope. DaylineProductKit owns decoding and presentation DTOs; SwiftUI only maps
+  those DTOs to reusable Daily and Live sections. Legacy artifacts remain readable.

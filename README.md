@@ -69,10 +69,12 @@ are persisted through the real Rust SQLite boundary.
 The versioned Daily profile now queries the local store with a timezone-correct
 One Day window, sends the assembled ContextBundle through the Apple runtime, persists
 the resulting SemanticArtifact, and exposes explicit empty/unavailable states in the
-iOS client. Live Meeting, external outputs, and macOS collectors remain tracked Phase
-1 work rather than implied completed features. Live Meeting now has an independent
+iOS client. Live Meeting has an independent
 iOS 26 microphone-to-SpeechAnalyzer stream, session-scoped finalized evidence, and a
-profile-driven 30-second meeting-state update loop; external outputs and macOS
-collectors remain unfinished.
+profile-driven 30-second meeting-state update loop. Daily and Live artifacts now carry
+typed summary, highlight, topic, decision, TODO, idea, and question groups; the iOS UI
+shows non-empty groups and their evidence count while preserving legacy summaries.
+Privacy/source controls, explicit Notion output, and macOS collectors remain unfinished
+Phase 1 work.
 Product features are tracked in
 [`docs/TODO.md`](docs/TODO.md).

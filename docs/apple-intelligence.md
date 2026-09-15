@@ -28,8 +28,15 @@ deterministic 75% reduction. Retries are bounded.
 ## Structured output and errors
 
 The Foundation Models implementation uses an internal `@Generable` output with a
-summary and key points, then maps it to the language-neutral SemanticArtifact
-contract. Prompt ID/version and evidence IDs are retained in provenance.
+summary, highlights, topics, decisions, TODOs, ideas, and questions. The plain summary
+remains the SemanticArtifact content text. The complete structured payload is encoded
+as deterministic JSON in the versioned `sections_v1` content attribute, so the v1
+language-neutral record envelope does not change. Language, prompt ID/version, and
+evidence IDs remain traceable in attributes and provenance.
+
+`SemanticSectionsCodec` is the only encoder/decoder for this compatibility payload.
+Product and UI layers consume its typed representation and gracefully fall back to
+the plain summary when reading an older or malformed artifact.
 
 Errors are mapped to content-free categories such as unavailable, context window,
 guardrail, unsupported language, decoding, rate limit, concurrent request, and
