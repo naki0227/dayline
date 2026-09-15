@@ -4,6 +4,7 @@ import ContextCoreFFIKit
 import ContextCoreKit
 import DaylineProductKit
 import Foundation
+import NotionKit
 
 @MainActor
 struct AppEnvironment {
@@ -14,6 +15,9 @@ struct AppEnvironment {
   let sourcePolicyStore: DaylineSourcePolicyStore
   let sourcePolicyPersistence: AppSourcePolicyPersistence
   let initialSourcePolicy: DaylineSourcePolicy
+  let notionExport: NotionExportModel
+  let notionCredentials: any NotionCredentialStoring
+  let notionConfiguration: AppNotionConfiguration
 
   static func make(processInfo: ProcessInfo = .processInfo) -> AppEnvironment {
     let store = AppCaptureEnvironment.makeContextStore()
@@ -21,48 +25,53 @@ struct AppEnvironment {
     let isUITesting = processInfo.arguments.contains("--ui-testing")
     let initialPolicy = isUITesting ? DaylineSourcePolicy.localDefault : persistence.load()
     let sourcePolicyStore = DaylineSourcePolicyStore(policy: initialPolicy)
-    if isUITesting {
-      return makeUITest(
-        processInfo: processInfo,
-        store: store,
-        policyStore: sourcePolicyStore,
-        persistence: persistence,
-        initialPolicy: initialPolicy
-      )
-    }
-    return makeProduction(
-      processInfo: processInfo,
+    let notionCredentials: any NotionCredentialStoring =
+      isUITesting
+      ? InMemoryNotionCredentialStore()
+      : KeychainNotionCredentialStore()
+    let notionWriter: any NotionOutputWriting =
+      isUITesting
+      ? DeterministicNotionWriter()
+      : NotionPageWriter(credentials: notionCredentials)
+    let notionExport = NotionExportModel(
+      service: NotionExportService(policy: AppActionPolicyAdapter(), writer: notionWriter)
+    )
+    let shared = AppSharedComposition(
       store: store,
       policyStore: sourcePolicyStore,
-      persistence: persistence,
-      initialPolicy: initialPolicy
+      policyPersistence: persistence,
+      initialPolicy: initialPolicy,
+      notionExport: notionExport,
+      notionCredentials: notionCredentials,
+      notionConfiguration: AppNotionConfiguration()
     )
+    if isUITesting {
+      return makeUITest(processInfo: processInfo, shared: shared)
+    }
+    return makeProduction(processInfo: processInfo, shared: shared)
   }
 
   private static func makeProduction(
     processInfo: ProcessInfo,
-    store: any AppContextStore,
-    policyStore: DaylineSourcePolicyStore,
-    persistence: AppSourcePolicyPersistence,
-    initialPolicy: DaylineSourcePolicy
+    shared: AppSharedComposition
   ) -> AppEnvironment {
     let bridge = RustContextBridge()
     let reducer = ContextReducer { context, maximumUnits in
       try bridge.shrinkContext(context, maximumUnits: maximumUnits)
     }
     let dailyService = DailySummaryService(
-      contextBuilder: store,
+      contextBuilder: shared.store,
       runtime: AppleFoundationModelRuntime(reducer: reducer),
-      artifactStore: store,
-      sourcePolicy: policyStore
+      artifactStore: shared.store,
+      sourcePolicy: shared.policyStore
     )
     let liveGenerator: any LiveMeetingGenerating
     do {
       liveGenerator = try LiveMeetingService(
-        contextBuilder: store,
+        contextBuilder: shared.store,
         runtime: AppleFoundationModelRuntime(reducer: reducer),
-        artifactStore: store,
-        sourcePolicy: policyStore
+        artifactStore: shared.store,
+        sourcePolicy: shared.policyStore
       )
     } catch {
       liveGenerator = UnavailableLiveMeetingGenerator()
@@ -70,42 +79,87 @@ struct AppEnvironment {
     return AppEnvironment(
       capture: AppCaptureEnvironment.makeCoordinator(
         processInfo: processInfo,
-        eventStore: store
+        eventStore: shared.store
       ),
       dailySummary: DailySummaryModel(generator: dailyService),
       liveCapture: AppCaptureEnvironment.makeLiveMeetingCoordinator(
         processInfo: processInfo,
-        eventStore: store
+        eventStore: shared.store
       ),
       liveMeeting: LiveMeetingModel(generator: liveGenerator),
-      sourcePolicyStore: policyStore,
-      sourcePolicyPersistence: persistence,
-      initialSourcePolicy: initialPolicy
+      sourcePolicyStore: shared.policyStore,
+      sourcePolicyPersistence: shared.policyPersistence,
+      initialSourcePolicy: shared.initialPolicy,
+      notionExport: shared.notionExport,
+      notionCredentials: shared.notionCredentials,
+      notionConfiguration: shared.notionConfiguration
     )
   }
 
   private static func makeUITest(
     processInfo: ProcessInfo,
-    store: any AppContextStore,
-    policyStore: DaylineSourcePolicyStore,
-    persistence: AppSourcePolicyPersistence,
-    initialPolicy: DaylineSourcePolicy
+    shared: AppSharedComposition
   ) -> AppEnvironment {
     AppEnvironment(
       capture: AppCaptureEnvironment.makeCoordinator(
         processInfo: processInfo,
-        eventStore: store
+        eventStore: shared.store
       ),
-      dailySummary: DailySummaryModel(generator: EmptyDailySummaryGenerator()),
+      dailySummary: DailySummaryModel(generator: uiTestDailyGenerator(processInfo: processInfo)),
       liveCapture: AppCaptureEnvironment.makeLiveMeetingCoordinator(
         processInfo: processInfo,
-        eventStore: store
+        eventStore: shared.store
       ),
       liveMeeting: LiveMeetingModel(generator: EmptyLiveMeetingGenerator()),
-      sourcePolicyStore: policyStore,
-      sourcePolicyPersistence: persistence,
-      initialSourcePolicy: initialPolicy
+      sourcePolicyStore: shared.policyStore,
+      sourcePolicyPersistence: shared.policyPersistence,
+      initialSourcePolicy: shared.initialPolicy,
+      notionExport: shared.notionExport,
+      notionCredentials: shared.notionCredentials,
+      notionConfiguration: shared.notionConfiguration
     )
+  }
+
+  private static func uiTestDailyGenerator(
+    processInfo: ProcessInfo
+  ) -> any DailySummaryGenerating {
+    processInfo.arguments.contains("--ui-testing-notion")
+      ? ReadyDailySummaryGenerator()
+      : EmptyDailySummaryGenerator()
+  }
+}
+
+@MainActor
+private struct AppSharedComposition {
+  let store: any AppContextStore
+  let policyStore: DaylineSourcePolicyStore
+  let policyPersistence: AppSourcePolicyPersistence
+  let initialPolicy: DaylineSourcePolicy
+  let notionExport: NotionExportModel
+  let notionCredentials: any NotionCredentialStoring
+  let notionConfiguration: AppNotionConfiguration
+}
+
+private actor InMemoryNotionCredentialStore: NotionCredentialStoring {
+  private var token: String?
+
+  func accessToken() throws -> String {
+    guard let token else { throw NotionCredentialFailure.unavailable }
+    return token
+  }
+
+  func save(accessToken: String) {
+    token = accessToken
+  }
+
+  func remove() {
+    token = nil
+  }
+}
+
+private struct DeterministicNotionWriter: NotionOutputWriting {
+  func write(_: ActionProposalDocument) -> ExternalOutputReceipt {
+    ExternalOutputReceipt(remoteID: "ui-test-notion-page", remoteURL: nil)
   }
 }
 
@@ -142,5 +196,35 @@ private struct EmptyDailySummaryGenerator: DailySummaryGenerating {
     language _: String
   ) async throws -> SemanticArtifactDocument {
     throw DailySummaryFailure.emptyContext
+  }
+}
+
+private struct ReadyDailySummaryGenerator: DailySummaryGenerating {
+  func generate(
+    for _: Date,
+    timezone _: TimeZone,
+    language _: String
+  ) -> SemanticArtifactDocument {
+    SemanticArtifactDocument(
+      id: "018f6ea2-8f44-7f00-8000-000000000961",
+      createdAt: "2026-09-15T01:00:00Z",
+      dayId: DayIDDocument(localDate: "2026-09-15", timezone: "Asia/Tokyo"),
+      sessionId: nil,
+      kind: "summary",
+      content: SemanticContentDocument(text: "UI test summary", attributes: ["language": "en"]),
+      sourceEventIds: ["018f6ea2-8f44-7f00-8000-000000000962"],
+      sourceArtifactIds: [],
+      confidence: nil,
+      sensitivity: .sensitive,
+      retention: RetentionDocument(type: "days", days: 30),
+      generation: GenerationProvenanceDocument(
+        runtime: "deterministic-test",
+        model: "deterministic-test",
+        promptId: "daily-summary",
+        promptVersion: 1,
+        runId: "018f6ea2-8f44-7f00-8000-000000000963",
+        generatedAt: "2026-09-15T01:00:00Z"
+      )
+    )
   }
 }

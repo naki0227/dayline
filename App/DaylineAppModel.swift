@@ -1,5 +1,6 @@
 import ContextCaptureKit
 import DaylineProductKit
+import NotionKit
 import Observation
 
 @MainActor
@@ -9,6 +10,9 @@ final class DaylineAppModel {
   let dailySummary: DailySummaryModel
   let liveCapture: LiveMeetingCoordinator
   let liveMeeting: LiveMeetingModel
+  let notionExport: NotionExportModel
+  let notionCredentials: any NotionCredentialStoring
+  let notionConfiguration: AppNotionConfiguration
   private(set) var sourcePolicy: DaylineSourcePolicy
 
   private let sourcePolicyStore: DaylineSourcePolicyStore
@@ -19,6 +23,9 @@ final class DaylineAppModel {
     dailySummary = environment.dailySummary
     liveCapture = environment.liveCapture
     liveMeeting = environment.liveMeeting
+    notionExport = environment.notionExport
+    notionCredentials = environment.notionCredentials
+    notionConfiguration = environment.notionConfiguration
     sourcePolicy = environment.initialSourcePolicy
     sourcePolicyStore = environment.sourcePolicyStore
     sourcePolicyPersistence = environment.sourcePolicyPersistence

@@ -25,6 +25,8 @@ packages:
     path: packages/ContextCoreFFIKit
   DaylineProductKit:
     path: packages/DaylineProductKit
+  NotionKit:
+    path: integrations/NotionKit
 
 targets:
   Dayline:
@@ -38,6 +40,7 @@ targets:
       - package: ContextCaptureKit
       - package: ContextCoreFFIKit
       - package: DaylineProductKit
+      - package: NotionKit
     info:
       path: App/Info.plist
       properties:

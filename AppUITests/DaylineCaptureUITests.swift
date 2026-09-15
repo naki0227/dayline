@@ -73,6 +73,31 @@ final class DaylineCaptureUITests: XCTestCase {
     XCTAssertFalse(capture.isEnabled)
   }
 
+  func testNotionExportRequiresExplicitConfirmation() {
+    let app = XCUIApplication()
+    app.launchArguments = ["--ui-testing", "--ui-testing-notion"]
+    app.launch()
+
+    app.buttons["dayline.daily.generate"].tap()
+    let open = app.buttons["dayline.notion.open"]
+    XCTAssertTrue(open.waitForExistence(timeout: 5))
+    open.tap()
+
+    let token = app.secureTextFields["dayline.notion.token"]
+    let parent = app.textFields["dayline.notion.parent"]
+    XCTAssertTrue(token.waitForExistence(timeout: 5))
+    token.tap()
+    token.typeText("unit-test-token")
+    parent.tap()
+    parent.typeText("parent-page")
+    app.buttons["dayline.notion.prepare"].tap()
+
+    let alert = app.alerts["Notionへ送信しますか？"]
+    XCTAssertTrue(alert.waitForExistence(timeout: 5))
+    alert.buttons["送信"].tap()
+    XCTAssertTrue(app.staticTexts["dayline.notion.success"].waitForExistence(timeout: 5))
+  }
+
   private func waitForLabel(_ label: String, element: XCUIElement) -> Bool {
     let predicate = NSPredicate(format: "label == %@", label)
     let expectation = XCTNSPredicateExpectation(predicate: predicate, object: element)
