@@ -41,11 +41,18 @@ struct RootView: View {
             .accessibilityIdentifier("dayline.live.status")
         }
       }
-      Text(liveMeetingText)
-        .font(.subheadline)
-        .foregroundStyle(liveMeeting.latest == nil ? .secondary : .primary)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .accessibilityIdentifier("dayline.live.content")
+      if let presentation = liveMeeting.presentation {
+        ArtifactSectionsView(
+          presentation: presentation,
+          accessibilityPrefix: "dayline.live"
+        )
+      } else {
+        Text(liveMeetingText)
+          .font(.subheadline)
+          .foregroundStyle(.secondary)
+          .frame(maxWidth: .infinity, alignment: .leading)
+          .accessibilityIdentifier("dayline.live.content")
+      }
       Button {
         Task { await model.toggleLiveMeeting() }
       } label: {
@@ -78,10 +85,11 @@ struct RootView: View {
     VStack(alignment: .leading, spacing: 10) {
       Text("今日のまとめ")
         .font(.headline)
-      if let summary = dailySummary.summary {
-        Text(summary.content.text)
-          .frame(maxWidth: .infinity, alignment: .leading)
-          .accessibilityIdentifier("dayline.daily.summary")
+      if let presentation = dailySummary.presentation {
+        ArtifactSectionsView(
+          presentation: presentation,
+          accessibilityPrefix: "dayline.daily"
+        )
       } else {
         Text(dailySummaryStatusText)
           .font(.subheadline)
