@@ -6,6 +6,7 @@
 - Apple Speech and Foundation Models processing is on-device.
 - Audio is enabled by default. Browser, shell, and calendar are opt-in.
 - No external destination receives data merely because a profile names a tool.
+- macOS shell and browser collectors are independently disabled by default.
 
 ## Enforcement
 
@@ -38,3 +39,9 @@ The Notion access token is stored with a device-only Keychain accessibility clas
 is never persisted in UserDefaults. The parent page ID is non-secret configuration and
 may be stored in UserDefaults. User-facing and internal integration errors are finite,
 content-free categories; response bodies and credentials are not logged.
+
+The macOS shell hook records only completed command metadata and sends it to the local
+agent over stdin. It never captures stdout, stderr, or individual keystrokes. Chrome is
+read-only and limited to HTTP(S) visit URL/title/time. Policy is checked before either
+stdin is read or the Chrome database is opened. Commands still pass through Rust
+redaction before storage, and collector errors never include observed content or paths.

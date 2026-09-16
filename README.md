@@ -79,6 +79,10 @@ only, stops capture when audio is revoked, filters context through both profile 
 user policy, and visibly states that processing is local-only. A selected artifact can
 be exported to Notion only after Rust policy evaluation and explicit confirmation;
 the access token stays in Keychain and raw capture data is not included. macOS Terminal
-and Chrome collectors remain unfinished Phase 1 work.
+and Chrome collection is available through an opt-in local agent: completed command
+metadata and Chrome visits become strict ContextEvents in the same Rust store, while
+stdout, stderr, keystrokes, and collected content stay out of logs.
 Product features are tracked in
 [`docs/TODO.md`](docs/TODO.md).
+macOS collector setup is documented in
+[`docs/mac-context.md`](docs/mac-context.md).

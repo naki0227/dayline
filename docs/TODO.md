@@ -2,7 +2,8 @@
 
 ## In progress
 
-- [ ] Add the macOS Terminal and Chrome collector boundaries.
+- [ ] Run the Phase 1 acceptance audit and close GitHub Issue #11 after all pushed
+      responsibility workflows pass.
 
 ## Not started
 
@@ -76,6 +77,8 @@
       prevents capture without turning an empty source list into an unrestricted query.
 - [x] Add explicit Notion output for a selected SemanticArtifact behind Rust
       ActionProposal policy, confirmation UI, Keychain credentials, and adapter tests.
+- [x] Add opt-in macOS Terminal and Chrome collectors, a local CLI composition root,
+      lossless Chrome cursoring, Rust persistence, and content-free diagnostics.
 
 ## On hold
 
@@ -95,8 +98,8 @@
 ## Start here next time
 
 1. Read `docs/adr/0001-context-platform-boundaries.md` and
-   `docs/adr/0005-uniffi-json-boundary.md`.
+   `docs/adr/0006-macos-context-collection.md`.
 2. Read `docs/product-profiles.md`, `docs/capture.md`, and GitHub Issue #11.
 3. Run `make ci`.
-4. Implement opt-in macOS Terminal and Chrome collector boundaries that emit only
-   normalized ContextEvents and obey the shared source policy.
+4. Audit every checkbox in Issue #11 against implementation and runtime/CI evidence;
+   close only when all current-head workflows are green.

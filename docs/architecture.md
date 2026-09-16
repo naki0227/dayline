@@ -4,7 +4,7 @@
 
 ```text
 Apple clients
-  Dayline iOS / widgets / macOS collector
+  Dayline iOS / widgets / macOS collector agent
              |
              v
 ContextCoreKit (Swift facade)
@@ -134,6 +134,20 @@ Migration and rollback details are in `docs/storage.md`.
 - The app composition root injects ContextCoreFFIKit's typed Rust store. CaptureKit
   imports neither generated FFI nor SQLite, while every app build/archive must link a
   freshly generated XCFramework.
+
+## macOS context runtime
+
+- `MacContextKit` owns local source adapters and maps observations to typed shell and
+  browser ContextEvent documents. It imports neither ProductKit nor generated FFI.
+- `MacContextAgent` is the headless composition root that injects `RustContextStore`,
+  local policy/settings, Chrome history location, and the installation identifier.
+- Terminal metadata enters over stdin after a command completes; CLI arguments and
+  output never contain the command. stdout, stderr, and keystrokes are not observed.
+- Chrome is queried read-only from `visits JOIN urls`. A compound visit-time/visit-ID
+  cursor advances only after successful Rust persistence, preventing duplicate polls
+  without skipping equal-timestamp visits.
+- Both sources are disabled by default. The CLI checks policy before reading stdin or
+  opening Chrome History and returns finite content-free diagnostic codes.
 
 ## Product runtime
 
