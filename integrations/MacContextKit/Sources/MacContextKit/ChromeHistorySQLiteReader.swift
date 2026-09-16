@@ -26,6 +26,14 @@ public struct ChromeHistorySQLiteReader: Sendable {
     }
     defer { sqlite3_close(database) }
 
+    return try readVisits(database: database, after: cursor, limit: limit)
+  }
+
+  private func readVisits(
+    database: OpaquePointer,
+    after cursor: ChromeHistoryCursor,
+    limit: Int
+  ) throws -> ChromeHistoryBatch {
     let query = """
       SELECT visits.id, urls.url, urls.title, visits.visit_time
       FROM visits
