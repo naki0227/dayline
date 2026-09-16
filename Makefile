@@ -94,6 +94,7 @@ ffi-check: ffi-xcframework ## 生成済みFFI artifactを検証する
 	$(SWIFT_ENV) swift test --package-path packages/ContextCoreFFIKit --parallel
 
 mac-agent-check: ffi-xcframework ## macOS collector CLIが実Rust FFIへリンクすることを検証する
+	swift format lint --recursive --strict apps/MacContextAgent
 	$(SWIFT_ENV) swift build --package-path apps/MacContextAgent
 
 mac-agent-build: ffi-xcframework ## macOS collector CLIをreleaseビルドする

@@ -93,7 +93,7 @@ func macShellEventPersistsThroughRustWithPreStorageRedaction() async throws {
   )
 
   #expect(!persisted.payload.content.command.contains("secret-value"))
-  #expect(persisted.payload.content.command.contains("[REDACTED]"))
+  #expect(persisted.payload.content.command.contains("TOKEN=***"))
 }
 
 @Test
