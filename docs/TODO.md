@@ -2,8 +2,8 @@
 
 ## In progress
 
-- [ ] Run the Phase 1 acceptance audit and close GitHub Issue #11 after all pushed
-      responsibility workflows pass.
+- None. Phase 1 implementation is complete; current-head CI and Issue #11 closure are
+  release bookkeeping rather than unimplemented product scope.
 
 ## Not started
 
@@ -79,6 +79,8 @@
       ActionProposal policy, confirmation UI, Keychain credentials, and adapter tests.
 - [x] Add opt-in macOS Terminal and Chrome collectors, a local CLI composition root,
       lossless Chrome cursoring, Rust persistence, and content-free diagnostics.
+- [x] Audit every Phase 1 acceptance criterion against code, unit/integration/UI tests,
+      an isolated macOS runtime smoke test, and responsibility-specific CI.
 
 ## On hold
 
@@ -101,5 +103,4 @@
    `docs/adr/0006-macos-context-collection.md`.
 2. Read `docs/product-profiles.md`, `docs/capture.md`, and GitHub Issue #11.
 3. Run `make ci`.
-4. Audit every checkbox in Issue #11 against implementation and runtime/CI evidence;
-   close only when all current-head workflows are green.
+4. Start only explicitly reprioritized follow-up work; Phase 2+ remains out of scope.

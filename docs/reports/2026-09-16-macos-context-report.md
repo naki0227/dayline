@@ -70,6 +70,7 @@ DB migration、CD signing設定には変更なし。
 - synthetic Chrome HistoryをCLI -> Rust SQLiteへ保存: 成功。
 - 同一Chrome cursor再実行: `persisted=0`、重複なし。
 - browser無効 + missing History path: `persisted=0`、source openなし。
+- synthetic `TOKEN=fixture-value` shell commandはSQLite上で`TOKEN=***`を確認。
 
 ## CIで確認される内容
 
