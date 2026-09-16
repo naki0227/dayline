@@ -122,6 +122,53 @@ func storedContextRequestEncodesForTheRustBoundary() throws {
   #expect(decoded == request)
 }
 
+@Test
+func shellAndBrowserDocumentsEncodeTheirStrictPayloadShapes() throws {
+  let day = DayIDDocument(localDate: "2026-09-16", timezone: "Asia/Tokyo")
+  let provenance = EventProvenanceDocument(
+    collector: "dayline-mac-context",
+    deviceId: "mac-local",
+    capturedAt: "2026-09-16T01:00:01Z"
+  )
+  let shell = ShellCommandContextEventDocument(
+    id: "018f6ea2-8f44-7f00-8000-000000000971",
+    occurredAt: "2026-09-16T01:00:00Z",
+    dayId: day,
+    command: "cargo test",
+    cwd: "/workspace/dayline",
+    exitCode: 0,
+    durationMilliseconds: 425,
+    metadata: ["redacted": "false"],
+    retention: RetentionDocument(type: "days", days: 30),
+    provenance: provenance
+  )
+  let browser = BrowserVisitContextEventDocument(
+    id: "018f6ea2-8f44-7f00-8000-000000000972",
+    occurredAt: "2026-09-16T01:00:00Z",
+    dayId: day,
+    url: "https://example.com/docs",
+    title: "Docs",
+    metadata: [:],
+    retention: RetentionDocument(type: "days", days: 30),
+    provenance: provenance
+  )
+
+  let shellJSON = try jsonObject(shell)
+  let browserJSON = try jsonObject(browser)
+  let shellPayload = try #require(shellJSON["payload"] as? [String: Any])
+  let browserPayload = try #require(browserJSON["payload"] as? [String: Any])
+  let shellContent = try #require(shellPayload["content"] as? [String: Any])
+
+  #expect(shellPayload["type"] as? String == "shell_command")
+  #expect(shellContent["duration_ms"] as? Int == 425)
+  #expect(browserPayload["type"] as? String == "browser_visit")
+}
+
+private func jsonObject<T: Encodable>(_ document: T) throws -> [String: Any] {
+  let data = try ContractCodec.encode(document)
+  return try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+}
+
 private func storedContextRequest() -> StoredContextRequestDocument {
   StoredContextRequestDocument(
     dayId: DayIDDocument(localDate: "2026-09-14", timezone: "Asia/Tokyo"),

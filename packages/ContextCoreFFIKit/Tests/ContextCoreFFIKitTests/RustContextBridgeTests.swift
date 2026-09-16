@@ -64,6 +64,39 @@ func typedEventStorePersistsThroughRust() async throws {
 }
 
 @Test
+func macShellEventPersistsThroughRustWithPreStorageRedaction() async throws {
+  let database = FileManager.default.temporaryDirectory
+    .appending(path: "dayline-mac-shell-\(UUID().uuidString).sqlite")
+  defer { try? FileManager.default.removeItem(at: database) }
+  let event = ShellCommandContextEventDocument(
+    id: "018f6ea2-8f44-7f00-8000-000000000981",
+    occurredAt: "2026-09-16T01:00:00Z",
+    dayId: DayIDDocument(localDate: "2026-09-16", timezone: "Asia/Tokyo"),
+    command: "TOKEN=secret-value cargo test",
+    cwd: "/workspace/dayline",
+    exitCode: 0,
+    durationMilliseconds: 425,
+    metadata: ["redaction": "rust-pre-persistence"],
+    retention: RetentionDocument(type: "days", days: 30),
+    provenance: EventProvenanceDocument(
+      collector: "dayline-mac-context",
+      deviceId: "mac-test",
+      capturedAt: "2026-09-16T01:00:01Z"
+    )
+  )
+  let store = RustContextStore(databaseURL: database)
+
+  let persistedData = try await store.persistEventData(ContractCodec.encode(event))
+  let persisted = try ContractCodec.decode(
+    ShellCommandContextEventDocument.self,
+    from: persistedData
+  )
+
+  #expect(!persisted.payload.content.command.contains("secret-value"))
+  #expect(persisted.payload.content.command.contains("[REDACTED]"))
+}
+
+@Test
 func typedStoreBuildsStoredContextThroughRust() async throws {
   let database = FileManager.default.temporaryDirectory
     .appending(path: "dayline-stored-bundle-\(UUID().uuidString).sqlite")

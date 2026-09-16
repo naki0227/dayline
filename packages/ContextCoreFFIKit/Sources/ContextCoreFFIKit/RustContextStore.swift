@@ -28,6 +28,14 @@ public actor RustContextStore: ContextEventPersisting {
     }
   }
 
+  public func persistEventData(_ event: Data) throws -> Data {
+    do {
+      return try bridge.persistEvent(databaseURL: databaseURL, event: event)
+    } catch {
+      throw map(error)
+    }
+  }
+
   public func buildStoredContext(
     _ request: StoredContextRequestDocument
   ) throws -> ContextBundleDocument {
@@ -62,3 +70,4 @@ public actor RustContextStore: ContextEventPersisting {
 
 extension RustContextStore: StoredContextBuilding {}
 extension RustContextStore: SemanticArtifactPersisting {}
+extension RustContextStore: ContextEventDataPersisting {}
