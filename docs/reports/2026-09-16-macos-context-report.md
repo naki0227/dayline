@@ -2,7 +2,7 @@
 
 ## 作業日時
 
-2026年09月16日 14時23分34秒 JST
+2026年09月16日 14時38分03秒 JST
 
 ## 作業対象
 
@@ -21,6 +21,9 @@ ContextEventへ変換し、Rust-owned SQLiteへ保存できるようにする。
 - Chromeを`visits JOIN urls`でread-only取得し、timestamp + visit ID cursorを実装した。
 - headless CLI、stdin-only zsh hook、configure/status/collect commandsを追加した。
 - Integration/FFI workflowとMakefileへmacOS collector検証を追加した。
+- Xcode 26.3でもFoundation Models runtimeをbuildできるよう、26.4 SDKで追加された
+  token APIをSwift 6.3 compile gateとOS availabilityの両方で隔離した。
+- XCFramework生成後のmodule map検査を、runnerに存在しなかった`rg`から標準`grep`へ変更した。
 
 ## 変更したファイル
 
@@ -32,6 +35,8 @@ ContextEventへ変換し、Rust-owned SQLiteへ保存できるようにする。
 - `apps/MacContextAgent/`
 - `scripts/dayline-zsh-hook.zsh`
 - `Makefile`、`.swiftlint.yml`、`.github/workflows/ci-*.yml`
+- `packages/AppleIntelligenceKit/Sources/AppleIntelligenceKit/AppleFoundationModelRuntime.swift`
+- `scripts/build-context-xcframework.sh`
 - `README.md`、`docs/architecture.md`、`docs/privacy.md`、`docs/mac-context.md`
 - `docs/adr/0006-macos-context-collection.md`、`docs/TODO.md`
 
@@ -50,6 +55,9 @@ validation/redaction/persistenceを所有する。無効時はsourceを読む前
 
 macOS local collector、Swift contract DTO、FFI store port、CI。iOS capture、Notion、schema version、
 DB migration、CD signing設定には変更なし。
+
+Foundation Modelsの実token計測はXcode 26.4 / Swift 6.3以降で維持する。Xcode 26.3以前で
+buildした場合は、context-window errorを受けた既存の決定的縮小retryを利用する。
 
 ## 追加・更新したテスト
 
@@ -71,6 +79,10 @@ DB migration、CD signing設定には変更なし。
 - 同一Chrome cursor再実行: `persisted=0`、重複なし。
 - browser無効 + missing History path: `persisted=0`、source openなし。
 - synthetic `TOKEN=fixture-value` shell commandはSQLite上で`TOKEN=***`を確認。
+- `swift-format lint --strict AppleFoundationModelRuntime.swift`: 成功。
+- `bash -n scripts/build-context-xcframework.sh`: 成功。
+- Command Line Tools単体のAppleIntelligenceKit test: Foundation Models macro pluginが同梱されないため
+  実行不可。Xcode 26.3のFFI/App workflowで互換性を直接確認する。
 
 ## CIで確認される内容
 
@@ -84,6 +96,7 @@ Mac agent buildを追加した。重複検知は引き続きwarning-only。
   再実行できていない。production sourceはCommand Line Toolsでbuild済み、最終判定はGitHub CI。
 - 実ユーザーのChrome DBはプライバシー保護のため読み取っていない。
 - signed macOS UI/LaunchAgent installerはPhase 1外。手動設定手順は`docs/mac-context.md`。
+- Xcode 26.3互換修正後のFFI/App workflow結果を確認する必要がある。
 
 ## 次にやること
 

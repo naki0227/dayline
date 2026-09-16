@@ -81,6 +81,8 @@
       lossless Chrome cursoring, Rust persistence, and content-free diagnostics.
 - [x] Audit every Phase 1 acceptance criterion against code, unit/integration/UI tests,
       an isolated macOS runtime smoke test, and responsibility-specific CI.
+- [x] Keep Foundation Models token measurement source-compatible with Xcode 26.3 by
+      compile-gating the 26.4 SDK API while preserving deterministic shrink retry.
 
 ## On hold
 

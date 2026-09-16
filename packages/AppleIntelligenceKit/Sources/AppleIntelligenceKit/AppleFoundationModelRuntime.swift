@@ -102,17 +102,19 @@ public struct AppleFoundationModelRuntime: IntelligenceRuntime {
       var context = initialContext
       for attempt in 1...maximumAttempts {
         let rendered = PromptRenderer.render(request: request, context: context)
-        if #available(iOS 26.4, macOS 26.4, visionOS 26.4, *) {
-          let target = try await measuredReductionTarget(
-            model: model,
-            rendered: rendered,
-            currentUnits: context.budget.maximumUnits
-          )
-          if let target {
-            context = try await reduce(context, to: target)
-            continue
+        #if compiler(>=6.3)
+          if #available(iOS 26.4, macOS 26.4, visionOS 26.4, *) {
+            let target = try await measuredReductionTarget(
+              model: model,
+              rendered: rendered,
+              currentUnits: context.budget.maximumUnits
+            )
+            if let target {
+              context = try await reduce(context, to: target)
+              continue
+            }
           }
-        }
+        #endif
 
         do {
           return try await generateArtifact(
@@ -182,29 +184,31 @@ public struct AppleFoundationModelRuntime: IntelligenceRuntime {
       return ContextWindowPlanner.fallbackTarget(currentUnits: context.budget.maximumUnits)
     }
 
-    @available(iOS 26.4, macOS 26.4, visionOS 26.4, *)
-    private func measuredReductionTarget(
-      model: SystemLanguageModel,
-      rendered: RenderedPrompt,
-      currentUnits: UInt64
-    ) async throws -> UInt64? {
-      do {
-        let instructions = Instructions(rendered.instructions)
-        let promptTokens = try await model.tokenCount(for: rendered.prompt)
-        let instructionTokens = try await model.tokenCount(for: instructions)
-        let schemaTokens = try await model.tokenCount(
-          for: GeneratedSemanticArtifact.generationSchema)
-        let measured = promptTokens + instructionTokens + schemaTokens
-        let allowed = model.contextSize - reservedOutputTokens
-        return ContextWindowPlanner.measuredTarget(
-          currentUnits: currentUnits,
-          measuredTokens: measured,
-          allowedTokens: allowed
-        )
-      } catch {
-        throw AppleIntelligenceRuntimeError.generationFailed
+    #if compiler(>=6.3)
+      @available(iOS 26.4, macOS 26.4, visionOS 26.4, *)
+      private func measuredReductionTarget(
+        model: SystemLanguageModel,
+        rendered: RenderedPrompt,
+        currentUnits: UInt64
+      ) async throws -> UInt64? {
+        do {
+          let instructions = Instructions(rendered.instructions)
+          let promptTokens = try await model.tokenCount(for: rendered.prompt)
+          let instructionTokens = try await model.tokenCount(for: instructions)
+          let schemaTokens = try await model.tokenCount(
+            for: GeneratedSemanticArtifact.generationSchema)
+          let measured = promptTokens + instructionTokens + schemaTokens
+          let allowed = model.contextSize - reservedOutputTokens
+          return ContextWindowPlanner.measuredTarget(
+            currentUnits: currentUnits,
+            measuredTokens: measured,
+            allowedTokens: allowed
+          )
+        } catch {
+          throw AppleIntelligenceRuntimeError.generationFailed
+        }
       }
-    }
+    #endif
 
     private func reduce(
       _ context: ContextBundleDocument,

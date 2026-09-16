@@ -71,7 +71,7 @@ xcodebuild -create-xcframework \
 
 test -f "${xcframework_path}/Info.plist"
 test -f "${swift_output_root}/ContextCoreFFI.swift"
-if rg --quiet 'use "_Builtin_' "${xcframework_path}"; then
+if grep -R -q 'use "_Builtin_' "${xcframework_path}"; then
   echo "generated module map contains Xcode-incompatible builtin imports" >&2
   exit 1
 fi
