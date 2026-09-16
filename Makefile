@@ -1,5 +1,5 @@
-SWIFT_PACKAGES := packages/ContextCoreKit packages/AppleIntelligenceKit packages/ContextCaptureKit packages/DaylineProductKit integrations/NotionKit
-SWIFT_CHECK_PATHS := App AppUITests packages/ContextCoreKit packages/AppleIntelligenceKit packages/ContextCaptureKit packages/DaylineProductKit packages/ContextCoreFFIKit/Sources/ContextCoreFFIKit packages/ContextCoreFFIKit/Tests integrations/NotionKit
+SWIFT_PACKAGES := packages/ContextCoreKit packages/AppleIntelligenceKit packages/ContextCaptureKit packages/DaylineProductKit integrations/NotionKit integrations/MacContextKit
+SWIFT_CHECK_PATHS := App AppUITests apps/MacContextAgent packages/ContextCoreKit packages/AppleIntelligenceKit packages/ContextCaptureKit packages/DaylineProductKit packages/ContextCoreFFIKit/Sources/ContextCoreFFIKit packages/ContextCoreFFIKit/Tests integrations/NotionKit integrations/MacContextKit
 SWIFT_ENV := CLANG_MODULE_CACHE_PATH=$(CURDIR)/.build/clang-module-cache SWIFTPM_MODULECACHE_OVERRIDE=$(CURDIR)/.build/swift-module-cache
 APP_PROJECT := Dayline.xcodeproj
 APP_SCHEME := Dayline
@@ -14,12 +14,12 @@ MARKETING_VERSION ?= 0.1.0
 BUILD_NUMBER ?= 1
 CONTRACTS_VENV := contracts/.venv
 
-.PHONY: help ci quality architecture duplication contracts-venv contracts-check rust-format rust-lint rust-check rust-test rust-build ffi-xcframework ffi-check swift-format swift-format-check swift-lint swift-check swift-test swift-build project app-build app-test export-options archive export-ipa asc-venv asc-dev-venv release-tools-format release-tools-format-check release-tools-lint release-tools-typecheck release-tools-test release-tools-build release-tools-ci asc-status asc-profile asc-build validate-ipa upload release-dry-run release-upload clean
+.PHONY: help ci quality architecture duplication contracts-venv contracts-check rust-format rust-lint rust-check rust-test rust-build ffi-xcframework ffi-check mac-agent-check mac-agent-build swift-format swift-format-check swift-lint swift-check swift-test swift-build project app-build app-test export-options archive export-ipa asc-venv asc-dev-venv release-tools-format release-tools-format-check release-tools-lint release-tools-typecheck release-tools-test release-tools-build release-tools-ci asc-status asc-profile asc-build validate-ipa upload release-dry-run release-upload clean
 
 help: ## 利用できるターゲットを表示する
 	@awk 'BEGIN {FS = ":.*## "}; /^[a-zA-Z_-]+:.*## / {printf "  %-22s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-ci: architecture rust-format rust-lint rust-check rust-test rust-build ffi-check swift-format-check swift-lint swift-check swift-test swift-build app-build app-test ## blocking CIと同じ検証を実行する
+ci: architecture rust-format rust-lint rust-check rust-test rust-build ffi-check mac-agent-check swift-format-check swift-lint swift-check swift-test swift-build app-build app-test ## blocking CIと同じ検証を実行する
 
 quality: duplication ## 警告扱いの横断的品質検査を実行する
 
@@ -92,6 +92,12 @@ ffi-check: ffi-xcframework ## 生成済みFFI artifactを検証する
 	@test -f packages/ContextCoreFFIKit/.generated/ContextCoreFFIGenerated/ContextCoreFFI.swift
 	@! rg --quiet 'use "_Builtin_' packages/ContextCoreFFIKit/.artifacts/ContextCoreFFI.xcframework
 	$(SWIFT_ENV) swift test --package-path packages/ContextCoreFFIKit --parallel
+
+mac-agent-check: ffi-xcframework ## macOS collector CLIが実Rust FFIへリンクすることを検証する
+	$(SWIFT_ENV) swift build --package-path apps/MacContextAgent
+
+mac-agent-build: ffi-xcframework ## macOS collector CLIをreleaseビルドする
+	$(SWIFT_ENV) swift build --package-path apps/MacContextAgent -c release
 
 swift-format: ## Swiftソースを整形する
 	swift format format --recursive --in-place $(SWIFT_CHECK_PATHS)

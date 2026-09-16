@@ -1,5 +1,6 @@
 included:
   - App
+  - apps
   - integrations
   - packages
 
@@ -12,6 +13,8 @@ excluded:
   - packages/ContextCaptureKit/.build
   - packages/DaylineProductKit/.build
   - integrations/NotionKit/.build
+  - integrations/MacContextKit/.build
+  - apps/MacContextAgent/.build
 
 strict: true
 

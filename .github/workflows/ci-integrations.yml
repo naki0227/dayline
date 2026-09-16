@@ -27,3 +27,19 @@ jobs:
         run: swift test --package-path integrations/NotionKit --parallel
       - name: Release build
         run: swift build --package-path integrations/NotionKit -c release
+
+  mac-context:
+    name: macOS context collectors
+    runs-on: macos-15
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/select-toolchain
+      - name: Format
+        run: swift format lint --recursive --strict integrations/MacContextKit
+      - name: Type check
+        run: swift build --package-path integrations/MacContextKit
+      - name: Unit tests
+        run: swift test --package-path integrations/MacContextKit --parallel
+      - name: Release build
+        run: swift build --package-path integrations/MacContextKit -c release

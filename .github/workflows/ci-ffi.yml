@@ -28,3 +28,5 @@ jobs:
           workspaces: rust
       - name: Build and verify FFI artifacts
         run: make ffi-check
+      - name: Link macOS collector agent
+        run: make mac-agent-check
