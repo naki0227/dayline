@@ -14,7 +14,7 @@ class AppStoreConfigTests(TestCase):
             }
         )
 
-        self.assertEqual(config.bundle_id, "com.dayline.Dayline")
+        self.assertEqual(config.bundle_id, "com.enludus.Dayline")
         self.assertEqual(config.profile_name, "Dayline App Store")
         self.assertEqual(
             config.private_key_path,
