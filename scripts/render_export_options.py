@@ -19,7 +19,7 @@ def export_options(environment: Mapping[str, str]) -> dict[str, object]:
     if not team_id:
         raise ExportConfigurationError("APPLE_TEAM_ID is required")
 
-    bundle_id = environment.get("BUNDLE_ID", "com.dayline.Dayline")
+    bundle_id = environment.get("BUNDLE_ID", "com.enludus.Dayline")
     profile_name = environment.get("ASC_PROFILE_NAME", "Dayline App Store")
     return {
         "method": "app-store-connect",
