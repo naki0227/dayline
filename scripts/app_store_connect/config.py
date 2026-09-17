@@ -35,7 +35,7 @@ class AppStoreConfig:
         return cls(
             key_id=key_id,
             issuer_id=issuer_id,
-            bundle_id=values.get("BUNDLE_ID", "com.dayline.Dayline"),
+            bundle_id=values.get("BUNDLE_ID", "com.enludus.Dayline"),
             profile_name=values.get("ASC_PROFILE_NAME", "Dayline App Store"),
             private_keys_dir=Path(
                 values.get(
