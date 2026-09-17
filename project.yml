@@ -1,6 +1,6 @@
 name: Dayline
 options:
-  bundleIdPrefix: com.dayline
+  bundleIdPrefix: com.enludus
   deploymentTarget:
     iOS: "18.0"
   createIntermediateGroups: true
@@ -62,7 +62,7 @@ targets:
           - UIInterfaceOrientationLandscapeRight
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.dayline.Dayline
+        PRODUCT_BUNDLE_IDENTIFIER: com.enludus.Dayline
         PRODUCT_NAME: Dayline
         GENERATE_INFOPLIST_FILE: NO
         CURRENT_PROJECT_VERSION: "1"
@@ -86,7 +86,7 @@ targets:
       - target: Dayline
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.dayline.DaylineUITests
+        PRODUCT_BUNDLE_IDENTIFIER: com.enludus.DaylineUITests
         GENERATE_INFOPLIST_FILE: YES
 
 schemes:
