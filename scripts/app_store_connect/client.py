@@ -33,7 +33,7 @@ class Client:
         if not response.ok:
             raise RuntimeError(
                 f"App Store Connect {method} {path} failed "
-                f"with HTTP {response.status_code}: {response.text}"
+                f"with HTTP {response.status_code}"
             )
         if not response.content:
             return {}

@@ -8,13 +8,13 @@ EXPORT_DIR := build/export
 ASC_VENV := scripts/.venv
 ASC_PYTHON := $(ASC_VENV)/bin/python
 EXPORT_OPTIONS := build/ExportOptions.plist
-BUNDLE_ID ?= com.dayline.Dayline
+BUNDLE_ID ?= com.enludus.Dayline
 ASC_PROFILE_NAME ?= Dayline App Store
 MARKETING_VERSION ?= 0.1.0
 BUILD_NUMBER ?= 1
 CONTRACTS_VENV := contracts/.venv
 
-.PHONY: help ci quality architecture duplication contracts-venv contracts-check rust-format rust-lint rust-check rust-test rust-build ffi-xcframework ffi-check mac-agent-check mac-agent-build swift-format swift-format-check swift-lint swift-check swift-test swift-build project app-build app-test export-options archive export-ipa asc-venv asc-dev-venv release-tools-format release-tools-format-check release-tools-lint release-tools-typecheck release-tools-test release-tools-build release-tools-ci asc-status asc-profile asc-build validate-ipa upload release-dry-run release-upload clean
+.PHONY: help ci quality architecture duplication contracts-venv contracts-check rust-format rust-lint rust-check rust-test rust-build ffi-xcframework ffi-check mac-agent-check mac-agent-build swift-format swift-format-check swift-lint swift-check swift-test swift-build project app-build app-test export-options archive export-ipa asc-venv asc-dev-venv release-tools-format release-tools-format-check release-tools-lint release-tools-typecheck release-tools-test release-tools-build release-tools-ci asc-status asc-profile asc-build asc-testflight validate-ipa upload release-dry-run release-upload clean
 
 help: ## 利用できるターゲットを表示する
 	@awk 'BEGIN {FS = ":.*## "}; /^[a-zA-Z_-]+:.*## / {printf "  %-22s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -90,7 +90,7 @@ ffi-xcframework: ## Rust/Swift境界のXCFrameworkとSwift bindingを生成す�
 ffi-check: ffi-xcframework ## 生成済みFFI artifactを検証する
 	@test -f packages/ContextCoreFFIKit/.artifacts/ContextCoreFFI.xcframework/Info.plist
 	@test -f packages/ContextCoreFFIKit/.generated/ContextCoreFFIGenerated/ContextCoreFFI.swift
-	@! rg --quiet 'use "_Builtin_' packages/ContextCoreFFIKit/.artifacts/ContextCoreFFI.xcframework
+	@! grep -R -q 'use "_Builtin_' packages/ContextCoreFFIKit/.artifacts/ContextCoreFFI.xcframework
 	$(SWIFT_ENV) swift test --package-path packages/ContextCoreFFIKit --parallel
 
 mac-agent-check: ffi-xcframework ## macOS collector CLIが実Rust FFIへリンクすることを検証する
@@ -202,6 +202,11 @@ asc-profile: check-asc ## 配布用provisioning profileを取得する
 asc-build: check-asc ## 最新の有効なbuildを編集可能versionへ紐付ける
 	$(ASC_PYTHON) scripts/asc.py build
 
+asc-testflight: check-asc ## 今回アップロードしたbuildのTestFlight処理完了を確認する
+	@test -n "$${MARKETING_VERSION:-}" || (echo "MARKETING_VERSION is required" && exit 1)
+	@test -n "$${BUILD_NUMBER:-}" || (echo "BUILD_NUMBER is required" && exit 1)
+	$(ASC_PYTHON) scripts/asc.py testflight
+
 check-ipa:
 	@test -f "$(EXPORT_DIR)/Dayline.ipa" || (echo "Exported IPA is missing" && exit 1)
 
@@ -221,12 +226,12 @@ release-dry-run: ## archiveからApple検証まで順番に実行する
 	$(MAKE) export-ipa
 	$(MAKE) validate-ipa
 
-release-upload: ## archive、upload、build紐付けを順番に実行する
+release-upload: ## archive、upload、TestFlight処理確認を順番に実行する
 	$(MAKE) asc-venv
 	$(MAKE) asc-profile
 	$(MAKE) export-ipa
 	$(MAKE) upload
-	$(MAKE) asc-build
+	$(MAKE) asc-testflight
 
 clean: ## ローカル生成物を削除する
 	cd rust && cargo clean
