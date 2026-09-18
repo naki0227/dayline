@@ -45,6 +45,7 @@ targets:
       path: App/Info.plist
       properties:
         CFBundleDisplayName: Dayline
+        CFBundleIconName: AppIcon
         CFBundleDevelopmentRegion: ja
         CFBundleLocalizations: [ja, en]
         ITSAppUsesNonExemptEncryption: false
@@ -64,6 +65,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.enludus.Dayline
         PRODUCT_NAME: Dayline
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         GENERATE_INFOPLIST_FILE: NO
         CURRENT_PROJECT_VERSION: "1"
         MARKETING_VERSION: "0.1.0"
