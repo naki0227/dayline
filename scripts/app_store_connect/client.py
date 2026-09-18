@@ -24,11 +24,12 @@ class Client:
     base_url = "https://api.appstoreconnect.apple.com"
 
     def __init__(self, config: AppStoreConfig) -> None:
+        self.config = config
         self.session = requests.Session()
-        self.session.headers["Authorization"] = f"Bearer {create_token(config)}"
 
     def request(self, method: str, path: str, **kwargs: Any) -> JsonObject:
         url = path if path.startswith("http") else f"{self.base_url}{path}"
+        self.session.headers["Authorization"] = f"Bearer {create_token(self.config)}"
         response = self.session.request(method, url, timeout=60, **kwargs)
         if not response.ok:
             raise RuntimeError(
