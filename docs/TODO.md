@@ -2,8 +2,8 @@
 
 ## In progress
 
-- [ ] Inspect App Store Connect after the successful `0.1.0 (5)` IPA upload;
-      the exact-build check did not see `VALID` within 30 minutes.
+- [ ] Dry-run and upload a new `1.0` build after fixing the generated
+      Info.plist version/build placeholders and archive identity guard.
 - [ ] Confirm internal tester availability once the uploaded build is `VALID`.
 
 ## Not started
@@ -91,6 +91,8 @@
       Apple validation rejected the first signed archive.
 - [x] Install and pass the `useful-map` Dayline signed-IPA dry-run.
 - [x] Upload Dayline `0.1.0 (5)` with Apple reporting `UPLOAD SUCCEEDED`.
+- [x] Diagnose that the archived Info.plist had literal `1.0 (1)` despite
+      command-line `0.1.0 (5)`, and add pre-upload archive identity tests.
 
 ## On hold
 

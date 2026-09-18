@@ -2,7 +2,7 @@
 
 ## 作業日時
 
-2026年09月18日 11時34分50秒 JST
+2026年09月18日 18時13分00秒 JST
 
 ## 作業対象
 
@@ -25,6 +25,10 @@ DaylineのTestFlight CD、`useful-map`署名再利用、App Store Connect CLI。
 - `useful-map`専用workflowを設置し、固定SHA `6554389`でsigned-IPA dry-runが成功した。
 - `0.1.0 (5)`のIPA uploadはAppleから`UPLOAD SUCCEEDED`を受けたが、正確な
   buildの`VALID`照合は30分でtimeoutした。重複uploadせず読み取り専用status workflowを追加した。
+- 数時間後のAPI確認でも新buildはなく、既存の`1.0 (1)`だけが`VALID`/`COMPLETE`だった。
+- 原因候補をさらに調べ、生成された`Info.plist`が固定の`1.0 (1)`だったことを発見した。
+  Xcode引数は`0.1.0 (5)`でもIPAの実値へ反映されていなかった。XcodeGen設定を修正し、
+  archive実値をupload前に照合するguardを追加した。
 
 ## 変更したファイル
 
@@ -34,7 +38,9 @@ DaylineのTestFlight CD、`useful-map`署名再利用、App Store Connect CLI。
 `deployment/useful-map-dayline-testflight.yml`、`docs/release.md`、
 `docs/adr/0007-borrowed-testflight-signing.md`、`docs/TODO.md`、本報告書、
 `App/Info.plist`、`App/Assets.xcassets/AppIcon.appiconset/`、`project.yml`、
-`deployment/useful-map-dayline-status.yml`。
+`deployment/useful-map-dayline-status.yml`、`scripts/app_store_connect/apps.py`、
+`scripts/tests/test_status.py`、`scripts/verify_archive.py`、
+`scripts/tests/test_verify_archive.py`。
 
 ## 変更意図
 
@@ -56,6 +62,7 @@ CIと署名、Apple APIを分離し、境界を短いCLIへ限定する。workfl
 HTTPエラー本文を秘匿することのunit testを追加した。
 JWTを連続requestで更新するunit testも追加した。アイコンはロジックではないため、
 asset metadataの確認とApple CI/validationで検証する。
+archiveのversion/build/bundle ID一致と不一致・欠損のunit testを追加した。
 
 ## 実行した確認コマンド
 
@@ -66,6 +73,8 @@ asset metadataの確認とApple CI/validationで検証する。
 - `xcodegen generate`、`sips`による1024×1024・不透明画像の確認: 成功。
 - Daylineの責務別GitHub CI全件: 成功。`useful-map` dry-run `35294696426`: 成功。
 - `useful-map` upload `35296413011`: IPA送信成功、exact-build照合timeoutでjob失敗。
+- `useful-map` status `35327953586`: 旧`1.0 (1)`のみ表示、新buildなし。
+- `xcodegen generate`: `Info.plist`にbuild setting変数が生成されることを確認。
 - Xcode 26.5のライセンス未同意により、ローカル署名archiveは実行していない。
 
 ## CIで確認される内容
@@ -75,21 +84,22 @@ Rust、Swift等は通常の責務別CIで検証する。`useful-map`の専用CD�
 
 ## 未解決の課題
 
-- App Store Connect上でbuild `0.1.0 (5)`がまだ表示・処理中かを確認する必要がある。
+- 修正後の`1.0` archiveの実値とApple受理・TestFlight処理結果は未確認。
 - 内部tester accessはApple側の確認が必要。
 - Dayline自身の5 Secretsは未設定。`v*`タグCDは現状使わない。
 
 ## 次にやること
 
-読み取り専用status workflowを`useful-map`へ設置し、ビルド状態を確認する。
-Appleに受理済みのbuild `0.1.0 (5)`を重複uploadしない。`VALID`後に内部tester accessを確認する。
+修正したDayline SHAでdry-runし、archive実値とApple検証を確認する。成功後に
+新buildを1回だけuploadし、`VALID`と内部tester accessを確認する。
 
 ## 次回最初に見るべきファイル
 
-`docs/release.md`、`deployment/useful-map-dayline-status.yml`、`docs/TODO.md`。
+`docs/release.md`、`project.yml`、`scripts/verify_archive.py`、`docs/TODO.md`。
 
 ## 引き継ぎ事項
 
 最初に`gh run view 35296413011 -R naki0227/useful-map --log-failed`でAppleの
-upload受理と照合timeoutを確認する。Secret値をログ、issue、artifact、チャットへ
-出さない。Daylineの`v*`タグを先に押さない。
+upload受理と照合timeoutを確認する。`0.1.0 (5)`を同じ名前で重複uploadしない。
+ブラウザのApp Store Connect認証は期限切れ。Secret値をログ、issue、artifact、
+チャットへ出さない。Daylineの`v*`タグを先に押さない。

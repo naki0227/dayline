@@ -18,6 +18,12 @@ using the existing `useful-map` signing Secrets without copying them between rep
 8. For TestFlight, wait until the exact uploaded marketing version and build number
    becomes `VALID`. Do not attach an arbitrary latest build to an App Store version.
 
+The generated `Info.plist` must expand `MARKETING_VERSION` and
+`CURRENT_PROJECT_VERSION`. `make archive` now checks the actual archived plist
+against the requested version, build number, and bundle ID before any upload.
+This guard was added after an archive with literal `1.0 (1)` passed signing while
+the release command requested `0.1.0 (5)`.
+
 This reproduces the proven `useful_map` release shape. In Dayline, “AppleDevCLI”
 means the combination of `xcodebuild`, `xcrun altool`, and the responsibility-split
 Python client rooted at `scripts/asc.py`.
@@ -65,6 +71,9 @@ Once the installed workflow and app record are ready, run a dry-run using the
 current `main` SHA, inspect its GitHub Actions result, then deliberately dispatch
 with `dry_run=false`. Do not push a Dayline `v*` tag while its local signing Secrets
 are absent; that legacy workflow will fail before signing.
+The borrowed workflow defaults to marketing version `1.0`, matching the editable
+App Store Connect version record. Its build number remains the useful-map Actions
+run number.
 
 ## Safety rules
 
