@@ -2,7 +2,7 @@
 
 ## 作業日時
 
-2026年09月18日 10時15分06秒 JST
+2026年09月18日 11時34分50秒 JST
 
 ## 作業対象
 
@@ -22,6 +22,9 @@ DaylineのTestFlight CD、`useful-map`署名再利用、App Store Connect CLI。
 - Appleの最初の検証で不足が判明したApp Store iconとInfo.plist設定を追加した。
 - 長時間のbuild処理待ちに備えて、App Store Connect JWTを毎requestで再発行するようにした。
 - 公開repositoryに生成された旧署名IPA artifactだけを削除した。再取得には再buildが必要。
+- `useful-map`専用workflowを設置し、固定SHA `6554389`でsigned-IPA dry-runが成功した。
+- `0.1.0 (5)`のIPA uploadはAppleから`UPLOAD SUCCEEDED`を受けたが、正確な
+  buildの`VALID`照合は30分でtimeoutした。重複uploadせず読み取り専用status workflowを追加した。
 
 ## 変更したファイル
 
@@ -30,7 +33,8 @@ DaylineのTestFlight CD、`useful-map`署名再利用、App Store Connect CLI。
 `scripts/tests/test_testflight.py`、`scripts/tests/test_client.py`、
 `deployment/useful-map-dayline-testflight.yml`、`docs/release.md`、
 `docs/adr/0007-borrowed-testflight-signing.md`、`docs/TODO.md`、本報告書、
-`App/Info.plist`、`App/Assets.xcassets/AppIcon.appiconset/`、`project.yml`。
+`App/Info.plist`、`App/Assets.xcassets/AppIcon.appiconset/`、`project.yml`、
+`deployment/useful-map-dayline-status.yml`。
 
 ## 変更意図
 
@@ -60,6 +64,8 @@ asset metadataの確認とApple CI/validationで検証する。
 - `git diff --check`、`bash -n scripts/build-context-xcframework.sh`、
   `scripts/check-architecture.sh`: 成功。
 - `xcodegen generate`、`sips`による1024×1024・不透明画像の確認: 成功。
+- Daylineの責務別GitHub CI全件: 成功。`useful-map` dry-run `35294696426`: 成功。
+- `useful-map` upload `35296413011`: IPA送信成功、exact-build照合timeoutでjob失敗。
 - Xcode 26.5のライセンス未同意により、ローカル署名archiveは実行していない。
 
 ## CIで確認される内容
@@ -69,22 +75,21 @@ Rust、Swift等は通常の責務別CIで検証する。`useful-map`の専用CD�
 
 ## 未解決の課題
 
-- `useful-map`側のworkflow設置・dry-run・実upload結果を確認する必要がある。
-- 最初のApple validationはicon不足で失敗。修正後の再検証は未実施。
-- Apple Developer identifier、App Store Connect app recordと内部tester accessは
-  Apple側の確認が必要。
+- App Store Connect上でbuild `0.1.0 (5)`がまだ表示・処理中かを確認する必要がある。
+- 内部tester accessはApple側の確認が必要。
 - Dayline自身の5 Secretsは未設定。`v*`タグCDは現状使わない。
 
 ## 次にやること
 
-専用workflowを`useful-map`へ配置し、現行Dayline SHAでdry-runを実行する。
-成功後に明示的なuploadを行い、TestFlight `VALID` buildと内部tester accessを確認する。
+読み取り専用status workflowを`useful-map`へ設置し、ビルド状態を確認する。
+Appleに受理済みのbuild `0.1.0 (5)`を重複uploadしない。`VALID`後に内部tester accessを確認する。
 
 ## 次回最初に見るべきファイル
 
-`docs/release.md`、`deployment/useful-map-dayline-testflight.yml`、`docs/TODO.md`。
+`docs/release.md`、`deployment/useful-map-dayline-status.yml`、`docs/TODO.md`。
 
 ## 引き継ぎ事項
 
-最初に`gh secret list -R naki0227/useful-map`で名前のみ確認する。Secret値を
-ログ、issue、artifact、チャットへ出さない。Daylineの`v*`タグを先に押さない。
+最初に`gh run view 35296413011 -R naki0227/useful-map --log-failed`でAppleの
+upload受理と照合timeoutを確認する。Secret値をログ、issue、artifact、チャットへ
+出さない。Daylineの`v*`タグを先に押さない。

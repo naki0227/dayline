@@ -55,6 +55,12 @@ group. An external tester requires a separate group and Apple's TestFlight revie
 The workflow only verifies build processing; it does not invite testers or submit
 the app for App Store review.
 
+If Apple accepts an upload but build processing takes longer than the 30-minute
+polling window, do not upload the same build number again. Run the read-only
+`deployment/useful-map-dayline-status.yml` workflow in `useful-map` to inspect
+App Store Connect first. A successful IPA transfer alone does not mean the build
+is ready for TestFlight.
+
 Once the installed workflow and app record are ready, run a dry-run using the
 current `main` SHA, inspect its GitHub Actions result, then deliberately dispatch
 with `dry_run=false`. Do not push a Dayline `v*` tag while its local signing Secrets

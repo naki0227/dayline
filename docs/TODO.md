@@ -2,9 +2,9 @@
 
 ## In progress
 
-- [ ] Install and dry-run the dedicated `useful-map` Dayline TestFlight workflow.
-- [ ] Confirm the `com.enludus.Dayline` Apple Developer identifier and App Store
-      Connect app record, then perform the first explicit TestFlight upload.
+- [ ] Inspect App Store Connect after the successful `0.1.0 (5)` IPA upload;
+      the exact-build check did not see `VALID` within 30 minutes.
+- [ ] Confirm internal tester availability once the uploaded build is `VALID`.
 
 ## Not started
 
@@ -89,6 +89,8 @@
 - [x] Refresh short-lived App Store Connect JWTs during long TestFlight polling.
 - [x] Add an opaque 1024-pixel App Store icon and explicit icon metadata after
       Apple validation rejected the first signed archive.
+- [x] Install and pass the `useful-map` Dayline signed-IPA dry-run.
+- [x] Upload Dayline `0.1.0 (5)` with Apple reporting `UPLOAD SUCCEEDED`.
 
 ## On hold
 
