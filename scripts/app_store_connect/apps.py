@@ -58,3 +58,28 @@ def print_status(client: AppStoreClient, config: AppStoreConfig) -> None:
     for build in builds:
         attributes = build["attributes"]
         print(f"Build: {attributes['version']} / {attributes['processingState']}")
+
+    uploads = client.get(
+        f"/v1/apps/{app['id']}/buildUploads",
+        params={"limit": 10, "sort": "-uploadedDate"},
+    )["data"]
+    for upload in uploads:
+        attributes = upload["attributes"]
+        state = attributes.get("state")
+        if isinstance(state, dict):
+            status = state.get("state", "UNKNOWN")
+            errors = state.get("errors", [])
+        else:
+            status = state if isinstance(state, str) else "UNKNOWN"
+            errors = []
+        error_codes = [
+            error["code"]
+            for error in errors
+            if isinstance(error, dict) and isinstance(error.get("code"), str)
+        ]
+        print(
+            f"Upload: {attributes.get('cfBundleShortVersionString', '?')} "
+            f"({attributes.get('cfBundleVersion', '?')}) / {status}"
+        )
+        if error_codes:
+            print(f"Upload error codes: {', '.join(error_codes)}")
