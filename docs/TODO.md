@@ -2,8 +2,9 @@
 
 ## In progress
 
-- None. Phase 1 implementation is complete; current-head CI and Issue #11 closure are
-  release bookkeeping rather than unimplemented product scope.
+- [ ] Install and dry-run the dedicated `useful-map` Dayline TestFlight workflow.
+- [ ] Confirm the `com.enludus.Dayline` Apple Developer identifier and App Store
+      Connect app record, then perform the first explicit TestFlight upload.
 
 ## Not started
 
@@ -83,11 +84,13 @@
       an isolated macOS runtime smoke test, and responsibility-specific CI.
 - [x] Keep Foundation Models token measurement source-compatible with Xcode 26.3 by
       compile-gating the 26.4 SDK API while preserving deterministic shrink retry.
+- [x] Add exact TestFlight build processing checks and redact App Store Connect
+      HTTP error response bodies from release logs.
 
 ## On hold
 
-- [ ] Register or confirm `com.dayline.Dayline` in Apple Developer and App Store
-      Connect, then configure signing Secrets after the vertical slice is proven.
+- [ ] Migrate signing to Dayline-owned GitHub Secrets or organization-scoped
+      Secrets if fully automatic Dayline tag delivery becomes necessary.
 - [ ] External LLM runtimes, independent backend, vector database, and autonomous
       agents remain outside the MVP.
 
