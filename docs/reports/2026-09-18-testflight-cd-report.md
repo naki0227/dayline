@@ -2,7 +2,7 @@
 
 ## 作業日時
 
-2026年09月18日 10時03分51秒 JST
+2026年09月18日 10時15分06秒 JST
 
 ## 作業対象
 
@@ -19,6 +19,9 @@ DaylineのTestFlight CD、`useful-map`署名再利用、App Store Connect CLI。
 - App Store Connect HTTPエラー本文をログへ出さなくした。
 - `useful-map`で実行する専用手動workflowのsourceを追加した。
 - Dayline CDの目的をTestFlightとして明確化した。
+- Appleの最初の検証で不足が判明したApp Store iconとInfo.plist設定を追加した。
+- 長時間のbuild処理待ちに備えて、App Store Connect JWTを毎requestで再発行するようにした。
+- 公開repositoryに生成された旧署名IPA artifactだけを削除した。再取得には再buildが必要。
 
 ## 変更したファイル
 
@@ -26,7 +29,8 @@ DaylineのTestFlight CD、`useful-map`署名再利用、App Store Connect CLI。
 `scripts/app_store_connect/builds.py`、`scripts/app_store_connect/client.py`、
 `scripts/tests/test_testflight.py`、`scripts/tests/test_client.py`、
 `deployment/useful-map-dayline-testflight.yml`、`docs/release.md`、
-`docs/adr/0007-borrowed-testflight-signing.md`、`docs/TODO.md`、本報告書。
+`docs/adr/0007-borrowed-testflight-signing.md`、`docs/TODO.md`、本報告書、
+`App/Info.plist`、`App/Assets.xcassets/AppIcon.appiconset/`、`project.yml`。
 
 ## 変更意図
 
@@ -46,6 +50,8 @@ CIと署名、Apple APIを分離し、境界を短いCLIへ限定する。workfl
 
 対象buildだけを待つこと、異なるversionを無視すること、processing失敗時に停止すること、
 HTTPエラー本文を秘匿することのunit testを追加した。
+JWTを連続requestで更新するunit testも追加した。アイコンはロジックではないため、
+asset metadataの確認とApple CI/validationで検証する。
 
 ## 実行した確認コマンド
 
@@ -53,6 +59,7 @@ HTTPエラー本文を秘匿することのunit testを追加した。
 - `DEVELOPER_DIR=/Library/Developer/CommandLineTools make -n release-upload`: 順序確認。
 - `git diff --check`、`bash -n scripts/build-context-xcframework.sh`、
   `scripts/check-architecture.sh`: 成功。
+- `xcodegen generate`、`sips`による1024×1024・不透明画像の確認: 成功。
 - Xcode 26.5のライセンス未同意により、ローカル署名archiveは実行していない。
 
 ## CIで確認される内容
@@ -63,6 +70,7 @@ Rust、Swift等は通常の責務別CIで検証する。`useful-map`の専用CD�
 ## 未解決の課題
 
 - `useful-map`側のworkflow設置・dry-run・実upload結果を確認する必要がある。
+- 最初のApple validationはicon不足で失敗。修正後の再検証は未実施。
 - Apple Developer identifier、App Store Connect app recordと内部tester accessは
   Apple側の確認が必要。
 - Dayline自身の5 Secretsは未設定。`v*`タグCDは現状使わない。

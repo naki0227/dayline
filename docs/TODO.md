@@ -86,6 +86,9 @@
       compile-gating the 26.4 SDK API while preserving deterministic shrink retry.
 - [x] Add exact TestFlight build processing checks and redact App Store Connect
       HTTP error response bodies from release logs.
+- [x] Refresh short-lived App Store Connect JWTs during long TestFlight polling.
+- [x] Add an opaque 1024-pixel App Store icon and explicit icon metadata after
+      Apple validation rejected the first signed archive.
 
 ## On hold
 
