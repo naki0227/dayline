@@ -10,7 +10,7 @@ ASC_PYTHON := $(ASC_VENV)/bin/python
 EXPORT_OPTIONS := build/ExportOptions.plist
 BUNDLE_ID ?= com.enludus.Dayline
 ASC_PROFILE_NAME ?= Dayline App Store
-MARKETING_VERSION ?= 0.1.0
+MARKETING_VERSION ?= 1.0
 BUILD_NUMBER ?= 1
 CONTRACTS_VENV := contracts/.venv
 
@@ -155,6 +155,9 @@ archive: ffi-xcframework project check-release-config ## App Store提出用archi
 		PRODUCT_BUNDLE_IDENTIFIER="$(BUNDLE_ID)" \
 		MARKETING_VERSION="$(MARKETING_VERSION)" \
 		CURRENT_PROJECT_VERSION="$(BUILD_NUMBER)"
+	@python3 scripts/verify_archive.py --archive $(ARCHIVE_PATH) \
+		--bundle-id "$(BUNDLE_ID)" --marketing-version "$(MARKETING_VERSION)" \
+		--build-number "$(BUILD_NUMBER)"
 
 export-ipa: archive export-options ## archiveからApp Store用IPAを書き出す
 	xcodebuild -exportArchive -archivePath $(ARCHIVE_PATH) \
