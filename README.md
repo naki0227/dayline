@@ -78,7 +78,10 @@ The app now exposes persisted audio/browser/shell/calendar controls, defaults to
 only, stops capture when audio is revoked, filters context through both profile and
 user policy, and visibly states that processing is local-only. A selected artifact can
 be exported to Notion only after Rust policy evaluation and explicit confirmation;
-the access token stays in Keychain and raw capture data is not included. macOS Terminal
+the user-facing flow uses an OAuth broker, the token pair stays in the device-only
+Keychain, and raw capture data is not included. The workspace connection is visible,
+and the destination is selected from pages explicitly shared through Notion OAuth.
+macOS Terminal
 and Chrome collection is available through an opt-in local agent: completed command
 metadata and Chrome visits become strict ContextEvents in the same Rust store, while
 stdout, stderr, keystrokes, and collected content stay out of logs.

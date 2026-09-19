@@ -35,10 +35,13 @@ provenance identifiers. It does not send raw audio, full transcript records, bro
 terminal history, the SQLite path, or signing configuration. Rust evaluates the
 ActionProposal before the confirmation prompt and again immediately before execution.
 
-The Notion access token is stored with a device-only Keychain accessibility class and
-is never persisted in UserDefaults. The parent page ID is non-secret configuration and
-may be stored in UserDefaults. User-facing and internal integration errors are finite,
-content-free categories; response bodies and credentials are not logged.
+The Notion access/refresh token pair and revocation capability are stored as one
+versioned record with a device-only Keychain accessibility class and are never persisted
+in UserDefaults. OAuth authorization-code exchange and the Notion client secret stay
+behind an HTTPS broker; the app callback carries only an opaque session ID. The parent
+page ID is non-secret configuration and may be stored in UserDefaults. User-facing and
+internal integration errors are finite, content-free categories; response bodies and
+credentials are not logged.
 
 The macOS shell hook records only completed command metadata and sends it to the local
 agent over stdin. It never captures stdout, stderr, or individual keystrokes. Chrome is

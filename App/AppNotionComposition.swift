@@ -118,7 +118,9 @@ private struct DeterministicWebAuthentication: AppWebAuthenticating {
   func authenticate(at _: URL, callbackScheme _: String) throws -> URL {
     guard let callback = URL(
       string: "dayline://oauth/notion?session_id=ui-test-session&result=success"
-    ) else { throw AppWebAuthenticationFailure.missingCallback }
+    ) else {
+      throw AppWebAuthenticationFailure.missingCallback
+    }
     return callback
   }
 }

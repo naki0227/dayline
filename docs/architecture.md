@@ -84,8 +84,11 @@ Migration and rollback details are in `docs/storage.md`.
 - The app persists only source identifiers in UserDefaults. Disabling audio stops
   active Daily/Live capture before the new policy is published. Detailed context and
   connector credentials are not part of this settings record.
-- Notion credentials are stored as a device-only Keychain item. Parent page ID is
-  non-secret configuration. Neither value enters model context or diagnostic output.
+- The Notion OAuth client secret and authorization-code exchange remain behind an HTTPS
+  broker. The app callback contains only an opaque, single-use session ID.
+- The Notion access/refresh token pair, connection ID, revocation capability, and
+  workspace metadata form one versioned device-only Keychain record. Parent page ID is
+  non-secret configuration. None enters model context or diagnostic output.
 
 ## Test strategy
 
@@ -183,5 +186,6 @@ Migration and rollback details are in `docs/storage.md`.
 - Notion export is a separate ProductKit use case. It renders only the selected
   SemanticArtifact, constructs a provenance-preserving ActionProposal, evaluates Rust
   policy before presentation and again before execution, and requires confirmation.
-  `NotionKit` owns Keychain and HTTP details; it validates the proposal shape again and
-  returns content-free failures. SwiftUI owns only configuration and presentation.
+  `NotionKit` owns OAuth broker, Keychain, destination discovery, and Notion HTTP
+  details; it validates the proposal shape again and returns content-free failures.
+  SwiftUI owns web-authentication presentation and connection/destination UI only.

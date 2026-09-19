@@ -2,11 +2,11 @@
 
 ## In progress
 
-- [ ] Issue #19: define and implement the secure Notion OAuth connection boundary.
+- [ ] Issue #19: deploy/configure the HTTPS OAuth broker and registered public Notion
+      connection, then complete the physical-device acceptance test.
 
 ## Not started
 
-- [ ] Issue #19: replace manual Notion credentials with a product OAuth flow.
 - [ ] Issue #20: add an explicitly enabled Google Calendar OAuth connector.
 - [ ] Issue #21: package the Mac collectors as a signed/notarized companion app.
 - [ ] Issue #22: redesign the iOS information architecture and product UI.
@@ -101,11 +101,17 @@
       configuration, stage-specific failures, sanitized diagnostics, and cleanup tests.
 - [x] Implement Issue #18's initial audio-waiting state, two-second recovery loop,
       fresh-chunk resumption, visible UI state, and deterministic unit/UI tests.
+- [x] Implement Issue #19's client-side OAuth session, versioned Keychain connection,
+      visible workspace state, reconnect/disconnect flow, shared-page picker, legacy
+      read compatibility, and preserved ActionProposal confirmation boundary.
 
 ## On hold
 
 - [ ] A new TestFlight upload and physical-device confirmation for Issues #17/#18 is
       deferred by request; do not deploy until explicitly requested again.
+- [ ] Issue #19 production enablement needs a selected HTTPS hosting environment,
+      deployed broker, Notion public connection credentials, redirect registration,
+      and `DAYLINE_NOTION_OAUTH_BROKER_URL`; do not embed the client secret in the app.
 - [ ] Migrate signing to Dayline-owned GitHub Secrets or organization-scoped
       Secrets if fully automatic Dayline tag delivery becomes necessary.
 - [ ] External LLM runtimes, independent backend, vector database, and autonomous
@@ -121,10 +127,11 @@
 
 ## Start here next time
 
-1. Read GitHub Epic #16, Issue #19, `docs/capture.md`, and
-   `docs/reports/2026-09-19-call-audio-recovery-report.md`.
+1. Read GitHub Epic #16, Issue #19, `docs/notion.md`,
+   `docs/notion-oauth-broker.md`, and the latest Issue #19 work report.
 2. Accept the local Xcode license or use CI, then run
    `swift test --package-path packages/ContextCaptureKit --parallel`.
 3. Do not start a TestFlight deployment unless the user explicitly requests it.
-4. Begin Issue #19 by documenting the OAuth redirect/backend and token-lifecycle
-   boundary before adding credentials or network code.
+4. Select the OAuth broker hosting environment and configure the Notion public
+   connection before closing Issue #19; do not put its client secret in iOS or GitHub
+   Variables.
