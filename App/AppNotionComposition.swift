@@ -17,12 +17,10 @@ extension AppEnvironment {
       )
     }
     let broker: any NotionOAuthBrokering
-    if let rawURL = Bundle.main.object(
+    let rawURL = Bundle.main.object(
       forInfoDictionaryKey: "DAYLINE_NOTION_OAUTH_BROKER_URL"
-    ) as? String,
-      let baseURL = URL(string: rawURL),
-      baseURL.scheme == "https"
-    {
+    ) as? String
+    if let rawURL, let baseURL = URL(string: rawURL), baseURL.scheme == "https" {
       broker = HTTPNotionOAuthBroker(baseURL: baseURL)
     } else {
       broker = UnavailableNotionOAuthBroker()
@@ -30,7 +28,7 @@ extension AppEnvironment {
     return NotionConnectionModel(
       broker: broker,
       credentials: credentials,
-      webAuthentication: AppWebAuthenticationSession(),
+      webAuthentication: WebAuthenticationSession(),
       destinationListing: NotionPageDirectory(credentials: credentials),
       callbackURL: callbackURL
     )

@@ -33,7 +33,8 @@ func startsOAuthWithoutPuttingCredentialsInCallback() async throws {
   #expect(session.id == "session-1")
   #expect(session.authorizationURL.scheme == "https")
   #expect(json == ["callback_url": "dayline://oauth/notion"])
-  #expect(!String(decoding: body, as: UTF8.self).contains("secret"))
+  let bodyText = try #require(String(data: body, encoding: .utf8))
+  #expect(!bodyText.contains("secret"))
 }
 
 @Test

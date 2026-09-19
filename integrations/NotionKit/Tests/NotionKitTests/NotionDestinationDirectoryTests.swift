@@ -45,7 +45,9 @@ func listsSharedNotionPagesWithoutExposingTokenInBody() async throws {
   #expect(destinations.map(\.title) == ["Daily", "Projects"])
   #expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer access-secret")
   #expect(request.value(forHTTPHeaderField: "Notion-Version") == "2026-03-11")
-  #expect(!String(decoding: request.httpBody ?? Data(), as: UTF8.self).contains("access-secret"))
+  let requestBody = try #require(request.httpBody)
+  let bodyText = try #require(String(data: requestBody, encoding: .utf8))
+  #expect(!bodyText.contains("access-secret"))
 }
 
 @Test

@@ -14,9 +14,7 @@ protocol AppWebAuthenticating {
 }
 
 @MainActor
-final class AppWebAuthenticationSession: NSObject, AppWebAuthenticating,
-  ASWebAuthenticationPresentationContextProviding
-{
+final class WebAuthenticationSession: NSObject, AppWebAuthenticating, ASWebAuthenticationPresentationContextProviding {
   private var session: ASWebAuthenticationSession?
 
   func authenticate(at url: URL, callbackScheme: String) async throws -> URL {
@@ -26,9 +24,8 @@ final class AppWebAuthenticationSession: NSObject, AppWebAuthenticating,
         callbackURLScheme: callbackScheme
       ) { [weak self] callbackURL, error in
         self?.session = nil
-        if let authenticationError = error as? ASWebAuthenticationSessionError,
-          authenticationError.code == .canceledLogin
-        {
+        let authenticationError = error as? ASWebAuthenticationSessionError
+        if authenticationError?.code == .canceledLogin {
           continuation.resume(throwing: AppWebAuthenticationFailure.cancelled)
         } else if error != nil {
           continuation.resume(throwing: AppWebAuthenticationFailure.unavailable)
