@@ -2,11 +2,7 @@
 
 ## In progress
 
-- [ ] Verify Issue #17's recording-session fix on a physical iPhone through the next
-      TestFlight build; configuration, activation, storage, and recorder failures are
-      now distinguishable and cleanup is deterministic.
-- [ ] Verify Issue #18 on-device: start Daily during a call, end the call, and confirm
-      a fresh audio chunk begins automatically without restarting Daily.
+- [ ] Issue #19: define and implement the secure Notion OAuth connection boundary.
 
 ## Not started
 
@@ -108,6 +104,8 @@
 
 ## On hold
 
+- [ ] A new TestFlight upload and physical-device confirmation for Issues #17/#18 is
+      deferred by request; do not deploy until explicitly requested again.
 - [ ] Migrate signing to Dayline-owned GitHub Secrets or organization-scoped
       Secrets if fully automatic Dayline tag delivery becomes necessary.
 - [ ] External LLM runtimes, independent backend, vector database, and autonomous
@@ -127,6 +125,6 @@
    `docs/reports/2026-09-19-call-audio-recovery-report.md`.
 2. Accept the local Xcode license or use CI, then run
    `swift test --package-path packages/ContextCaptureKit --parallel`.
-3. Confirm Issue #17 on a physical iPhone in the next TestFlight build.
+3. Do not start a TestFlight deployment unless the user explicitly requests it.
 4. Begin Issue #19 by documenting the OAuth redirect/backend and token-lifecycle
    boundary before adding credentials or network code.

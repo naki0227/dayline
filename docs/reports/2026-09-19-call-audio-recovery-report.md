@@ -83,16 +83,16 @@ Live Meeting、Rust、contracts、SQLite schema、外部 integration への変�
 
 ## 未解決の課題
 
-- 実通話中の `insufficientPriority` 分類と通話終了後の復帰は TestFlight 実機確認が必要。
+- 実通話中の `insufficientPriority` 分類と通話終了後の復帰は、将来配布を再開した際に
+  TestFlight 実機確認する。今回はユーザー指示により配布を完了条件から外した。
 - ローカル Xcode license の同意が必要。
 - Epic #16 の #19〜#23 は未着手。
 
 ## 次にやること
 
-1. Issue #18 push 後の全 CI を確認する。
-2. #17/#18 へ実装結果と TestFlight 確認待ちをコメントする。
-3. 次の TestFlight build を配布して実機確認する。
-4. Issue #19 の Notion OAuth セキュリティ境界を設計する。
+1. #17/#18 を実装・CI完了として close する。
+2. Issue #19 の Notion OAuth セキュリティ境界を設計する。
+3. TestFlight は明示的に再依頼された場合だけ配布する。
 
 ## 次回最初に見るべきファイル
 
@@ -107,3 +107,7 @@ Live Meeting、Rust、contracts、SQLite schema、外部 integration への変�
 Issue #8 は Epic #16 の対象外。Temporary retry を一般的な activation failure へ拡張しない。
 Daily を停止したら recovery task と rotation task の両方を cancel する。再開時は中断された
 コンテナへ追記せず、必ず新規 chunk を作る。ログへ録音内容やファイルパスを出さない。
+
+2026年09月19日 14時55分51秒 JST、全10 workflow 成功後に TestFlight workflow
+`35424290884` を開始したが、ユーザーから配布不要の指示を受けたため upload 前の
+`Verify Dayline` 実行中に cancel を要求した。Apple への新規 upload は実行していない。
