@@ -38,7 +38,7 @@ struct RootView: View {
           NotionExportView(
             artifact: artifact,
             model: model.notionExport,
-            credentials: model.notionCredentials,
+            connection: model.notionConnection,
             configuration: model.notionConfiguration
           )
         }

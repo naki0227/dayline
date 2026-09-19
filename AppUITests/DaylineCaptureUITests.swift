@@ -98,11 +98,11 @@ final class DaylineCaptureUITests: XCTestCase {
     XCTAssertTrue(open.waitForExistence(timeout: 5))
     open.tap()
 
-    let token = app.secureTextFields["dayline.notion.token"]
+    let connect = app.buttons["dayline.notion.connect"]
     let parent = app.textFields["dayline.notion.parent"]
-    XCTAssertTrue(token.waitForExistence(timeout: 5))
-    token.tap()
-    token.typeText("unit-test-token")
+    XCTAssertTrue(connect.waitForExistence(timeout: 5))
+    connect.tap()
+    XCTAssertTrue(app.staticTexts["dayline.notion.connected"].waitForExistence(timeout: 5))
     parent.tap()
     parent.typeText("parent-page")
     app.buttons["dayline.notion.prepare"].tap()
@@ -111,6 +111,27 @@ final class DaylineCaptureUITests: XCTestCase {
     XCTAssertTrue(alert.waitForExistence(timeout: 5))
     alert.buttons["送信"].tap()
     XCTAssertTrue(app.staticTexts["dayline.notion.success"].waitForExistence(timeout: 5))
+  }
+
+  func testNotionConnectionShowsWorkspaceAndDisconnects() {
+    let app = XCUIApplication()
+    app.launchArguments = ["--ui-testing", "--ui-testing-notion"]
+    app.launch()
+
+    app.buttons["dayline.daily.generate"].tap()
+    let open = app.buttons["dayline.notion.open"]
+    XCTAssertTrue(open.waitForExistence(timeout: 5))
+    open.tap()
+
+    let connect = app.buttons["dayline.notion.connect"]
+    XCTAssertTrue(connect.waitForExistence(timeout: 5))
+    connect.tap()
+    let connected = app.staticTexts["dayline.notion.connected"]
+    XCTAssertTrue(connected.waitForExistence(timeout: 5))
+    XCTAssertEqual(connected.label, "UI Test Workspace")
+
+    app.buttons["dayline.notion.disconnect"].tap()
+    XCTAssertTrue(app.buttons["dayline.notion.connect"].waitForExistence(timeout: 5))
   }
 
   private func waitForLabel(_ label: String, element: XCUIElement) -> Bool {

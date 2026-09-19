@@ -17,6 +17,7 @@ struct AppEnvironment {
   let initialSourcePolicy: DaylineSourcePolicy
   let notionExport: NotionExportModel
   let notionCredentials: any NotionCredentialStoring
+  let notionConnection: NotionConnectionModel
   let notionConfiguration: AppNotionConfiguration
 
   static func make(processInfo: ProcessInfo = .processInfo) -> AppEnvironment {
@@ -36,6 +37,10 @@ struct AppEnvironment {
     let notionExport = NotionExportModel(
       service: NotionExportService(policy: AppActionPolicyAdapter(), writer: notionWriter)
     )
+    let notionConnection = makeNotionConnection(
+      processInfo: processInfo,
+      credentials: notionCredentials
+    )
     let shared = AppSharedComposition(
       store: store,
       policyStore: sourcePolicyStore,
@@ -43,6 +48,7 @@ struct AppEnvironment {
       initialPolicy: initialPolicy,
       notionExport: notionExport,
       notionCredentials: notionCredentials,
+      notionConnection: notionConnection,
       notionConfiguration: AppNotionConfiguration()
     )
     if isUITesting {
@@ -92,6 +98,7 @@ struct AppEnvironment {
       initialSourcePolicy: shared.initialPolicy,
       notionExport: shared.notionExport,
       notionCredentials: shared.notionCredentials,
+      notionConnection: shared.notionConnection,
       notionConfiguration: shared.notionConfiguration
     )
   }
@@ -116,6 +123,7 @@ struct AppEnvironment {
       initialSourcePolicy: shared.initialPolicy,
       notionExport: shared.notionExport,
       notionCredentials: shared.notionCredentials,
+      notionConnection: shared.notionConnection,
       notionConfiguration: shared.notionConfiguration
     )
   }
@@ -127,6 +135,7 @@ struct AppEnvironment {
       ? ReadyDailySummaryGenerator()
       : EmptyDailySummaryGenerator()
   }
+
 }
 
 @MainActor
@@ -137,24 +146,8 @@ private struct AppSharedComposition {
   let initialPolicy: DaylineSourcePolicy
   let notionExport: NotionExportModel
   let notionCredentials: any NotionCredentialStoring
+  let notionConnection: NotionConnectionModel
   let notionConfiguration: AppNotionConfiguration
-}
-
-private actor InMemoryNotionCredentialStore: NotionCredentialStoring {
-  private var token: String?
-
-  func accessToken() throws -> String {
-    guard let token else { throw NotionCredentialFailure.unavailable }
-    return token
-  }
-
-  func save(accessToken: String) {
-    token = accessToken
-  }
-
-  func remove() {
-    token = nil
-  }
 }
 
 private struct DeterministicNotionWriter: NotionOutputWriting {

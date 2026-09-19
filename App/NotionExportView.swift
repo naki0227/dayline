@@ -1,31 +1,29 @@
 import ContextCoreKit
 import DaylineProductKit
-import NotionKit
 import SwiftUI
 
 struct NotionExportView: View {
   let artifact: SemanticArtifactDocument
   @Bindable var model: NotionExportModel
-  let credentials: any NotionCredentialStoring
+  @Bindable var connection: NotionConnectionModel
   let configuration: AppNotionConfiguration
 
   @Environment(\.dismiss) private var dismiss
-  @State private var accessToken = ""
   @State private var parentPageID = ""
-  @State private var connectionFailed = false
   @State private var showsConfirmation = false
 
   var body: some View {
     NavigationStack {
       Form {
-        Section("接続") {
-          SecureField("Notion access token", text: $accessToken)
-            .textContentType(.password)
-            .accessibilityIdentifier("dayline.notion.token")
+        connectionSection
+        Section("保存先") {
           TextField("親ページID", text: $parentPageID)
             .textInputAutocapitalization(.never)
             .autocorrectionDisabled()
             .accessibilityIdentifier("dayline.notion.parent")
+          Text("OAuthで共有したページのIDを指定します。")
+            .font(.caption)
+            .foregroundStyle(.secondary)
         }
         Section("送信する内容") {
           Text(artifact.content.text)
@@ -35,31 +33,11 @@ struct NotionExportView: View {
             .foregroundStyle(.secondary)
         }
         Section {
-          Button("出力内容を確認") {
-            Task { await prepare() }
-          }
-          .disabled(trimmedToken.isEmpty || trimmedParent.isEmpty)
-          .accessibilityIdentifier("dayline.notion.prepare")
+          Button("出力内容を確認") { prepare() }
+            .disabled(!connection.isConnected || trimmedParent.isEmpty)
+            .accessibilityIdentifier("dayline.notion.prepare")
         }
-        if model.state == .succeeded {
-          Section {
-            Label("Notionへ出力しました", systemImage: "checkmark.circle.fill")
-              .foregroundStyle(.green)
-              .accessibilityIdentifier("dayline.notion.success")
-          }
-        } else if model.state == .failed {
-          Section {
-            Text("Notionへ出力できませんでした。接続と権限を確認してください。")
-              .foregroundStyle(.red)
-              .accessibilityIdentifier("dayline.notion.failure")
-          }
-        }
-        if connectionFailed {
-          Section {
-            Text("credentialをKeychainへ保存できませんでした。")
-              .foregroundStyle(.red)
-          }
-        }
+        exportResultSection
       }
       .navigationTitle("Notionへ出力")
       .toolbar {
@@ -67,11 +45,11 @@ struct NotionExportView: View {
           Button("閉じる") { dismiss() }
         }
       }
-      .onAppear { parentPageID = configuration.parentPageID() }
-      .alert(
-        "Notionへ送信しますか？",
-        isPresented: $showsConfirmation
-      ) {
+      .task {
+        parentPageID = configuration.parentPageID()
+        await connection.load()
+      }
+      .alert("Notionへ送信しますか？", isPresented: $showsConfirmation) {
         Button("キャンセル", role: .cancel) { model.cancel() }
         Button("送信") { Task { await model.confirm() } }
       } message: {
@@ -80,28 +58,75 @@ struct NotionExportView: View {
     }
   }
 
-  private var trimmedToken: String {
-    accessToken.trimmingCharacters(in: .whitespacesAndNewlines)
+  @ViewBuilder
+  private var connectionSection: some View {
+    Section("接続") {
+      switch connection.state {
+      case .loading:
+        ProgressView("接続状態を確認中…")
+      case .disconnected:
+        Button("Notionと連携") { Task { await connection.connect() } }
+          .accessibilityIdentifier("dayline.notion.connect")
+      case .connecting:
+        ProgressView("Notionに接続中…")
+      case .connected(let summary):
+        Label(summary.workspaceName, systemImage: "checkmark.circle.fill")
+          .foregroundStyle(.green)
+          .accessibilityIdentifier("dayline.notion.connected")
+        Button("接続し直す") { Task { await connection.connect() } }
+        Button("連携を解除", role: .destructive) {
+          Task { await connection.disconnect() }
+        }
+        .accessibilityIdentifier("dayline.notion.disconnect")
+      case .disconnecting(let summary):
+        ProgressView("\(summary.workspaceName) の連携を解除中…")
+      case .unavailable:
+        Text("Notion OAuthがまだ構成されていません。")
+          .foregroundStyle(.secondary)
+          .accessibilityIdentifier("dayline.notion.unavailable")
+        Button("再試行") { Task { await connection.connect() } }
+      case .failed:
+        Text("接続状態を更新できませんでした。")
+          .foregroundStyle(.red)
+          .accessibilityIdentifier("dayline.notion.connection-failure")
+        Button("再試行") { Task { await connection.load() } }
+      }
+      if connection.disconnectRevocationFailed {
+        Text("端末上のcredentialは削除しました。Notion側の解除は完了を確認できませんでした。")
+          .font(.caption)
+          .foregroundStyle(.orange)
+      }
+    }
+  }
+
+  @ViewBuilder
+  private var exportResultSection: some View {
+    if model.state == .succeeded {
+      Section {
+        Label("Notionへ出力しました", systemImage: "checkmark.circle.fill")
+          .foregroundStyle(.green)
+          .accessibilityIdentifier("dayline.notion.success")
+      }
+    } else if model.state == .failed {
+      Section {
+        Text("Notionへ出力できませんでした。接続と権限を確認してください。")
+          .foregroundStyle(.red)
+          .accessibilityIdentifier("dayline.notion.failure")
+      }
+    }
   }
 
   private var trimmedParent: String {
     parentPageID.trimmingCharacters(in: .whitespacesAndNewlines)
   }
 
-  private func prepare() async {
-    do {
-      connectionFailed = false
-      try await credentials.save(accessToken: trimmedToken)
-      configuration.save(parentPageID: trimmedParent)
-      accessToken = ""
-      model.prepare(
-        artifact: artifact,
-        parentPageID: trimmedParent,
-        title: "\(artifact.dayId.localDate) Dayline Summary"
-      )
-      showsConfirmation = model.state == .awaitingConfirmation
-    } catch {
-      connectionFailed = true
-    }
+  private func prepare() {
+    configuration.save(parentPageID: trimmedParent)
+    model.prepare(
+      artifact: artifact,
+      parentPageID: trimmedParent,
+      title: "\(artifact.dayId.localDate) Dayline Summary"
+    )
+    showsConfirmation = model.state == .awaitingConfirmation
   }
 }

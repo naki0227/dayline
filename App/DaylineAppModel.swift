@@ -11,7 +11,7 @@ final class DaylineAppModel {
   let liveCapture: LiveMeetingCoordinator
   let liveMeeting: LiveMeetingModel
   let notionExport: NotionExportModel
-  let notionCredentials: any NotionCredentialStoring
+  let notionConnection: NotionConnectionModel
   let notionConfiguration: AppNotionConfiguration
   private(set) var sourcePolicy: DaylineSourcePolicy
 
@@ -24,7 +24,7 @@ final class DaylineAppModel {
     liveCapture = environment.liveCapture
     liveMeeting = environment.liveMeeting
     notionExport = environment.notionExport
-    notionCredentials = environment.notionCredentials
+    notionConnection = environment.notionConnection
     notionConfiguration = environment.notionConfiguration
     sourcePolicy = environment.initialSourcePolicy
     sourcePolicyStore = environment.sourcePolicyStore

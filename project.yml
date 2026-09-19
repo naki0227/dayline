@@ -50,6 +50,11 @@ targets:
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         CFBundleDevelopmentRegion: ja
         CFBundleLocalizations: [ja, en]
+        CFBundleURLTypes:
+          - CFBundleTypeRole: Editor
+            CFBundleURLName: com.enludus.Dayline.notion-oauth
+            CFBundleURLSchemes: [dayline]
+        DAYLINE_NOTION_OAUTH_BROKER_URL: $(DAYLINE_NOTION_OAUTH_BROKER_URL)
         ITSAppUsesNonExemptEncryption: false
         NSMicrophoneUsageDescription: "一日の音声を記録し、端末上で文脈を整理するために使用します。"
         NSSpeechRecognitionUsageDescription: "録音した音声を端末上で文字起こしするために使用します。"
@@ -71,6 +76,7 @@ targets:
         GENERATE_INFOPLIST_FILE: NO
         CURRENT_PROJECT_VERSION: "1"
         MARKETING_VERSION: "1.0"
+        DAYLINE_NOTION_OAUTH_BROKER_URL: ""
         TARGETED_DEVICE_FAMILY: "1,2"
       configs:
         Release:
