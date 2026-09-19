@@ -176,7 +176,8 @@ struct RootView: View {
   private func failureText(_ failure: CaptureFailure) -> String {
     switch failure {
     case .microphonePermissionDenied: "マイクの許可が必要です。"
-    case .audioSessionUnavailable: "音声セッションを開始できません。"
+    case .audioSessionConfigurationFailed: "録音用の音声設定を準備できません。"
+    case .audioSessionActivationFailed: "音声セッションを有効にできません。"
     case .storageUnavailable: "録音の保存先を準備できません。"
     case .recordingFailed: "録音を開始できませんでした。"
     }

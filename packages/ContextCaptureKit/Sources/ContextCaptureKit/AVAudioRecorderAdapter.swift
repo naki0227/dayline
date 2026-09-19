@@ -1,6 +1,58 @@
 #if os(iOS)
   import AVFAudio
   import Foundation
+  import OSLog
+
+  @MainActor
+  private final class AppleRecordingAudioSession: RecordingAudioSessionControlling {
+    private let session: AVAudioSession
+    private let logger: Logger
+
+    init(
+      session: AVAudioSession = .sharedInstance(),
+      logger: Logger = Logger(subsystem: "app.dayline", category: "AudioSession")
+    ) {
+      self.session = session
+      self.logger = logger
+    }
+
+    func configureForRecording() throws {
+      do {
+        try session.setCategory(
+          .record,
+          mode: .default,
+          options: [.allowBluetoothHFP]
+        )
+      } catch {
+        log(error, operation: "configure")
+        throw error
+      }
+    }
+
+    func activate() throws {
+      do {
+        try session.setActive(true)
+      } catch {
+        log(error, operation: "activate")
+        throw error
+      }
+    }
+
+    func deactivate() {
+      do {
+        try session.setActive(false, options: [.notifyOthersOnDeactivation])
+      } catch {
+        log(error, operation: "deactivate")
+      }
+    }
+
+    private func log(_ error: Error, operation: String) {
+      let error = error as NSError
+      logger.error(
+        "Audio session \(operation, privacy: .public): domain=\(error.domain, privacy: .public) code=\(error.code)"
+      )
+    }
+  }
 
   @MainActor
   public final class AVAudioRecorderAdapter: NSObject, AudioRecording {
@@ -8,6 +60,8 @@
     private var interruptionHandler: (@MainActor @Sendable (AudioInterruption) async -> Void)?
     private let fileManager: FileManager
     private let baseDirectory: URL
+    private let audioSession: RecordingAudioSessionLifecycle
+    private let logger = Logger(subsystem: "app.dayline", category: "AudioRecorder")
 
     public init(
       fileManager: FileManager = .default,
@@ -15,6 +69,7 @@
     ) {
       self.fileManager = fileManager
       self.baseDirectory = baseDirectory ?? Self.defaultBaseDirectory(fileManager: fileManager)
+      self.audioSession = RecordingAudioSessionLifecycle(session: AppleRecordingAudioSession())
       super.init()
       NotificationCenter.default.addObserver(
         self,
@@ -32,20 +87,9 @@
       guard await AVAudioApplication.requestRecordPermission() else {
         throw CaptureFailure.microphonePermissionDenied
       }
-      let session = AVAudioSession.sharedInstance()
+      try audioSession.prepare()
       do {
-        try session.setCategory(
-          .record,
-          mode: .spokenAudio,
-          options: [.allowBluetoothHFP]
-        )
-        try session.setActive(true)
-      } catch {
-        throw CaptureFailure.audioSessionUnavailable
-      }
-
-      let destination = try makeDestination()
-      do {
+        let destination = try makeDestination()
         let recorder = try AVAudioRecorder(
           url: destination,
           settings: [
@@ -62,8 +106,14 @@
         self.recorder = recorder
         return destination
       } catch let failure as CaptureFailure {
+        audioSession.deactivate()
         throw failure
       } catch {
+        let error = error as NSError
+        logger.error(
+          "Audio recorder start: domain=\(error.domain, privacy: .public) code=\(error.code)"
+        )
+        audioSession.deactivate()
         throw CaptureFailure.recordingFailed
       }
     }
@@ -71,6 +121,7 @@
     public func stopChunk() async {
       recorder?.stop()
       recorder = nil
+      audioSession.deactivate()
     }
 
     public func setInterruptionHandler(

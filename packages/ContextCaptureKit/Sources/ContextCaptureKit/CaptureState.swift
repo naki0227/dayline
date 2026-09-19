@@ -16,7 +16,8 @@ public enum AudioSourceState: Equatable, Sendable {
 
 public enum CaptureFailure: Error, Equatable, Sendable {
   case microphonePermissionDenied
-  case audioSessionUnavailable
+  case audioSessionConfigurationFailed
+  case audioSessionActivationFailed
   case storageUnavailable
   case recordingFailed
 }
