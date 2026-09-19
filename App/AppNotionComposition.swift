@@ -17,9 +17,10 @@ extension AppEnvironment {
       )
     }
     let broker: any NotionOAuthBrokering
-    let rawURL = Bundle.main.object(
-      forInfoDictionaryKey: "DAYLINE_NOTION_OAUTH_BROKER_URL"
-    ) as? String
+    let rawURL =
+      Bundle.main.object(
+        forInfoDictionaryKey: "DAYLINE_NOTION_OAUTH_BROKER_URL"
+      ) as? String
     if let rawURL, let baseURL = URL(string: rawURL), baseURL.scheme == "https" {
       broker = HTTPNotionOAuthBroker(baseURL: baseURL)
     } else {

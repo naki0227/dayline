@@ -14,7 +14,9 @@ protocol AppWebAuthenticating {
 }
 
 @MainActor
-final class WebAuthenticationSession: NSObject, AppWebAuthenticating, ASWebAuthenticationPresentationContextProviding {
+final class WebAuthenticationSession: NSObject, AppWebAuthenticating,
+  ASWebAuthenticationPresentationContextProviding
+{  // swiftlint:disable:this opening_brace
   private var session: ASWebAuthenticationSession?
 
   func authenticate(at url: URL, callbackScheme: String) async throws -> URL {
