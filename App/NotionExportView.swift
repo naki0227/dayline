@@ -92,7 +92,9 @@ struct NotionExportView: View {
         Button("再試行") { Task { await connection.load() } }
       }
       if connection.disconnectRevocationFailed {
-        Text("端末上のcredentialは削除しました。Notion側の解除は完了を確認できませんでした。")
+        Text(
+          "端末上のcredentialは削除しました。Notion側の解除は完了を確認できませんでした。"
+        )
           .font(.caption)
           .foregroundStyle(.orange)
       }
@@ -109,7 +111,9 @@ struct NotionExportView: View {
       }
     } else if model.state == .failed {
       Section {
-        Text("Notionへ出力できませんでした。接続と権限を確認してください。")
+        Text(
+          "Notionへ出力できませんでした。接続と権限を確認してください。"
+        )
           .foregroundStyle(.red)
           .accessibilityIdentifier("dayline.notion.failure")
       }

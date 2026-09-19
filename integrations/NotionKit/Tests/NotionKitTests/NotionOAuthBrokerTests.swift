@@ -9,7 +9,12 @@ func startsOAuthWithoutPuttingCredentialsInCallback() async throws {
     responses: [
       OAuthResponse(
         statusCode: 200,
-        body: #"{"session_id":"session-1","authorization_url":"https://api.notion.com/v1/oauth/authorize?state=server-state"}"#
+        body: """
+          {
+            "session_id":"session-1",
+            "authorization_url":"https://api.notion.com/v1/oauth/authorize?state=server-state"
+          }
+          """
       )
     ]
   )
@@ -82,7 +87,10 @@ func revokesWithCapabilityAndIgnoresResponseBody() async throws {
 
   #expect(json["connection_id"] == "connection-1")
   #expect(json["revocation_token"] == "revoke-secret")
-  #expect(request.url?.absoluteString == "https://broker.dayline.example/v1/notion/oauth/connections/revoke")
+  #expect(
+    request.url?.absoluteString
+      == "https://broker.dayline.example/v1/notion/oauth/connections/revoke"
+  )
 }
 
 @Test
