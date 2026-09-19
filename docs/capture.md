@@ -13,6 +13,8 @@ is the iOS implementation.
 - Start failure resets Daily to stopped and exposes only a content-free failure.
 - Stop is idempotent outside the running state.
 - Chunk rotation preserves Daily running state.
+- Every failed recorder start deactivates the audio session, including configuration,
+  activation, storage, and recorder-construction failures.
 
 ## Audio format and storage
 
@@ -23,6 +25,14 @@ not part of CloudKit synchronization.
 
 The production target declares the audio background mode plus microphone and
 speech usage descriptions.
+
+The passive recorder configures `AVAudioSession` with the recording category,
+default mode, and Bluetooth HFP input support. Session configuration and activation
+are separate lifecycle stages so the UI and device diagnostics can identify which
+stage failed. Diagnostics contain only the operation and `NSError` domain/code; no
+recorded content or destination path is logged. Deactivation uses
+`notifyOthersOnDeactivation` so another app's audio can recover after Dayline stops
+or fails to start.
 
 ## Transcription boundary
 
@@ -63,9 +73,10 @@ audio session simultaneously.
 
 ## Testing
 
-Package tests use deterministic recorder and transcriber fakes for success,
-permission failure, manual rotation, interruption/resume, volatile/final segment
-handling, duplicate rejection, and ContextEvent mapping. The XCUITest launches with
+Package tests use deterministic recorder, audio-session, and transcriber fakes for
+success, permission failure, session configuration/activation cleanup, manual
+rotation, interruption/resume, volatile/final segment handling, duplicate rejection,
+and ContextEvent mapping. The XCUITest launches with
 `--ui-testing`; the composition root then injects a fake recorder, so CI never sees
 a microphone permission dialog or writes a real recording. The same launch mode uses
 a deterministic Live stream and verifies that the active indicator remains visible

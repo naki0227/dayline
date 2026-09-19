@@ -2,12 +2,19 @@
 
 ## In progress
 
-- [ ] Dry-run and upload a new `1.0` build after fixing the generated
-      Info.plist version/build placeholders and archive identity guard.
-- [ ] Confirm internal tester availability once the uploaded build is `VALID`.
+- [ ] Verify Issue #17's recording-session fix on a physical iPhone through the next
+      TestFlight build; configuration, activation, storage, and recorder failures are
+      now distinguishable and cleanup is deterministic.
 
 ## Not started
 
+- [ ] Issue #18: keep Daily running while audio is initially unavailable and resume
+      into a fresh chunk after calls/interruption.
+- [ ] Issue #19: replace manual Notion credentials with a product OAuth flow.
+- [ ] Issue #20: add an explicitly enabled Google Calendar OAuth connector.
+- [ ] Issue #21: package the Mac collectors as a signed/notarized companion app.
+- [ ] Issue #22: redesign the iOS information architecture and product UI.
+- [ ] Issue #23: expose privacy-safe status and actions through WidgetKit/App Intents.
 - [ ] Add Calendar read/write adapters behind source allowlisting and ActionProposal policy.
 - [ ] Add Live Activity, App Intent, and Control Center capture controls.
 - [ ] Add CloudKit synchronization for explicitly allowed lightweight records;
@@ -93,6 +100,9 @@
 - [x] Upload Dayline `0.1.0 (5)` with Apple reporting `UPLOAD SUCCEEDED`.
 - [x] Diagnose that the archived Info.plist had literal `1.0 (1)` despite
       command-line `0.1.0 (5)`, and add pre-upload archive identity tests.
+- [x] Deliver a TestFlight build and collect the first device-feedback epic (#16).
+- [x] Implement Issue #17's recording-safe `.record` + `.default` audio-session
+      configuration, stage-specific failures, sanitized diagnostics, and cleanup tests.
 
 ## On hold
 
@@ -111,8 +121,9 @@
 
 ## Start here next time
 
-1. Read `docs/adr/0001-context-platform-boundaries.md` and
-   `docs/adr/0006-macos-context-collection.md`.
-2. Read `docs/product-profiles.md`, `docs/capture.md`, and GitHub Issue #11.
-3. Run `make ci`.
-4. Start only explicitly reprioritized follow-up work; Phase 2+ remains out of scope.
+1. Read GitHub Epic #16, Issue #18, `docs/capture.md`, and
+   `docs/reports/2026-09-19-testflight-feedback-audio-session-report.md`.
+2. Accept the local Xcode license or use CI, then run
+   `swift test --package-path packages/ContextCaptureKit --parallel`.
+3. Confirm Issue #17 on a physical iPhone in the next TestFlight build.
+4. Implement Issue #18 without coupling Daily lifetime to audio availability.
