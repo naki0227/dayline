@@ -195,7 +195,9 @@ public final class CaptureCoordinator {
       audioRecoveryTask = nil
     }
   }
+}
 
+extension CaptureCoordinator {
   public func processCompletedChunk(
     _ fileURL: URL,
     startedAt chunkStartedAt: Date

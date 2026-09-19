@@ -29,6 +29,7 @@ Daily session と音声 source の lifetime を分離し、通話による一時
 - `packages/ContextCaptureKit/Sources/ContextCaptureKit/CaptureCoordinator.swift`
 - `packages/ContextCaptureKit/Sources/ContextCaptureKit/CaptureState.swift`
 - `packages/ContextCaptureKit/Tests/ContextCaptureKitTests/CaptureCoordinatorTests.swift`
+- `packages/ContextCaptureKit/Tests/ContextCaptureKitTests/CaptureCoordinatorAudioRecoveryTests.swift`
 - `packages/ContextCaptureKit/Tests/ContextCaptureKitTests/RecordingAudioSessionLifecycleTests.swift`
 - `App/AppCaptureEnvironment.swift`
 - `App/RootView.swift`
@@ -67,7 +68,9 @@ Live Meeting、Rust、contracts、SQLite schema、外部 integration への変�
 
 - `git diff --check` — 成功。
 - Issue #17 の `CI / Swift` — format、lint、typecheck、unit test、build 成功。
-- Issue #18 の Swift/App 検証 — push 後の GitHub Actions で確認する。
+- Issue #18 の初回 `CI / Swift` — file/type body length lint で失敗。
+- Recovery tests を専用ファイルへ分け、coordinator の transcription/scheduler
+  methods を extension へ分離して責務と lint 上限を回復した。再 push で確認する。
 
 ローカル Swift コマンドは Xcode license 未同意のため実行できない。これは前作業報告書に
 記載済みであり、main の責務別 CI を代替検証とする。
