@@ -5,11 +5,11 @@
 - [ ] Verify Issue #17's recording-session fix on a physical iPhone through the next
       TestFlight build; configuration, activation, storage, and recorder failures are
       now distinguishable and cleanup is deterministic.
+- [ ] Verify Issue #18 on-device: start Daily during a call, end the call, and confirm
+      a fresh audio chunk begins automatically without restarting Daily.
 
 ## Not started
 
-- [ ] Issue #18: keep Daily running while audio is initially unavailable and resume
-      into a fresh chunk after calls/interruption.
 - [ ] Issue #19: replace manual Notion credentials with a product OAuth flow.
 - [ ] Issue #20: add an explicitly enabled Google Calendar OAuth connector.
 - [ ] Issue #21: package the Mac collectors as a signed/notarized companion app.
@@ -103,6 +103,8 @@
 - [x] Deliver a TestFlight build and collect the first device-feedback epic (#16).
 - [x] Implement Issue #17's recording-safe `.record` + `.default` audio-session
       configuration, stage-specific failures, sanitized diagnostics, and cleanup tests.
+- [x] Implement Issue #18's initial audio-waiting state, two-second recovery loop,
+      fresh-chunk resumption, visible UI state, and deterministic unit/UI tests.
 
 ## On hold
 
@@ -121,9 +123,10 @@
 
 ## Start here next time
 
-1. Read GitHub Epic #16, Issue #18, `docs/capture.md`, and
-   `docs/reports/2026-09-19-testflight-feedback-audio-session-report.md`.
+1. Read GitHub Epic #16, Issue #19, `docs/capture.md`, and
+   `docs/reports/2026-09-19-call-audio-recovery-report.md`.
 2. Accept the local Xcode license or use CI, then run
    `swift test --package-path packages/ContextCaptureKit --parallel`.
 3. Confirm Issue #17 on a physical iPhone in the next TestFlight build.
-4. Implement Issue #18 without coupling Daily lifetime to audio availability.
+4. Begin Issue #19 by documenting the OAuth redirect/backend and token-lifecycle
+   boundary before adding credentials or network code.

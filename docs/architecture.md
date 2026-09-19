@@ -120,6 +120,9 @@ Migration and rollback details are in `docs/storage.md`.
   generation, FFI, or persistence.
 - Daily capture and audio-source state are independent. An interruption changes
   audio from recording to interrupted while Daily remains running.
+- Initial `insufficientPriority` activation enters `waitingForAudio`; a bounded-interval
+  retry starts a fresh chunk when call audio releases the microphone. Other failures
+  remain terminal and do not masquerade as a call interruption.
 - Passive audio is AAC-LC, mono, 16 kHz, 32 kbps and rotates into a new local file
   every five minutes. Files live below Application Support/audio/One-Day-date.
 - The app targets iOS 18. Foundation Models availability never gates recording.

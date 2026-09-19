@@ -8,9 +8,14 @@ is the iOS implementation.
 
 - Daily and audio-source state are independent.
 - An audio interruption never stops Daily capture.
+- Starting Daily while a call owns microphone priority enters `waitingForAudio`
+  instead of failing the Daily session.
 - A resumable interruption starts a new chunk instead of appending to a possibly
   incomplete audio container.
-- Start failure resets Daily to stopped and exposes only a content-free failure.
+- A two-second content-free recovery loop retries temporary priority failures; a
+  successful recovery always starts a fresh chunk.
+- Non-temporary start failure resets Daily to stopped and exposes only a content-free
+  failure.
 - Stop is idempotent outside the running state.
 - Chunk rotation preserves Daily running state.
 - Every failed recorder start deactivates the audio session, including configuration,
@@ -33,6 +38,11 @@ stage failed. Diagnostics contain only the operation and `NSError` domain/code; 
 recorded content or destination path is logged. Deactivation uses
 `notifyOthersOnDeactivation` so another app's audio can recover after Dayline stops
 or fails to start.
+
+iOS reports microphone capture attempts made during another active call as
+`AVAudioSession.ErrorCode.insufficientPriority`. The adapter maps only that documented
+temporary condition to the waiting state. Configuration, permission, storage, and
+recorder failures remain terminal and visible rather than being retried forever.
 
 ## Transcription boundary
 
