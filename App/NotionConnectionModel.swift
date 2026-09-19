@@ -17,21 +17,27 @@ enum NotionConnectionState: Equatable {
 final class NotionConnectionModel {
   private(set) var state: NotionConnectionState = .loading
   private(set) var disconnectRevocationFailed = false
+  private(set) var destinations: [NotionDestination] = []
+  private(set) var destinationLoading = false
+  private(set) var destinationLoadFailed = false
 
   private let broker: any NotionOAuthBrokering
   private let credentials: any NotionCredentialStoring
   private let webAuthentication: any AppWebAuthenticating
+  private let destinationListing: any NotionDestinationListing
   private let callbackURL: URL
 
   init(
     broker: any NotionOAuthBrokering,
     credentials: any NotionCredentialStoring,
     webAuthentication: any AppWebAuthenticating,
+    destinationListing: any NotionDestinationListing,
     callbackURL: URL
   ) {
     self.broker = broker
     self.credentials = credentials
     self.webAuthentication = webAuthentication
+    self.destinationListing = destinationListing
     self.callbackURL = callbackURL
   }
 
@@ -42,7 +48,9 @@ final class NotionConnectionModel {
 
   func load() async {
     do {
-      state = .connected(try await credentials.connectionSummary())
+      let summary = try await credentials.connectionSummary()
+      state = .connected(summary)
+      if summary.authorization == .oauth { await loadDestinations() }
     } catch NotionCredentialFailure.unavailable {
       state = .disconnected
     } catch {
@@ -65,6 +73,7 @@ final class NotionConnectionModel {
       let connection = try await broker.complete(sessionID: session.id)
       try await credentials.save(connection: connection)
       state = .connected(connection.summary)
+      await loadDestinations()
     } catch AppWebAuthenticationFailure.cancelled {
       state = previousState
     } catch NotionOAuthFailure.notConfigured {
@@ -90,9 +99,22 @@ final class NotionConnectionModel {
         }
       }
       try await credentials.remove()
+      destinations = []
       state = .disconnected
     } catch {
       state = .failed
+    }
+  }
+
+  func loadDestinations() async {
+    destinationLoading = true
+    destinationLoadFailed = false
+    defer { destinationLoading = false }
+    do {
+      destinations = try await destinationListing.listDestinations()
+    } catch {
+      destinations = []
+      destinationLoadFailed = true
     }
   }
 }

@@ -12,14 +12,14 @@ extension AppEnvironment {
         broker: DeterministicNotionOAuthBroker(),
         credentials: credentials,
         webAuthentication: DeterministicWebAuthentication(),
+        destinationListing: DeterministicNotionDestinationListing(),
         callbackURL: callbackURL
       )
     }
     let broker: any NotionOAuthBrokering
-    if
-      let rawURL = Bundle.main.object(
-        forInfoDictionaryKey: "DAYLINE_NOTION_OAUTH_BROKER_URL"
-      ) as? String,
+    if let rawURL = Bundle.main.object(
+      forInfoDictionaryKey: "DAYLINE_NOTION_OAUTH_BROKER_URL"
+    ) as? String,
       let baseURL = URL(string: rawURL),
       baseURL.scheme == "https"
     {
@@ -31,6 +31,7 @@ extension AppEnvironment {
       broker: broker,
       credentials: credentials,
       webAuthentication: AppWebAuthenticationSession(),
+      destinationListing: NotionPageDirectory(credentials: credentials),
       callbackURL: callbackURL
     )
   }
@@ -101,6 +102,14 @@ private struct DeterministicNotionOAuthBroker: NotionOAuthBrokering {
   func revoke(connectionID: String, revocationToken: String) throws {
     guard connectionID == "ui-test-connection", revocationToken == "ui-test-revocation-token"
     else { throw NotionOAuthFailure.rejected }
+  }
+}
+
+private struct DeterministicNotionDestinationListing: NotionDestinationListing {
+  func listDestinations() -> [NotionDestination] {
+    [
+      NotionDestination(id: "parent-page", title: "UI Test Destination", url: nil)
+    ]
   }
 }
 

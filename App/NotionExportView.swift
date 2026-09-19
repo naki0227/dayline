@@ -16,15 +16,7 @@ struct NotionExportView: View {
     NavigationStack {
       Form {
         connectionSection
-        Section("保存先") {
-          TextField("親ページID", text: $parentPageID)
-            .textInputAutocapitalization(.never)
-            .autocorrectionDisabled()
-            .accessibilityIdentifier("dayline.notion.parent")
-          Text("OAuthで共有したページのIDを指定します。")
-            .font(.caption)
-            .foregroundStyle(.secondary)
-        }
+        destinationSection
         Section("送信する内容") {
           Text(artifact.content.text)
             .lineLimit(4)
@@ -49,11 +41,55 @@ struct NotionExportView: View {
         parentPageID = configuration.parentPageID()
         await connection.load()
       }
+      .onChange(of: connection.destinations) { _, destinations in
+        guard
+          !destinations.isEmpty,
+          !destinations.contains(where: { $0.id == parentPageID })
+        else { return }
+        parentPageID = destinations[0].id
+      }
       .alert("Notionへ送信しますか？", isPresented: $showsConfirmation) {
         Button("キャンセル", role: .cancel) { model.cancel() }
         Button("送信") { Task { await model.confirm() } }
       } message: {
         Text("選択した要約を親ページ \(trimmedParent) の下に作成します。")
+      }
+    }
+  }
+
+  @ViewBuilder
+  private var destinationSection: some View {
+    Section("保存先") {
+      if oauthConnected {
+        if connection.destinationLoading {
+          ProgressView("共有ページを読み込み中…")
+        } else if connection.destinations.isEmpty {
+          Text("書き込み可能な共有ページが見つかりません。")
+            .foregroundStyle(.secondary)
+          if connection.destinationLoadFailed {
+            Button("ページを再読み込み") {
+              Task { await connection.loadDestinations() }
+            }
+          }
+        } else {
+          Picker("親ページ", selection: $parentPageID) {
+            ForEach(connection.destinations) { destination in
+              Text(destination.title).tag(destination.id)
+            }
+          }
+          .accessibilityIdentifier("dayline.notion.destination")
+        }
+      } else if connection.isConnected {
+        TextField("親ページID", text: $parentPageID)
+          .textInputAutocapitalization(.never)
+          .autocorrectionDisabled()
+          .accessibilityIdentifier("dayline.notion.parent")
+        Text("既存の開発用手動接続を使用しています。")
+          .font(.caption)
+          .foregroundStyle(.secondary)
+      } else {
+        Text("Notionと連携すると保存先を選べます。")
+          .foregroundStyle(.secondary)
       }
     }
   }
@@ -93,10 +129,11 @@ struct NotionExportView: View {
       }
       if connection.disconnectRevocationFailed {
         Text(
-          "端末上のcredentialは削除しました。Notion側の解除は完了を確認できませんでした。"
+          "端末上のcredentialは削除しました。"
+            + "Notion側の解除は完了を確認できませんでした。"
         )
-          .font(.caption)
-          .foregroundStyle(.orange)
+        .font(.caption)
+        .foregroundStyle(.orange)
       }
     }
   }
@@ -114,14 +151,21 @@ struct NotionExportView: View {
         Text(
           "Notionへ出力できませんでした。接続と権限を確認してください。"
         )
-          .foregroundStyle(.red)
-          .accessibilityIdentifier("dayline.notion.failure")
+        .foregroundStyle(.red)
+        .accessibilityIdentifier("dayline.notion.failure")
       }
     }
   }
 
   private var trimmedParent: String {
     parentPageID.trimmingCharacters(in: .whitespacesAndNewlines)
+  }
+
+  private var oauthConnected: Bool {
+    if case .connected(let summary) = connection.state {
+      return summary.authorization == .oauth
+    }
+    return false
   }
 
   private func prepare() {

@@ -99,12 +99,10 @@ final class DaylineCaptureUITests: XCTestCase {
     open.tap()
 
     let connect = app.buttons["dayline.notion.connect"]
-    let parent = app.textFields["dayline.notion.parent"]
     XCTAssertTrue(connect.waitForExistence(timeout: 5))
     connect.tap()
     XCTAssertTrue(app.staticTexts["dayline.notion.connected"].waitForExistence(timeout: 5))
-    parent.tap()
-    parent.typeText("parent-page")
+    XCTAssertTrue(app.buttons["dayline.notion.destination"].waitForExistence(timeout: 5))
     app.buttons["dayline.notion.prepare"].tap()
 
     let alert = app.alerts["Notionへ送信しますか？"]
