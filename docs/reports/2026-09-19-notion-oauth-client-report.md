@@ -69,8 +69,8 @@ Context contract、Rust store、録音、Daily/Live生成、App Store署名に�
 - `git diff --check`: 成功。
 - `plutil -lint App/Info.plist`: 成功。
 - `swift format lint ...` / `swift test ...`: local Xcode license未同意のため実行不能。
-- GitHub Actions `CI / Integrations`: format、typecheck、unit test、release build成功。
-- GitHub Actionsの全責務workflowは最終documentation commit後に再確認する。
+- GitHub Actions commit `39b5fb3`: 全10 workflow成功。`CI / Integrations`の
+  format/typecheck/unit test/release build、および`CI / Apple App`のbuild/UI testsを含む。
 
 ## CIで確認される内容
 
