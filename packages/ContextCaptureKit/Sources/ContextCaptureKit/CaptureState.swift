@@ -9,6 +9,7 @@ public enum DailyCaptureState: Equatable, Sendable {
 
 public enum AudioSourceState: Equatable, Sendable {
   case stopped
+  case waitingForAudio
   case recording
   case interrupted
   case unavailable
@@ -18,6 +19,7 @@ public enum CaptureFailure: Error, Equatable, Sendable {
   case microphonePermissionDenied
   case audioSessionConfigurationFailed
   case audioSessionActivationFailed
+  case audioTemporarilyUnavailable
   case storageUnavailable
   case recordingFailed
 }

@@ -34,6 +34,10 @@
         try session.setActive(true)
       } catch {
         log(error, operation: "activate")
+        let errorCode = (error as NSError).code
+        if errorCode == Int(AVAudioSession.ErrorCode.insufficientPriority.rawValue) {
+          throw RecordingAudioSessionControlFailure.temporarilyUnavailable
+        }
         throw error
       }
     }

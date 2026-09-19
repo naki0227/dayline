@@ -11,6 +11,7 @@ private final class AudioSessionFake: RecordingAudioSessionControlling {
 
   var configurationResult: Result<Void, Failure> = .success(())
   var activationResult: Result<Void, Failure> = .success(())
+  var activationIsTemporarilyUnavailable = false
   private(set) var configureCount = 0
   private(set) var activateCount = 0
   private(set) var deactivateCount = 0
@@ -22,6 +23,9 @@ private final class AudioSessionFake: RecordingAudioSessionControlling {
 
   func activate() throws {
     activateCount += 1
+    if activationIsTemporarilyUnavailable {
+      throw RecordingAudioSessionControlFailure.temporarilyUnavailable
+    }
     try activationResult.get()
   }
 
@@ -65,6 +69,20 @@ func activationFailureIsSpecificAndCleansUp() {
   let lifecycle = RecordingAudioSessionLifecycle(session: session)
 
   #expect(throws: CaptureFailure.audioSessionActivationFailed) {
+    try lifecycle.prepare()
+  }
+  #expect(session.activateCount == 1)
+  #expect(session.deactivateCount == 1)
+}
+
+@MainActor
+@Test
+func temporaryActivationFailureRemainsRecoverableAndCleansUp() {
+  let session = AudioSessionFake()
+  session.activationIsTemporarilyUnavailable = true
+  let lifecycle = RecordingAudioSessionLifecycle(session: session)
+
+  #expect(throws: CaptureFailure.audioTemporarilyUnavailable) {
     try lifecycle.prepare()
   }
   #expect(session.activateCount == 1)

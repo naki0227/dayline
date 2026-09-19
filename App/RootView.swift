@@ -152,7 +152,14 @@ struct RootView: View {
     switch capture.dailyState {
     case .stopped: "停止中"
     case .starting: "開始中"
-    case .running: capture.audioState == .interrupted ? "録音中断" : "録音中"
+    case .running:
+      switch capture.audioState {
+      case .waitingForAudio: "音声を待機中"
+      case .interrupted: "録音中断"
+      case .unavailable: "録音利用不可"
+      case .recording: "録音中"
+      case .stopped: "Daily実行中"
+      }
     case .stopping: "停止中"
     }
   }
@@ -162,6 +169,7 @@ struct RootView: View {
       return failureText(failure)
     }
     return switch capture.audioState {
+    case .waitingForAudio: "通話が終わると自動的に録音を開始します。"
     case .interrupted: "通話や他の音声が終了すると録音を再開できます。"
     case .unavailable: "マイクを利用できません。設定を確認してください。"
     case .recording: "5分ごとにローカルchunkへ保存します。"
@@ -178,6 +186,7 @@ struct RootView: View {
     case .microphonePermissionDenied: "マイクの許可が必要です。"
     case .audioSessionConfigurationFailed: "録音用の音声設定を準備できません。"
     case .audioSessionActivationFailed: "音声セッションを有効にできません。"
+    case .audioTemporarilyUnavailable: "音声が利用可能になるまで待機します。"
     case .storageUnavailable: "録音の保存先を準備できません。"
     case .recordingFailed: "録音を開始できませんでした。"
     }

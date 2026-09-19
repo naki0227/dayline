@@ -1,5 +1,9 @@
 import Foundation
 
+enum RecordingAudioSessionControlFailure: Error {
+  case temporarilyUnavailable
+}
+
 @MainActor
 protocol RecordingAudioSessionControlling: AnyObject {
   func configureForRecording() throws
@@ -25,6 +29,9 @@ final class RecordingAudioSessionLifecycle {
 
     do {
       try session.activate()
+    } catch RecordingAudioSessionControlFailure.temporarilyUnavailable {
+      session.deactivate()
+      throw CaptureFailure.audioTemporarilyUnavailable
     } catch {
       session.deactivate()
       throw CaptureFailure.audioSessionActivationFailed

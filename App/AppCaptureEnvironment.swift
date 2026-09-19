@@ -13,9 +13,16 @@ enum AppCaptureEnvironment {
     eventStore: any ContextEventPersisting
   ) -> CaptureCoordinator {
     if processInfo.arguments.contains("--ui-testing") {
+      let recorder: any AudioRecording =
+        if processInfo.arguments.contains("--ui-testing-audio-waiting") {
+          DeterministicWaitingAudioRecorder()
+        } else {
+          DeterministicAudioRecorder()
+        }
       return CaptureCoordinator(
-        recorder: DeterministicAudioRecorder(),
-        automaticChunkDuration: nil
+        recorder: recorder,
+        automaticChunkDuration: nil,
+        audioRecoveryInterval: nil
       )
     }
     let pipeline = makeTranscriptEventPipeline(eventStore: eventStore)
@@ -149,6 +156,15 @@ private struct UnavailableLiveSpeechStream: LiveSpeechStreaming {
 private final class DeterministicAudioRecorder: AudioRecording {
   func startChunk() async throws -> URL {
     URL(filePath: "/tmp/dayline-ui-test.m4a")
+  }
+
+  func stopChunk() async {}
+}
+
+@MainActor
+private final class DeterministicWaitingAudioRecorder: AudioRecording {
+  func startChunk() async throws -> URL {
+    throw CaptureFailure.audioTemporarilyUnavailable
   }
 
   func stopChunk() async {}

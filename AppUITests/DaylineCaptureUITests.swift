@@ -22,6 +22,21 @@ final class DaylineCaptureUITests: XCTestCase {
     XCTAssertTrue(waitForLabel("停止中", element: status))
   }
 
+  func testDailyRemainsRunningWhileWaitingForCallAudio() {
+    let app = XCUIApplication()
+    app.launchArguments = ["--ui-testing", "--ui-testing-audio-waiting"]
+    app.launch()
+
+    let status = app.staticTexts["dayline.capture.status"]
+    let toggle = app.buttons["dayline.capture.toggle"]
+    XCTAssertTrue(status.waitForExistence(timeout: 5))
+
+    toggle.tap()
+
+    XCTAssertTrue(waitForLabel("音声を待機中", element: status))
+    XCTAssertEqual(toggle.label, "録音を停止")
+  }
+
   func testDailySummaryShowsAnEmptyDayWithoutInvokingSystemIntelligence() {
     let app = XCUIApplication()
     app.launchArguments = ["--ui-testing"]

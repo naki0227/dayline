@@ -20,7 +20,9 @@ public final class CaptureCoordinator {
   private let transcriptionLocale: Locale
   private let now: @MainActor @Sendable () -> Date
   private let automaticChunkDuration: Duration?
+  private let audioRecoveryInterval: Duration?
   private var rotationTask: Task<Void, Never>?
+  private var audioRecoveryTask: Task<Void, Never>?
 
   public init(
     recorder: any AudioRecording,
@@ -28,7 +30,8 @@ public final class CaptureCoordinator {
     transcriptEventPipeline: TranscriptEventPipeline? = nil,
     transcriptionLocale: Locale = Locale(identifier: "ja-JP"),
     now: @escaping @MainActor @Sendable () -> Date = Date.init,
-    automaticChunkDuration: Duration? = .seconds(300)
+    automaticChunkDuration: Duration? = .seconds(300),
+    audioRecoveryInterval: Duration? = .seconds(2)
   ) {
     self.recorder = recorder
     self.transcriber = transcriber
@@ -36,6 +39,7 @@ public final class CaptureCoordinator {
     self.transcriptionLocale = transcriptionLocale
     self.now = now
     self.automaticChunkDuration = automaticChunkDuration
+    self.audioRecoveryInterval = audioRecoveryInterval
     recorder.setInterruptionHandler { [weak self] interruption in
       switch interruption {
       case .began:
@@ -68,7 +72,11 @@ public final class CaptureCoordinator {
       audioState = .recording
       scheduleRotation()
     } catch let failure as CaptureFailure {
-      failStart(with: failure)
+      if failure == .audioTemporarilyUnavailable {
+        enterAudioWaitingState()
+      } else {
+        failStart(with: failure)
+      }
     } catch {
       failStart(with: .recordingFailed)
     }
@@ -79,6 +87,8 @@ public final class CaptureCoordinator {
     dailyState = .stopping
     rotationTask?.cancel()
     rotationTask = nil
+    audioRecoveryTask?.cancel()
+    audioRecoveryTask = nil
     let completedChunk = activeFileURL
     let completedChunkStartedAt = startedAt
     await recorder.stopChunk()
@@ -99,20 +109,22 @@ public final class CaptureCoordinator {
       activeFileURL = try await recorder.startChunk()
       startedAt = now()
     } catch let failure as CaptureFailure {
-      audioState = .unavailable
-      activeFileURL = nil
-      startedAt = nil
-      lastFailure = failure
+      rotationTask?.cancel()
+      rotationTask = nil
+      handleAudioStartFailure(failure)
     } catch {
-      audioState = .unavailable
-      activeFileURL = nil
-      startedAt = nil
-      lastFailure = .recordingFailed
+      rotationTask?.cancel()
+      rotationTask = nil
+      handleAudioStartFailure(.recordingFailed)
     }
   }
 
   public func interruptionBegan() async {
     guard dailyState == .running else { return }
+    rotationTask?.cancel()
+    rotationTask = nil
+    audioRecoveryTask?.cancel()
+    audioRecoveryTask = nil
     let completedChunk = activeFileURL
     let completedChunkStartedAt = startedAt
     await recorder.stopChunk()
@@ -123,19 +135,32 @@ public final class CaptureCoordinator {
   }
 
   public func interruptionEnded(shouldResume: Bool) async {
-    guard dailyState == .running, audioState == .interrupted, shouldResume else { return }
+    guard
+      dailyState == .running,
+      audioState == .interrupted || audioState == .waitingForAudio
+    else { return }
+    audioState = .waitingForAudio
+    if !shouldResume {
+      scheduleAudioRecovery()
+      return
+    }
+    await retryWaitingAudio()
+  }
+
+  public func retryWaitingAudio() async {
+    guard dailyState == .running, audioState == .waitingForAudio else { return }
     do {
       activeFileURL = try await recorder.startChunk()
       startedAt = now()
       audioState = .recording
+      lastFailure = nil
+      audioRecoveryTask?.cancel()
+      audioRecoveryTask = nil
+      scheduleRotation()
     } catch let failure as CaptureFailure {
-      audioState = .unavailable
-      startedAt = nil
-      lastFailure = failure
+      handleAudioStartFailure(failure)
     } catch {
-      audioState = .unavailable
-      startedAt = nil
-      lastFailure = .recordingFailed
+      handleAudioStartFailure(.recordingFailed)
     }
   }
 
@@ -145,6 +170,30 @@ public final class CaptureCoordinator {
     activeFileURL = nil
     startedAt = nil
     lastFailure = failure
+  }
+
+  private func enterAudioWaitingState() {
+    dailyState = .running
+    audioState = .waitingForAudio
+    activeFileURL = nil
+    startedAt = nil
+    lastFailure = nil
+    scheduleAudioRecovery()
+  }
+
+  private func handleAudioStartFailure(_ failure: CaptureFailure) {
+    activeFileURL = nil
+    startedAt = nil
+    if failure == .audioTemporarilyUnavailable {
+      audioState = .waitingForAudio
+      lastFailure = nil
+      scheduleAudioRecovery()
+    } else {
+      audioState = .unavailable
+      lastFailure = failure
+      audioRecoveryTask?.cancel()
+      audioRecoveryTask = nil
+    }
   }
 
   public func processCompletedChunk(
@@ -207,6 +256,25 @@ public final class CaptureCoordinator {
         }
         guard let self, self.dailyState == .running else { return }
         await self.rotateChunk()
+      }
+    }
+  }
+
+  private func scheduleAudioRecovery() {
+    guard let audioRecoveryInterval, audioRecoveryTask == nil else { return }
+    audioRecoveryTask = Task { [weak self] in
+      while !Task.isCancelled {
+        do {
+          try await Task.sleep(for: audioRecoveryInterval)
+        } catch {
+          return
+        }
+        guard
+          let self,
+          self.dailyState == .running,
+          self.audioState == .waitingForAudio
+        else { return }
+        await self.retryWaitingAudio()
       }
     }
   }
