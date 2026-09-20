@@ -51,9 +51,12 @@ Store Connect app record, archives and validates the signed IPA. A separate
 `dry_run=false` dispatch uploads and waits for the exact TestFlight build.
 
 `useful-map` holds the five existing signing Secrets. Its repository Variables
-`APPLE_TEAM_ID`, `DAYLINE_BUNDLE_ID`, and `ASC_PROFILE_NAME` select Dayline's team,
-bundle ID, and profile. Never paste credentials into a workflow input, issue,
-commit, or chat. The signed IPA is not uploaded as a public Actions artifact.
+`APPLE_TEAM_ID`, `DAYLINE_BUNDLE_ID`, `ASC_PROFILE_NAME`, and
+`DAYLINE_NOTION_OAUTH_BROKER_URL` select Dayline's team, bundle ID, profile, and the
+public OAuth broker endpoint embedded in the archive. Never paste credentials into a
+workflow input, issue, commit, or chat. The signed IPA is not uploaded as a public
+Actions artifact. The broker URL is public configuration; the Notion client secret
+remains only in GitHub and Cloudflare encrypted secrets.
 
 For an internal tester, an App Store Connect user must have access to the app and
 TestFlight's App Store Connect Users group, or be assigned to another internal

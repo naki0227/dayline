@@ -111,14 +111,16 @@
       encrypted GitHub/Worker secrets, and deploy the production OAuth broker.
 - [x] Verify production health and OAuth session creation, then pass the complete
       `CD / OAuth Broker` workflow without distributing an iOS build.
+- [x] Pass the OAuth broker URL through the borrowed useful-map signing workflow and
+      deliver Dayline `1.0 (10)` to TestFlight with exact-build processing verification.
 
 ## On hold
 
-- [ ] A new TestFlight upload and physical-device confirmation for Issues #17/#18 is
-      deferred by request; do not deploy until explicitly requested again.
-- [ ] Issue #19 needs only the explicitly deferred physical-device acceptance test for
-      connect, page selection, export confirmation, and disconnect. Production broker
-      enablement is complete; never embed the client secret in the app.
+- [ ] Install TestFlight build `1.0 (10)` and physically confirm the already-closed
+      Issues #17/#18 fixes; the build is processed and available for testing.
+- [ ] Issue #19 needs the physical-device acceptance test for connect, page selection,
+      export confirmation, and disconnect using TestFlight build `1.0 (10)`. Production
+      broker enablement is complete; never embed the client secret in the app.
 - [ ] Migrate signing to Dayline-owned GitHub Secrets or organization-scoped
       Secrets if fully automatic Dayline tag delivery becomes necessary.
 - [ ] External LLM runtimes, independent backend, vector database, and autonomous
@@ -138,6 +140,6 @@
    `docs/notion-oauth-broker.md`, and the latest Issue #19 work report.
 2. Accept the local Xcode license or use CI, then run
    `swift test --package-path packages/ContextCaptureKit --parallel`.
-3. Do not start a TestFlight deployment unless the user explicitly requests it.
-4. When iOS distribution is explicitly requested, run the physical-device acceptance
-   test before closing Issue #19. Keep the client secret out of iOS and GitHub Variables.
+3. Install TestFlight build `1.0 (10)` and run the Issue #19 physical-device acceptance
+   test before closing it. Keep the client secret out of iOS and GitHub Variables.
+4. Record regressions as child issues of Epic #16 rather than reopening unrelated work.
