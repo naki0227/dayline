@@ -1,0 +1,4 @@
+NOTION_CLIENT_ID=replace-with-public-connection-client-id
+NOTION_CLIENT_SECRET=replace-with-local-development-secret
+RATE_LIMIT_KEY_SECRET=replace-with-at-least-32-random-characters
+NOTION_REDIRECT_URI=https://replace-with-registered-host/v1/notion/oauth/callback
