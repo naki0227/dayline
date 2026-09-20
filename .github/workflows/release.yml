@@ -110,6 +110,7 @@ jobs:
           ASC_PRIVATE_KEYS_DIR: ${{ runner.temp }}/app-store-keys
           BUNDLE_ID: ${{ vars.DAYLINE_BUNDLE_ID }}
           ASC_PROFILE_NAME: ${{ vars.ASC_PROFILE_NAME }}
+          DAYLINE_NOTION_OAUTH_BROKER_URL: ${{ vars.DAYLINE_NOTION_OAUTH_BROKER_URL }}
           MARKETING_VERSION: ${{ steps.version.outputs.marketing }}
           BUILD_NUMBER: ${{ steps.version.outputs.build }}
         run: make release-dry-run

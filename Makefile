@@ -14,7 +14,7 @@ MARKETING_VERSION ?= 1.0
 BUILD_NUMBER ?= 1
 CONTRACTS_VENV := contracts/.venv
 
-.PHONY: help ci quality architecture duplication contracts-venv contracts-check rust-format rust-lint rust-check rust-test rust-build ffi-xcframework ffi-check mac-agent-check mac-agent-build swift-format swift-format-check swift-lint swift-check swift-test swift-build oauth-broker-install oauth-broker-format-check oauth-broker-lint oauth-broker-typecheck oauth-broker-test oauth-broker-build oauth-broker-ci project app-build app-test export-options archive export-ipa asc-venv asc-dev-venv release-tools-format release-tools-format-check release-tools-lint release-tools-typecheck release-tools-test release-tools-build release-tools-ci asc-status asc-profile asc-build asc-testflight validate-ipa upload release-dry-run release-upload clean
+.PHONY: help ci quality architecture duplication contracts-venv contracts-check rust-format rust-lint rust-check rust-test rust-build ffi-xcframework ffi-check mac-agent-check mac-agent-build swift-format swift-format-check swift-lint swift-check swift-test swift-build oauth-broker-install oauth-broker-format-check oauth-broker-lint oauth-broker-typecheck oauth-broker-test oauth-broker-build oauth-broker-ci oauth-broker-dev oauth-broker-deploy project app-build app-test export-options archive export-ipa asc-venv asc-dev-venv release-tools-format release-tools-format-check release-tools-lint release-tools-typecheck release-tools-test release-tools-build release-tools-ci asc-status asc-profile asc-build asc-testflight validate-ipa upload release-dry-run release-upload clean
 
 help: ## 利用できるターゲットを表示する
 	@awk 'BEGIN {FS = ":.*## "}; /^[a-zA-Z_-]+:.*## / {printf "  %-22s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -147,6 +147,12 @@ oauth-broker-build: ## Notion OAuth brokerをdeployせずbuild検証する
 
 oauth-broker-ci: oauth-broker-install oauth-broker-format-check oauth-broker-lint oauth-broker-typecheck oauth-broker-test oauth-broker-build ## OAuth brokerのblocking検証を実行する
 
+oauth-broker-dev: ## Notion OAuth brokerをlocal起動する
+	npm run --prefix services/notion-oauth-broker dev
+
+oauth-broker-deploy: oauth-broker-ci ## 構成済みCloudflare accountへbrokerを配備する
+	npm run --prefix services/notion-oauth-broker deploy
+
 project: ## Xcodeプロジェクトを生成する
 	xcodegen generate
 
@@ -173,6 +179,7 @@ archive: ffi-xcframework project check-release-config ## App Store提出用archi
 		-destination 'generic/platform=iOS' -archivePath $(ARCHIVE_PATH) \
 		DAYLINE_TEAM_ID="$${APPLE_TEAM_ID}" \
 		PRODUCT_BUNDLE_IDENTIFIER="$(BUNDLE_ID)" \
+		DAYLINE_NOTION_OAUTH_BROKER_URL="$${DAYLINE_NOTION_OAUTH_BROKER_URL:-}" \
 		MARKETING_VERSION="$(MARKETING_VERSION)" \
 		CURRENT_PROJECT_VERSION="$(BUILD_NUMBER)"
 	@python3 scripts/verify_archive.py --archive $(ARCHIVE_PATH) \
