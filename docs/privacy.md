@@ -43,6 +43,12 @@ page ID is non-secret configuration and may be stored in UserDefaults. User-faci
 internal integration errors are finite, content-free categories; response bodies and
 credentials are not logged.
 
+The OAuth broker stores pending authorization state for at most ten minutes. After a
+successful completion replay window it removes the refresh token and raw revocation
+capability; it retains the access token and a revocation hash only until disconnect.
+Source addresses are not stored directly: a secret-keyed, minute-scoped HMAC digest is
+used solely as a Durable Object key, and its rate-limit counter is deleted by an alarm.
+
 The macOS shell hook records only completed command metadata and sends it to the local
 agent over stdin. It never captures stdout, stderr, or individual keystrokes. Chrome is
 read-only and limited to HTTP(S) visit URL/title/time. Policy is checked before either

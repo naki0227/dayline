@@ -24,8 +24,8 @@ Dayline uses a small HTTPS OAuth broker with three operations:
 - `POST /v1/notion/oauth/connections/revoke` revokes a connection using a separate,
   high-entropy revocation capability.
 
-The broker owns the Notion client secret, authorization-code exchange, refresh-token
-rotation, server-side state validation, and remote revocation. The app opens the returned
+The broker owns the Notion client secret, authorization-code exchange, server-side state
+validation, and remote revocation. The app opens the returned
 authorization URL with `ASWebAuthenticationSession`; the callback carries only an opaque
 session identifier and never carries a Notion access or refresh token.
 

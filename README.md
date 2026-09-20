@@ -26,6 +26,7 @@ composes both boundaries.
 | `contracts/` | Versioned cross-language schemas |
 | `profiles/` | Product AI profiles and prompt policy |
 | `integrations/` | External service adapters |
+| `services/notion-oauth-broker/` | Secret-bearing Notion OAuth Worker and Durable Objects |
 | `fixtures/` | Deterministic test input |
 | `docs/` | Architecture decisions, operations, and work logs |
 
@@ -38,6 +39,7 @@ duplication report.
 make ci       # blocking checks
 make quality  # advisory cross-cutting checks
 make ffi-check # regenerate XCFramework and run the real Swift/Rust bridge tests
+make oauth-broker-ci # validate the independently deployed Notion OAuth broker
 ```
 
 CI is split by responsibility under `.github/workflows/`. Development is based
@@ -53,6 +55,11 @@ make release-upload   # archive, upload, and App Store version association
 Repository Variables provide non-secret Apple identifiers. GitHub Secrets provide
 the certificate, its password, and App Store Connect API credentials. A `v*` tag
 runs the upload path; manual dispatch defaults to dry-run.
+
+The Notion OAuth broker has independent CI and CD. An `oauth-broker-v*` tag validates
+and deploys only the Cloudflare Worker; it never builds or distributes the iOS app.
+Its deployment prerequisites are documented in
+[`services/notion-oauth-broker/README.md`](services/notion-oauth-broker/README.md).
 
 ## Current status
 

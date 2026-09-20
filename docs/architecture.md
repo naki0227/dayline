@@ -189,3 +189,6 @@ Migration and rollback details are in `docs/storage.md`.
   `NotionKit` owns OAuth broker, Keychain, destination discovery, and Notion HTTP
   details; it validates the proposal shape again and returns content-free failures.
   SwiftUI owns web-authentication presentation and connection/destination UI only.
+- The secret-bearing Notion OAuth broker is an independently deployed Cloudflare Worker.
+  Durable Objects serialize short-lived session transitions, retain the minimum material
+  needed for revocation, enforce TTL cleanup, and rate-limit starts by source-address hash.

@@ -15,10 +15,10 @@ Dayline's product flow is **Notionと連携**:
    explicitly approves the write.
 
 The production build setting `DAYLINE_NOTION_OAUTH_BROKER_URL` must be an HTTPS base
-URL implementing [`notion-oauth-broker.md`](notion-oauth-broker.md). The current
-repository does not contain or deploy that secret-bearing service. A registered Notion
-public connection and deployed broker are therefore operator prerequisites for live
-OAuth; they must be configured before Issue #19 can satisfy its device acceptance test.
+URL implementing [`notion-oauth-broker.md`](notion-oauth-broker.md). The implementation
+lives in [`services/notion-oauth-broker`](../services/notion-oauth-broker/README.md) and
+has independent CI/tag CD. A registered Notion public connection, Cloudflare credentials,
+and deployed broker remain operator prerequisites for the live device acceptance test.
 
 ## Credential lifecycle
 

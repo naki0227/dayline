@@ -104,14 +104,17 @@
 - [x] Implement Issue #19's client-side OAuth session, versioned Keychain connection,
       visible workspace state, reconnect/disconnect flow, shared-page picker, legacy
       read compatibility, and preserved ActionProposal confirmation boundary.
+- [x] Implement and test the Cloudflare Worker OAuth broker with Durable Object session
+      isolation, bounded completion replay, cleanup alarms, start rate limiting, official
+      Notion token/revoke endpoints, and independent tag CD.
 
 ## On hold
 
 - [ ] A new TestFlight upload and physical-device confirmation for Issues #17/#18 is
       deferred by request; do not deploy until explicitly requested again.
-- [ ] Issue #19 production enablement needs a selected HTTPS hosting environment,
-      deployed broker, Notion public connection credentials, redirect registration,
-      and `DAYLINE_NOTION_OAUTH_BROKER_URL`; do not embed the client secret in the app.
+- [ ] Issue #19 production enablement is blocked on Cloudflare authentication and Notion
+      public connection credentials. Then register the redirect, deploy, and set
+      `DAYLINE_NOTION_OAUTH_BROKER_URL`; never embed the client secret in the app.
 - [ ] Migrate signing to Dayline-owned GitHub Secrets or organization-scoped
       Secrets if fully automatic Dayline tag delivery becomes necessary.
 - [ ] External LLM runtimes, independent backend, vector database, and autonomous
@@ -132,6 +135,6 @@
 2. Accept the local Xcode license or use CI, then run
    `swift test --package-path packages/ContextCaptureKit --parallel`.
 3. Do not start a TestFlight deployment unless the user explicitly requests it.
-4. Select the OAuth broker hosting environment and configure the Notion public
-   connection before closing Issue #19; do not put its client secret in iOS or GitHub
-   Variables.
+4. Authenticate Wrangler, create/configure the Notion public connection, populate the
+   documented GitHub Secrets/Variables, deploy, then run the physical-device acceptance
+   test before closing Issue #19. Keep the client secret out of iOS and GitHub Variables.

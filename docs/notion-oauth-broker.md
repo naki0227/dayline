@@ -1,6 +1,7 @@
 # Notion OAuth broker contract
 
-The broker is the only component allowed to know `NOTION_CLIENT_SECRET`. All endpoints
+The broker is the only component allowed to know `NOTION_CLIENT_SECRET`. The production
+implementation is `services/notion-oauth-broker`. All endpoints
 must use HTTPS in production, reject oversized bodies, rate-limit by session/IP, avoid
 logging request bodies, and return content-free errors.
 
@@ -21,13 +22,14 @@ logging request bodies, and return content-free errors.
 }
 ```
 
-The broker creates and stores the OAuth `state`, binds it to the session and callback,
+The broker creates a 256-bit OAuth `state`/session capability, binds it to the callback,
 and uses its own registered HTTPS redirect URI for Notion. After validating Notion's
 callback and exchanging the authorization code, it redirects to:
 
 `dayline://oauth/notion?session_id=<opaque>&result=success`
 
-The deep link contains no Notion credential. Sessions are single-use and short-lived.
+The deep link contains no Notion credential. Authorization codes are exchanged once;
+connection completion has only the bounded replay window described below.
 
 ## Complete a session
 
@@ -52,7 +54,9 @@ The deep link contains no Notion credential. Sessions are single-use and short-l
 }
 ```
 
-Completion consumes the session. Responses must set `Cache-Control: no-store`.
+Completion can return the same connection for two minutes so a lost response does not
+orphan a Notion token. An alarm then removes the refresh token and raw revocation
+capability. Responses set `Cache-Control: no-store`.
 
 ## Revoke a connection
 
@@ -65,8 +69,18 @@ Completion consumes the session. Responses must set `Cache-Control: no-store`.
 }
 ```
 
-A successful or already-revoked connection returns `204`. The broker must authenticate
+A successful or already-revoked connection returns `204`. The broker authenticates
 to Notion server-side and must never require the app to put a Notion token in a URL.
+
+## Storage and abuse controls
+
+- Pending/authorized sessions expire and delete all Durable Object storage after ten
+  minutes.
+- Delivered connections retain only metadata, access token, and revocation hash after
+  the two-minute completion replay window; disconnect revokes upstream then deletes all.
+- Start requests are limited to ten per secret-keyed, minute-scoped source-address
+  digest. The raw address and a stable plain hash are not stored.
+- JSON request bodies are limited to 4 KiB and callback URLs use an exact allowlist.
 
 ## Error contract
 
