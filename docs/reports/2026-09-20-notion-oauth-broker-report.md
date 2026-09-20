@@ -2,7 +2,7 @@
 
 ## 作業日時
 
-2026年09月20日 10時44分15秒
+2026年09月20日 18時52分00秒
 
 ## 作業対象
 
@@ -22,6 +22,14 @@ brokerを実装する。TestFlight配布とは独立して検証・配備でき�
 - Node 24の責務別CIと`oauth-broker-v*` tagによる独立CDを追加。
 - `Makefile`へbrokerの検証、開発起動、配備targetを追加。
 - iOS Release archiveへ公開broker URLだけを渡すようにした。
+- Notion public connectionを最小権限で作成し、登録済みHTTPS redirectを設定した。
+- Cloudflare Worker secretsとGitHub Actions Secrets/Variablesを構成した。秘密値は
+  リポジトリ、issue、ログへ保存していない。
+- Cloudflare API tokenを対象アカウント1件の`Workers Scripts: Edit`だけに限定した。
+- 初回API tokenは自動操作出力への露出を検知して即時失効し、未露出の代替tokenへ
+  ローテーションした。失効済みtokenはGitHub/Workerのどちらでも使用していない。
+- 実Notion設定で本番Workerを配備し、healthとOAuth session開始契約を確認した。
+- `CD / OAuth Broker`を手動実行し、検証、secret同期、配備、health確認が成功した。
 
 ## 変更したファイル
 
@@ -31,6 +39,7 @@ brokerを実装する。TestFlight配布とは独立して検証・配備でき�
 - `Makefile`、`.gitignore`、`README.md`
 - `docs/notion.md`、`docs/notion-oauth-broker.md`、`docs/privacy.md`
 - `docs/architecture.md`、`docs/adr/0008-notion-oauth-broker.md`、`docs/TODO.md`
+- `docs/reports/2026-09-20-notion-oauth-broker-report.md`
 
 ## 変更意図
 
@@ -64,9 +73,14 @@ Notion OAuthの接続・解除経路、GitHub Actions、Release archiveのbroker
 - `npm audit --audit-level=moderate`
 - `git diff --check`
 - `wrangler dev --local`を使ったHTTP smoke test
+- `npx wrangler deploy --var ...`による本番Worker配備
+- `curl`による本番`/health`とOAuth session開始契約の検証
+- `gh workflow run deploy-oauth-broker.yml --ref main`
+- `gh run watch 35503452710 --exit-status`
 
 brokerの全項目は成功。`make`はローカルの未同意Xcode licenseに阻まれたため、同一の
-npm commandを個別実行した。全責務CIはpush後にGitHub Actionsで確認する。
+npm commandを個別実行した。commit `cfcff3f`の責務別CI 11本はすべて成功し、
+本番CD run `35503452710`も成功した。
 
 ## CIで確認される内容
 
@@ -76,17 +90,15 @@ release tools、security、警告扱いの重複検査を責務別に実行す�
 
 ## 未解決の課題
 
-- Cloudflareへの認証と本番Worker配備。
-- Notion public connectionの作成、redirect URI登録、client ID/secretの安全な設定。
 - 実workspace・実端末での接続、page選択、解除のacceptance test。
-- 上記が未完了のためIssue #19はcloseしない。
+- iOS配布はユーザー指示により保留中であり、上記が未完了のためIssue #19はcloseしない。
+- GitHub ActionsのNode.js 20互換shim廃止前にactionsの更新を確認する。
 
 ## 次にやること
 
-1. Cloudflareへ認証し、最小権限API token、account ID、rate-limit用random secretを設定する。
-2. Notion public connectionを作成し、Worker callbackを登録する。
-3. GitHub Secrets/Variablesを設定してbrokerを配備する。
-4. broker URLをRelease buildへ設定し、明示的な配布依頼後に実端末で確認する。
+1. 明示的な配布依頼があった時だけ、broker URLを含むiOS buildを配布する。
+2. 実端末で接続、workspace/page選択、export確認、disconnectを確認する。
+3. acceptance完了後にIssue #19をcloseする。
 
 ## 次回最初に見るべきファイル
 
@@ -97,7 +109,8 @@ release tools、security、警告扱いの重複検査を責務別に実行す�
 
 ## 引き継ぎ事項
 
-最初に`make oauth-broker-ci`を実行する。Notion client secretはiOS、GitHub Variables、
-issue、ログへ置かず、GitHub SecretとCloudflare Worker secretだけに保存する。
+最初に`make oauth-broker-ci`を実行し、必要なら本番`/health`も確認する。Notion client
+secretはiOS、GitHub Variables、issue、ログへ置かず、GitHub SecretとCloudflare Worker
+secretだけに保存する。
 `oauth-broker-v*`はbrokerだけを配備し、`v*`はiOS配布なので混同しない。ユーザーの
 明示依頼があるまでTestFlight配布は行わない。

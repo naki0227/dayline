@@ -2,8 +2,8 @@
 
 ## In progress
 
-- [ ] Issue #19: deploy/configure the HTTPS OAuth broker and registered public Notion
-      connection, then complete the physical-device acceptance test.
+- No active implementation task. Issue #19 is awaiting the explicitly deferred
+  physical-device acceptance test.
 
 ## Not started
 
@@ -107,14 +107,18 @@
 - [x] Implement and test the Cloudflare Worker OAuth broker with Durable Object session
       isolation, bounded completion replay, cleanup alarms, start rate limiting, official
       Notion token/revoke endpoints, and independent tag CD.
+- [x] Create the public Notion connection, register the HTTPS callback, configure
+      encrypted GitHub/Worker secrets, and deploy the production OAuth broker.
+- [x] Verify production health and OAuth session creation, then pass the complete
+      `CD / OAuth Broker` workflow without distributing an iOS build.
 
 ## On hold
 
 - [ ] A new TestFlight upload and physical-device confirmation for Issues #17/#18 is
       deferred by request; do not deploy until explicitly requested again.
-- [ ] Issue #19 production enablement is blocked on Cloudflare authentication and Notion
-      public connection credentials. Then register the redirect, deploy, and set
-      `DAYLINE_NOTION_OAUTH_BROKER_URL`; never embed the client secret in the app.
+- [ ] Issue #19 needs only the explicitly deferred physical-device acceptance test for
+      connect, page selection, export confirmation, and disconnect. Production broker
+      enablement is complete; never embed the client secret in the app.
 - [ ] Migrate signing to Dayline-owned GitHub Secrets or organization-scoped
       Secrets if fully automatic Dayline tag delivery becomes necessary.
 - [ ] External LLM runtimes, independent backend, vector database, and autonomous
@@ -135,6 +139,5 @@
 2. Accept the local Xcode license or use CI, then run
    `swift test --package-path packages/ContextCaptureKit --parallel`.
 3. Do not start a TestFlight deployment unless the user explicitly requests it.
-4. Authenticate Wrangler, create/configure the Notion public connection, populate the
-   documented GitHub Secrets/Variables, deploy, then run the physical-device acceptance
+4. When iOS distribution is explicitly requested, run the physical-device acceptance
    test before closing Issue #19. Keep the client secret out of iOS and GitHub Variables.
