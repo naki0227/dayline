@@ -20,6 +20,15 @@ func runtimeBoundaryAcceptsIndependentImplementations() {
 }
 
 @Test
+func appleRuntimeUsesSharedSystemAvailability() {
+  let runtime = AppleFoundationModelRuntime(
+    reducer: ContextReducer { context, _ in context }
+  )
+
+  #expect(runtime.availability() == SystemIntelligenceAvailability.current())
+}
+
+@Test
 func stubMapsArtifactEvidenceAndSensitivity() async throws {
   let context = try fixtureBundle()
   let artifact = try await StubIntelligenceRuntime().generate(
