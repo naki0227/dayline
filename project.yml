@@ -58,6 +58,7 @@ targets:
         ITSAppUsesNonExemptEncryption: false
         NSMicrophoneUsageDescription: "一日の音声を記録し、端末上で文脈を整理するために使用します。"
         NSSpeechRecognitionUsageDescription: "録音した音声を端末上で文字起こしするために使用します。"
+        NSCalendarsFullAccessUsageDescription: "許可した予定をDaylineのContextとして整理するために使用します。"
         UILaunchScreen: {}
         UIApplicationSupportsIndirectInputEvents: true
         UIBackgroundModes: [audio]

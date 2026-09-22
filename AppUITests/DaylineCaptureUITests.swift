@@ -44,7 +44,7 @@ final class DaylineCaptureUITests: XCTestCase {
 
     let generate = app.buttons["dayline.daily.generate"]
     let status = app.staticTexts["dayline.daily.status"]
-    XCTAssertTrue(generate.waitForExistence(timeout: 5))
+    XCTAssertTrue(scrollToElement(generate, in: app))
 
     generate.tap()
 
@@ -55,6 +55,7 @@ final class DaylineCaptureUITests: XCTestCase {
     let app = XCUIApplication()
     app.launchArguments = ["--ui-testing"]
     app.launch()
+    app.tabBars.buttons["Meetings"].tap()
 
     let toggle = app.buttons["dayline.live.toggle"]
     let status = app.staticTexts["dayline.live.status"]
@@ -74,9 +75,11 @@ final class DaylineCaptureUITests: XCTestCase {
     app.launchArguments = ["--ui-testing"]
     app.launch()
 
+    app.tabBars.buttons["Settings"].tap()
+    app.buttons["dayline.settings.sources"].tap()
+
     let processing = app.staticTexts["dayline.privacy.processing"]
     let audio = app.switches["dayline.source.audio"]
-    let capture = app.buttons["dayline.capture.toggle"]
     XCTAssertTrue(processing.waitForExistence(timeout: 5))
     XCTAssertEqual(processing.label, "端末内のみ")
     XCTAssertTrue(audio.waitForExistence(timeout: 5))
@@ -85,7 +88,9 @@ final class DaylineCaptureUITests: XCTestCase {
     audio.tap()
 
     XCTAssertEqual(audio.value as? String, "0")
-    XCTAssertFalse(capture.isEnabled)
+    app.navigationBars.buttons.element(boundBy: 0).tap()
+    app.tabBars.buttons["Today"].tap()
+    XCTAssertFalse(app.buttons["dayline.capture.toggle"].isEnabled)
   }
 
   func testNotionExportRequiresExplicitConfirmation() {
@@ -93,7 +98,9 @@ final class DaylineCaptureUITests: XCTestCase {
     app.launchArguments = ["--ui-testing", "--ui-testing-notion"]
     app.launch()
 
-    app.buttons["dayline.daily.generate"].tap()
+    let generate = app.buttons["dayline.daily.generate"]
+    XCTAssertTrue(scrollToElement(generate, in: app))
+    generate.tap()
     let open = app.buttons["dayline.notion.open"]
     XCTAssertTrue(open.waitForExistence(timeout: 5))
     open.tap()
@@ -116,7 +123,9 @@ final class DaylineCaptureUITests: XCTestCase {
     app.launchArguments = ["--ui-testing", "--ui-testing-notion"]
     app.launch()
 
-    app.buttons["dayline.daily.generate"].tap()
+    let generate = app.buttons["dayline.daily.generate"]
+    XCTAssertTrue(scrollToElement(generate, in: app))
+    generate.tap()
     let open = app.buttons["dayline.notion.open"]
     XCTAssertTrue(open.waitForExistence(timeout: 5))
     open.tap()
@@ -136,5 +145,14 @@ final class DaylineCaptureUITests: XCTestCase {
     let predicate = NSPredicate(format: "label == %@", label)
     let expectation = XCTNSPredicateExpectation(predicate: predicate, object: element)
     return XCTWaiter.wait(for: [expectation], timeout: 5) == .completed
+  }
+
+  private func scrollToElement(_ element: XCUIElement, in app: XCUIApplication) -> Bool {
+    if element.waitForExistence(timeout: 1) { return true }
+    for _ in 0..<4 {
+      app.swipeUp()
+      if element.waitForExistence(timeout: 1) { return true }
+    }
+    return false
   }
 }
