@@ -100,9 +100,9 @@ final class AppCapabilityModel {
     }
   }
 
-  private func authorizationState(_ status: SFSpeechRecognizerAuthorizationStatus)
-    -> AppCapabilityState
-  {
+  private func authorizationState(
+    _ status: SFSpeechRecognizerAuthorizationStatus
+  ) -> AppCapabilityState {
     switch status {
     case .authorized: .available
     case .denied, .restricted: .denied

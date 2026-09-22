@@ -66,9 +66,7 @@ private struct CapabilityCard: View {
       Text("利用可能になる機能: \(enables)")
         .font(.caption)
         .foregroundStyle(.secondary)
-      if state != .available && state != .deviceNotEligible
-        && state != .unsupportedOperatingSystem && capability != .backgroundAudio
-      {
+      if shouldShowAction {
         Button(actionTitle, action: action)
           .buttonStyle(.borderedProminent)
           .tint(DaylineTheme.sky)
@@ -149,5 +147,10 @@ private struct CapabilityCard: View {
 
   private var actionTitle: String {
     state == .permissionNeeded ? "許可する" : "iOS設定を開く"
+  }
+
+  private var shouldShowAction: Bool {
+    state != .available && state != .deviceNotEligible
+      && state != .unsupportedOperatingSystem && capability != .backgroundAudio
   }
 }
