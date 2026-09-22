@@ -113,6 +113,13 @@
       `CD / OAuth Broker` workflow without distributing an iOS build.
 - [x] Pass the OAuth broker URL through the borrowed useful-map signing workflow and
       deliver Dayline `1.0 (10)` to TestFlight with exact-build processing verification.
+- [x] Translate the Figma Make design into a native SwiftUI four-tab shell with
+      Navy/Sky tokens, real Daily/Live state, Timeline empty/summary state, Settings,
+      Integrations, and Context Source controls.
+- [x] Add a capability center that distinguishes microphone, speech recognition,
+      Apple Intelligence, notification, Calendar, and background-audio states.
+- [x] Replace the generic Live Meeting device error with typed, actionable speech
+      permission, locale, asset, audio-session, OS, and analyzer failure messages.
 
 ## On hold
 
@@ -121,6 +128,9 @@
 - [ ] Issue #19 needs the physical-device acceptance test for connect, page selection,
       export confirmation, and disconnect using TestFlight build `1.0 (10)`. Production
       broker enablement is complete; never embed the client secret in the app.
+- [ ] Verify the redesigned Live Meeting on the iOS 26 device and record the exact
+      capability/failure shown if startup still fails. TestFlight delivery is separate
+      from this implementation and should run only after CI succeeds.
 - [ ] Migrate signing to Dayline-owned GitHub Secrets or organization-scoped
       Secrets if fully automatic Dayline tag delivery becomes necessary.
 - [ ] External LLM runtimes, independent backend, vector database, and autonomous
@@ -136,10 +146,10 @@
 
 ## Start here next time
 
-1. Read GitHub Epic #16, Issue #19, `docs/notion.md`,
-   `docs/notion-oauth-broker.md`, and the latest Issue #19 work report.
+1. Read GitHub Epic #16, Issue #22, `docs/capture.md`, and the latest UI redesign
+   work report.
 2. Accept the local Xcode license or use CI, then run
    `swift test --package-path packages/ContextCaptureKit --parallel`.
-3. Install TestFlight build `1.0 (10)` and run the Issue #19 physical-device acceptance
-   test before closing it. Keep the client secret out of iOS and GitHub Variables.
+3. After an explicitly requested TestFlight delivery, verify Today recording, the
+   capability center, and Live Meeting on the iOS 26 device before closing Issue #22.
 4. Record regressions as child issues of Epic #16 rather than reopening unrelated work.

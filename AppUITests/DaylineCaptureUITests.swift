@@ -13,13 +13,13 @@ final class DaylineCaptureUITests: XCTestCase {
     let status = app.staticTexts["dayline.capture.status"]
     let toggle = app.buttons["dayline.capture.toggle"]
     XCTAssertTrue(status.waitForExistence(timeout: 5))
-    XCTAssertEqual(status.label, "停止中")
+    XCTAssertEqual(status.label, "Dailyを開始")
 
     toggle.tap()
     XCTAssertTrue(waitForLabel("録音中", element: status))
 
     toggle.tap()
-    XCTAssertTrue(waitForLabel("停止中", element: status))
+    XCTAssertTrue(waitForLabel("Dailyを開始", element: status))
   }
 
   func testDailyRemainsRunningWhileWaitingForCallAudio() {
@@ -81,7 +81,7 @@ final class DaylineCaptureUITests: XCTestCase {
     let processing = app.staticTexts["dayline.privacy.processing"]
     let audio = app.switches["dayline.source.audio"]
     XCTAssertTrue(processing.waitForExistence(timeout: 5))
-    XCTAssertEqual(processing.label, "端末内のみ")
+    XCTAssertEqual(processing.label, "詳細Contextは、明示した出力操作を除き端末外へ送りません。")
     XCTAssertTrue(audio.waitForExistence(timeout: 5))
     XCTAssertEqual(audio.value as? String, "1")
 

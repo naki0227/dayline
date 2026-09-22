@@ -81,6 +81,18 @@ failure stops the underlying audio source before exposing a content-free unavail
 state. The app prevents passive Daily recording and Live Meeting from owning the
 audio session simultaneously.
 
+The product UI presents live transcription and Apple Intelligence generation as two
+separate capabilities. A transcription startup failure retains its finite typed
+reason and maps it to an actionable message for permission denial, unsupported
+locale, missing speech assets, invalid audio input, unsupported OS, or analyzer
+failure. AI generation being unavailable does not get mislabeled as a microphone or
+device failure.
+
+Settings includes a capability center for microphone, speech recognition, Apple
+Intelligence, notifications, Calendar, and background audio. OS permission,
+integration connection, and the Dayline source allowlist remain distinct states:
+granting an OS permission never silently enables that source for context assembly.
+
 ## Testing
 
 Package tests use deterministic recorder, audio-session, and transcriber fakes for

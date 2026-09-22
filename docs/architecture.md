@@ -183,6 +183,11 @@ Migration and rollback details are in `docs/storage.md`.
 - A single actor-backed source-policy snapshot is injected into Daily and Live
   services. SwiftUI requests changes through the app composition model and does not
   decide query authorization itself.
+- The SwiftUI product shell follows four user-facing areas: Today, Timeline, Live
+  Meeting, and Settings. Navy/sky visual tokens and reusable card treatment live in
+  the App layer only. Platform capability inspection also stays in the App layer,
+  while Apple model eligibility is exposed by AppleIntelligenceKit as a typed,
+  read-only availability query.
 - Notion export is a separate ProductKit use case. It renders only the selected
   SemanticArtifact, constructs a provenance-preserving ActionProposal, evaluates Rust
   policy before presentation and again before execution, and requires confirmation.
